@@ -369,6 +369,17 @@ class StorageService {
     return newOrder;
   }
 
+  updateVehicleOrderStatus(orderId: string, status: any): boolean {
+    const orders = this.getVehicleOrders();
+    const idx = orders.findIndex(o => o.id === orderId);
+    if (idx !== -1) {
+      orders[idx].status = status;
+      this.set('vehicle_orders', orders);
+      return true;
+    }
+    return false;
+  }
+
   // --- Test Drives ---
   getTestDrives(): TestDriveBookingItem[] {
     return this.get<TestDriveBookingItem[]>('test_drives', INITIAL_TEST_DRIVES);

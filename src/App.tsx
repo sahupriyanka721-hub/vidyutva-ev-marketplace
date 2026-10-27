@@ -33,6 +33,7 @@ import { CustomerDashboardPage } from './pages/CustomerDashboardPage';
 import { CustomerSupportPage } from './pages/CustomerSupportPage';
 import { FaqPage } from './pages/FaqPage';
 import { LegalPage } from './pages/LegalPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
 export const App: React.FC = () => {
   return (
@@ -69,6 +70,7 @@ export const App: React.FC = () => {
                         <Route path="/contact" element={<CustomerSupportPage />} />
                         <Route path="/faq" element={<FaqPage />} />
                         <Route path="/legal/:slug" element={<LegalPage />} />
+                        <Route path="/admin" element={<AdminDashboardPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                       </Routes>
                     </main>
