@@ -1,0 +1,852 @@
+// Prisma Schema for Vidyutva Multi-Vendor EV Marketplace
+// Module 1: Customer Panel Architecture (prepared for Admin, Vehicle Vendor, Spare Part Vendor, Service Partner integration)
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  VEHICLE_VENDOR
+  SPARE_PART_VENDOR
+  SERVICE_PARTNER
+}
+
+enum VehicleCategoryType {
+  ELECTRIC_SCOOTER
+  ELECTRIC_PASSENGER_AUTO
+  ELECTRIC_CARGO_AUTO
+  ELECTRIC_LOADER
+}
+
+enum VehicleUsageType {
+  PERSONAL
+  COMMERCIAL
+  FLEET
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  BOOKING_CONFIRMED
+  DEALER_ASSIGNED
+  KYC_SUBMITTED
+  REGISTRATION_IN_PROGRESS
+  READY_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  UPI
+  CREDIT_CARD
+  DEBIT_CARD
+  NET_BANKING
+  EMI
+  CASH_ON_DELIVERY
+}
+
+enum TestDriveStatus {
+  PENDING
+  CONFIRMED
+  RESCHEDULE_REQUESTED
+  COMPLETED
+  CANCELLED
+}
+
+enum QuotationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  QUOTE_PREPARED
+  SENT_TO_CUSTOMER
+  ACCEPTED
+  EXPIRED
+  REJECTED
+}
+
+enum ServiceBookingStatus {
+  REQUESTED
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  PARTNER_ASSIGNED
+  ON_THE_WAY
+  VEHICLE_INSPECTION
+  AWAITING_CUSTOMER_APPROVAL
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ServiceUrgency {
+  STANDARD
+  PRIORITY
+  EMERGENCY_BREAKDOWN
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  ITEM_PICKED_UP
+  INSPECTED
+  REFUNDED
+  REJECTED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+// 1. Users
+model User {
+  id            String          @id @default(cuid())
+  email         String?         @unique
+  phone         String          @unique
+  fullName      String
+  role          Role            @default(CUSTOMER)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  customerProfile CustomerProfile?
+  addresses       CustomerAddress[]
+  vehicleOrders   VehicleOrder[]
+  testDrives      TestDriveBooking[]
+  quotations      Quotation[]
+  carts           Cart[]
+  wishlists       Wishlist[]
+  serviceBookings ServiceBooking[]
+  reviews         Review[]
+  supportTickets  SupportTicket[]
+  notifications   Notification[]
+  auditLogs       AuditLog[]
+
+  @@index([phone])
+  @@index([email])
+}
+
+// 2. Customer Profiles
+model CustomerProfile {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alternatePhone   String?
+  city             String?
+  pincode          String?
+  drivingLicenseNo String?
+  isKycVerified    Boolean   @default(false)
+  avatarUrl        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// 3. Customer Addresses
+model CustomerAddress {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  addressType  String    @default("HOME") // HOME, WORK, DEALER_PICKUP
+  fullName     String
+  phone        String
+  line1        String
+  line2        String?
+  landmark     String?
+  city         String
+  state        String
+  pincode      String
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  orders          VehicleOrder[]
+  serviceBookings ServiceBooking[]
+
+  @@index([userId])
+  @@index([pincode])
+}
+
+// 4. Vehicle Brands
+model VehicleBrand {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  logoUrl     String?
+  originCountry String  @default("India")
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  vehicles    Vehicle[]
+}
+
+// 5. Vehicle Categories
+model VehicleCategory {
+  id          String              @id @default(cuid())
+  type        VehicleCategoryType @unique
+  displayName String
+  description String?
+  iconUrl     String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  vehicles    Vehicle[]
+}
+
+// 6. Vehicles
+model Vehicle {
+  id                  String             @id @default(cuid())
+  brandId             String
+  brand               VehicleBrand       @relation(fields: [brandId], references: [id])
+  categoryId          String
+  category            VehicleCategory    @relation(fields: [categoryId], references: [id])
+  name                String
+  modelSlug           String             @unique
+  tagline             String?
+  description         String
+  usageType           VehicleUsageType   @default(PERSONAL)
+  basePriceExShowroom Decimal            @db.Decimal(12, 2)
+  estimatedSubsidy    Decimal            @default(0) @db.Decimal(12, 2)
+  estimatedRtoCharges Decimal            @default(0) @db.Decimal(12, 2)
+  estimatedInsurance  Decimal            @default(0) @db.Decimal(12, 2)
+  bookingTokenAmount  Decimal            @default(2999) @db.Decimal(10, 2)
+  certifiedRangeKm    Int
+  certifiedRangeCondition String         @default("ARAI / IDC Certified")
+  topSpeedKmph        Int
+  batteryCapacityKwh  Decimal            @db.Decimal(5, 2)
+  chargingTimeHours   Decimal            @db.Decimal(4, 2)
+  fastChargingTimeMin Int?
+  motorType           String             @default("PMSM Hub / Mid-drive")
+  motorPowerWatts     Int
+  warrantyYears       Int                @default(3)
+  warrantyKm          Int                @default(50000)
+  isFeatured          Boolean            @default(false)
+  isActive            Boolean            @default(true)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  variants            VehicleVariant[]
+  images              VehicleImage[]
+  specifications      VehicleSpecification[]
+  inventories         VehicleInventory[]
+  vendorAssignments   VehicleVendorAssignment[]
+  orderItems          VehicleOrderItem[]
+  testDriveBookings   TestDriveBooking[]
+  quotationItems      QuotationItem[]
+  compatibleSpareParts SparePartCompatibility[]
+  reviews             Review[]
+
+  @@index([brandId])
+  @@index([categoryId])
+  @@index([modelSlug])
+}
+
+// 7. Vehicle Variants
+model VehicleVariant {
+  id              String         @id @default(cuid())
+  vehicleId       String
+  vehicle         Vehicle        @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  variantName     String
+  colorName       String
+  colorHex        String
+  priceDifference Decimal        @default(0) @db.Decimal(10, 2)
+  batteryCapacity Decimal        @db.Decimal(5, 2)
+  realWorldRangeKm Int
+  stockCount      Int            @default(5)
+  imageUrl        String
+  isDefault       Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  orderItems      VehicleOrderItem[]
+
+  @@index([vehicleId])
+}
+
+// 8. Vehicle Images
+model VehicleImage {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  imageUrl   String
+  isPrimary  Boolean  @default(false)
+  angleLabel String?  // "Front", "Side", "Dashboard", "Boot"
+  sortOrder  Int      @default(0)
+
+  @@index([vehicleId])
+}
+
+// 9. Vehicle Specifications
+model VehicleSpecification {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  groupName  String   // "Performance", "Battery & Charging", "Dimensions", "Smart Features"
+  specKey    String
+  specValue  String
+  sortOrder  Int      @default(0)
+
+  @@index([vehicleId])
+}
+
+// 10. Vehicle Inventory
+model VehicleInventory {
+  id             String   @id @default(cuid())
+  vehicleId      String
+  vehicle        Vehicle  @relation(fields: [vehicleId], references: [id])
+  pincode        String
+  city           String
+  unitsAvailable Int      @default(0)
+  isAvailableForDelivery Boolean @default(true)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([vehicleId, pincode])
+  @@index([pincode])
+}
+
+// 11. Vehicle Vendor Assignments
+model VehicleVendorAssignment {
+  id         String   @id @default(cuid())
+  vehicleId  String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id])
+  vendorName String
+  vendorCode String
+  dealerCity String
+  createdAt  DateTime @default(now())
+
+  @@index([vehicleId])
+}
+
+// 12. Vehicle Orders
+model VehicleOrder {
+  id                   String        @id @default(cuid())
+  orderNumber          String        @unique // e.g. ORD-EV-2026-XXXX
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id])
+  addressId            String
+  address              CustomerAddress @relation(fields: [addressId], references: [id])
+  status               OrderStatus   @default(BOOKING_CONFIRMED)
+  totalExShowroom      Decimal       @db.Decimal(12, 2)
+  subsidyDiscount      Decimal       @default(0) @db.Decimal(12, 2)
+  registrationFee      Decimal       @db.Decimal(10, 2)
+  insuranceFee         Decimal       @db.Decimal(10, 2)
+  deliveryFee          Decimal       @default(0) @db.Decimal(8, 2)
+  totalOnRoadAmount    Decimal       @db.Decimal(12, 2)
+  bookingAmountPaid    Decimal       @db.Decimal(10, 2)
+  balanceDueAmount     Decimal       @db.Decimal(12, 2)
+  isFullPayment        Boolean       @default(false)
+  financeRequested     Boolean       @default(false)
+  financeTenureMonths  Int?
+  estimatedEmiMonthly  Decimal?      @db.Decimal(10, 2)
+  allocatedDealer      String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  items                VehicleOrderItem[]
+  payments             Payment[]
+
+  @@index([userId])
+  @@index([orderNumber])
+}
+
+// 13. Vehicle Order Items
+model VehicleOrderItem {
+  id          String         @id @default(cuid())
+  orderId     String
+  order       VehicleOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  vehicleId   String
+  vehicle     Vehicle        @relation(fields: [vehicleId], references: [id])
+  variantId   String?
+  variant     VehicleVariant? @relation(fields: [variantId], references: [id])
+  unitPrice   Decimal        @db.Decimal(12, 2)
+  quantity    Int            @default(1)
+}
+
+// 14. Payments
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String?
+  vehicleOrder    VehicleOrder? @relation(fields: [orderId], references: [id])
+  gateway         String        @default("RAZORPAY_SANDBOX")
+  transactionRef  String        @unique // Payment Gateway ID
+  amount          Decimal       @db.Decimal(12, 2)
+  currency        String        @default("INR")
+  status          PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod
+  signatureProof  String?
+  rawPayloadJson  String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([transactionRef])
+}
+
+// 15. Test Drive Bookings
+model TestDriveBooking {
+  id              String          @id @default(cuid())
+  bookingNumber   String          @unique // TD-2026-XXXX
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  vehicleId       String
+  vehicle         Vehicle         @relation(fields: [vehicleId], references: [id])
+  customerName    String
+  customerPhone   String
+  customerEmail   String
+  city            String
+  pincode         String
+  testDriveMode   String          @default("DOORSTEP") // "DOORSTEP" | "DEALERSHIP"
+  preferredDate   DateTime
+  timeSlot        String          // e.g. "10:00 AM - 11:30 AM"
+  status          TestDriveStatus @default(PENDING)
+  notes           String?
+  allocatedDealer String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([vehicleId])
+  @@index([bookingNumber])
+}
+
+// 16. Test Drive Slots
+model TestDriveSlot {
+  id        String   @id @default(cuid())
+  city      String
+  date      DateTime
+  slotTime  String
+  isBooked  Boolean  @default(false)
+  maxCapacity Int    @default(3)
+  bookedCount Int    @default(0)
+
+  @@unique([city, date, slotTime])
+}
+
+// 17. Quotations
+model Quotation {
+  id                 String          @id @default(cuid())
+  quotationNumber    String          @unique // QT-2026-XXXX
+  userId             String?
+  user               User?           @relation(fields: [userId], references: [id])
+  customerName       String
+  customerPhone      String
+  customerEmail      String
+  customerType       String          @default("INDIVIDUAL") // INDIVIDUAL, BUSINESS
+  usageType          VehicleUsageType @default(PERSONAL)
+  city               String
+  pincode            String
+  status             QuotationStatus @default(SUBMITTED)
+  validUntil         DateTime
+  estimatedTotal     Decimal         @db.Decimal(12, 2)
+  subsidyDeduction   Decimal         @default(0) @db.Decimal(12, 2)
+  financeAssistance  Boolean         @default(false)
+  exchangeVehicle    Boolean         @default(false)
+  pdfDocketUrl       String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  items              QuotationItem[]
+
+  @@index([quotationNumber])
+}
+
+// 18. Quotation Items
+model QuotationItem {
+  id          String    @id @default(cuid())
+  quotationId String
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  vehicleId   String
+  vehicle     Vehicle   @relation(fields: [vehicleId], references: [id])
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @db.Decimal(12, 2)
+  notes       String?
+}
+
+// 19. Spare Part Categories
+model SparePartCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  iconName    String?
+  description String?
+  createdAt   DateTime    @default(now())
+
+  spareParts  SparePart[]
+}
+
+// 20. Spare Parts
+model SparePart {
+  id                String             @id @default(cuid())
+  categoryId        String
+  category          SparePartCategory  @relation(fields: [categoryId], references: [id])
+  name              String
+  slug              String             @unique
+  sku               String             @unique
+  brand             String
+  mrpPrice          Decimal            @db.Decimal(10, 2)
+  sellingPrice      Decimal            @db.Decimal(10, 2)
+  stockQuantity     Int                @default(10)
+  warrantyMonths    Int                @default(12)
+  returnWindowDays  Int                @default(7)
+  isOemGenuine      Boolean            @default(true)
+  imageUrl          String
+  description       String
+  specificationsJson String            @db.Text
+  vendorName        String             @default("Vidyut Genuine Parts Hub")
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  compatibilities   SparePartCompatibility[]
+  inventories       SparePartInventory[]
+  cartItems         CartItem[]
+  wishlistItems     WishlistItem[]
+
+  @@index([categoryId])
+  @@index([sku])
+}
+
+// 21. Spare Part Compatibility
+model SparePartCompatibility {
+  id                String    @id @default(cuid())
+  sparePartId       String
+  sparePart         SparePart @relation(fields: [sparePartId], references: [id], onDelete: Cascade)
+  vehicleId         String
+  vehicle           Vehicle   @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  compatibleYears   String    @default("2022-2026")
+  isVerified        Boolean   @default(true)
+  notes             String?
+
+  @@unique([sparePartId, vehicleId])
+  @@index([sparePartId])
+  @@index([vehicleId])
+}
+
+// 22. Spare Part Inventory
+model SparePartInventory {
+  id             String    @id @default(cuid())
+  sparePartId    String
+  sparePart      SparePart @relation(fields: [sparePartId], references: [id])
+  warehouseCity  String
+  stockCount     Int       @default(20)
+  updatedAt      DateTime  @updatedAt
+
+  @@index([sparePartId])
+}
+
+// 23. Spare Part Vendor Assignments
+model SparePartVendorAssignment {
+  id         String   @id @default(cuid())
+  partSku    String
+  vendorCode String
+  leadDays   Int      @default(2)
+}
+
+// 24. Carts
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  items     CartItem[]
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+// 25. Cart Items
+model CartItem {
+  id          String    @id @default(cuid())
+  cartId      String
+  cart        Cart      @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  sparePartId String
+  sparePart   SparePart @relation(fields: [sparePartId], references: [id])
+  quantity    Int       @default(1)
+  unitPrice   Decimal   @db.Decimal(10, 2)
+  addedAt     DateTime  @default(now())
+
+  @@index([cartId])
+}
+
+// 26. Wishlists
+model Wishlist {
+  id        String         @id @default(cuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime       @default(now())
+
+  items     WishlistItem[]
+
+  @@index([userId])
+}
+
+// 27. Wishlist Items
+model WishlistItem {
+  id          String     @id @default(cuid())
+  wishlistId  String
+  wishlist    Wishlist   @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  sparePartId String?
+  sparePart   SparePart? @relation(fields: [sparePartId], references: [id])
+  vehicleSlug String?
+  addedAt     DateTime   @default(now())
+
+  @@index([wishlistId])
+}
+
+// 28. Service Categories
+model ServiceCategory {
+  id                String           @id @default(cuid())
+  serviceKey        String           @unique
+  name              String
+  shortDescription  String
+  baseEstimatePrice Decimal          @db.Decimal(8, 2)
+  estimatedMinutes  Int              @default(60)
+  isDoorstepAllowed Boolean          @default(true)
+
+  serviceBookings   ServiceBooking[]
+}
+
+// 29. Service Areas
+model ServiceArea {
+  id             String   @id @default(cuid())
+  pincode        String   @unique
+  city           String
+  state          String
+  hasDoorstep    Boolean  @default(true)
+  hasServiceHub  Boolean  @default(true)
+  averageLeadHrs Int      @default(24)
+}
+
+// 30. Service Partners
+model ServicePartner {
+  id             String           @id @default(cuid())
+  name           String
+  phone          String
+  vanRegNumber   String?
+  rating         Decimal          @default(4.9) @db.Decimal(3, 2)
+  completedJobs  Int              @default(120)
+  currentCity    String
+  isAvailable    Boolean          @default(true)
+
+  bookings       ServiceBooking[]
+}
+
+// 31. Service Partner Capabilities
+model ServicePartnerCapability {
+  id               String   @id @default(cuid())
+  partnerId        String
+  serviceCategoryKey String
+}
+
+// 32. Service Slots
+model ServiceSlot {
+  id        String   @id @default(cuid())
+  pincode   String
+  slotDate  DateTime
+  slotTime  String   // "09:00 AM - 12:00 PM"
+  isBooked  Boolean  @default(false)
+}
+
+// 33. Service Bookings
+model ServiceBooking {
+  id                   String               @id @default(cuid())
+  bookingNumber        String               @unique // SRV-2026-XXXX
+  userId               String
+  user                 User                 @relation(fields: [userId], references: [id])
+  serviceCategoryId    String
+  serviceCategory      ServiceCategory      @relation(fields: [serviceCategoryId], references: [id])
+  servicePartnerId     String?
+  servicePartner       ServicePartner?      @relation(fields: [servicePartnerId], references: [id])
+  addressId            String
+  address              CustomerAddress      @relation(fields: [addressId], references: [id])
+  vehicleType          VehicleCategoryType
+  vehicleBrand         String
+  vehicleModel         String
+  vehicleRegNo         String?
+  serviceMode          String               @default("DOORSTEP") // "DOORSTEP" | "SERVICE_CENTRE"
+  urgency              ServiceUrgency       @default(STANDARD)
+  problemDescription   String
+  appointmentDate      DateTime
+  appointmentSlot      String
+  status               ServiceBookingStatus @default(REQUESTED)
+  baseFee              Decimal              @db.Decimal(8, 2)
+  inspectionCharges    Decimal              @default(299) @db.Decimal(8, 2)
+  totalApprovedAmount  Decimal              @default(299) @db.Decimal(10, 2)
+  isCustomerApproved   Boolean              @default(false)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  statusHistory        ServiceBookingStatusHistory[]
+  estimates            ServiceEstimate[]
+  invoices             ServiceInvoice[]
+
+  @@index([userId])
+  @@index([bookingNumber])
+}
+
+// 34. Service Booking Status History
+model ServiceBookingStatusHistory {
+  id               String               @id @default(cuid())
+  serviceBookingId String
+  serviceBooking   ServiceBooking       @relation(fields: [serviceBookingId], references: [id], onDelete: Cascade)
+  fromStatus       ServiceBookingStatus
+  toStatus         ServiceBookingStatus
+  remarks          String?
+  timestamp        DateTime             @default(now())
+
+  @@index([serviceBookingId])
+}
+
+// 35. Service Estimates (Requires explicit customer approval)
+model ServiceEstimate {
+  id               String         @id @default(cuid())
+  serviceBookingId String
+  serviceBooking   ServiceBooking @relation(fields: [serviceBookingId], references: [id], onDelete: Cascade)
+  partName         String
+  partCost         Decimal        @db.Decimal(8, 2)
+  labourCost       Decimal        @db.Decimal(8, 2)
+  technicianNotes  String
+  isApproved       Boolean        @default(false)
+  approvalTime     DateTime?
+
+  @@index([serviceBookingId])
+}
+
+// 36. Service Invoices
+model ServiceInvoice {
+  id               String         @id @default(cuid())
+  serviceBookingId String
+  serviceBooking   ServiceBooking @relation(fields: [serviceBookingId], references: [id], onDelete: Cascade)
+  invoiceNumber    String         @unique // INV-SRV-2026-XXXX
+  amount           Decimal        @db.Decimal(10, 2)
+  gstAmount        Decimal        @db.Decimal(8, 2)
+  isPaid           Boolean        @default(false)
+  paymentProofRef  String?
+  issuedAt         DateTime       @default(now())
+
+  @@index([serviceBookingId])
+}
+
+// 37. Reviews
+model Review {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  vehicleId    String?
+  vehicle      Vehicle?  @relation(fields: [vehicleId], references: [id])
+  rating       Int       @default(5)
+  title        String
+  comment      String
+  isVerified   Boolean   @default(true)
+  helpfulCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+
+  @@index([vehicleId])
+  @@index([userId])
+}
+
+// 38. Support Tickets
+model SupportTicket {
+  id             String              @id @default(cuid())
+  ticketNumber   String              @unique // TKT-2026-XXXX
+  userId         String
+  user           User                @relation(fields: [userId], references: [id])
+  category       String              // VEHICLE_ORDER, TEST_DRIVE, SERVICE, SPARE_PARTS, GENERAL
+  subject        String
+  status         SupportTicketStatus @default(OPEN)
+  relatedOrderId String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  messages       SupportMessage[]
+
+  @@index([userId])
+  @@index([ticketNumber])
+}
+
+// 39. Support Messages
+model SupportMessage {
+  id              String        @id @default(cuid())
+  supportTicketId String
+  supportTicket   SupportTicket @relation(fields: [supportTicketId], references: [id], onDelete: Cascade)
+  senderRole      String        // "CUSTOMER" | "SUPPORT_EXECUTIVE"
+  message         String        @db.Text
+  attachmentUrl   String?
+  sentAt          DateTime      @default(now())
+
+  @@index([supportTicketId])
+}
+
+// 40. Notifications
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String   // "ORDER", "TEST_DRIVE", "SERVICE", "QUOTATION", "PROMO"
+  title     String
+  message   String
+  actionUrl String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// 41. Coupons
+model Coupon {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discountType   String    // "PERCENTAGE" | "FLAT"
+  discountValue  Decimal   @db.Decimal(8, 2)
+  minOrderAmount Decimal   @default(0) @db.Decimal(10, 2)
+  maxDiscount    Decimal?  @db.Decimal(8, 2)
+  validUntil     DateTime
+  isActive       Boolean   @default(true)
+}
+
+// 42. Returns and Refunds
+model ReturnsAndRefunds {
+  id             String       @id @default(cuid())
+  returnNumber   String       @unique // RET-2026-XXXX
+  orderNumber    String
+  itemSku        String
+  reason         String
+  status         ReturnStatus @default(REQUESTED)
+  refundAmount   Decimal      @db.Decimal(10, 2)
+  inspectionNote String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+// 43. Audit Logs
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  action    String
+  entity    String
+  entityId  String
+  details   String?  @db.Text
+  ipAddress String?
+  timestamp DateTime @default(now())
+
+  @@index([userId])
+}
