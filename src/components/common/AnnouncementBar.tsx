@@ -26,16 +26,16 @@ export const AnnouncementBar: React.FC = () => {
   const Icon = current.icon;
 
   return (
-    <div className="bg-[#030B17] text-white text-xs sm:text-sm py-2 px-4 transition-all duration-300 relative border-b border-emerald-500/20">
+    <div className="bg-emerald-50 text-emerald-950 text-xs sm:text-sm py-2 px-4 transition-all duration-300 relative border-b border-emerald-200/70">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex-1 flex items-center justify-center space-x-2 text-center overflow-hidden">
-          <span className="inline-flex items-center justify-center p-1 rounded-full bg-gradient-to-r from-[#16A34A] to-[#22C55E] text-white shadow-sm">
+          <span className="inline-flex items-center justify-center p-1 rounded-full bg-[#16A34A] text-white shadow-sm">
             <Icon className="w-3.5 h-3.5" />
           </span>
-          <span className="font-medium text-slate-200 truncate">{current.text}</span>
+          <span className="font-semibold text-emerald-900 truncate">{current.text}</span>
           <Link
             to={current.link}
-            className="hidden sm:inline-flex items-center font-bold text-[#B7F34A] hover:underline ml-1"
+            className="hidden sm:inline-flex items-center font-bold text-[#16A34A] hover:underline ml-1"
           >
             {current.linkText}
             <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
@@ -44,7 +44,7 @@ export const AnnouncementBar: React.FC = () => {
 
         <button
           onClick={() => setIsVisible(false)}
-          className="text-slate-400 hover:text-white p-1 rounded-md transition-colors ml-2"
+          className="text-emerald-700 hover:text-emerald-950 p-1 rounded-md transition-colors ml-2"
           aria-label="Close Announcement Bar"
         >
           <X className="w-4 h-4" />
