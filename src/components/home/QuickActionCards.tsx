@@ -57,14 +57,14 @@ export const QuickActionCards: React.FC = () => {
   return (
     <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {QUICK_ACTIONS.map((card) => {
             const Icon = card.icon;
             return (
               <Link
                 key={card.id}
                 to={card.link}
-                className={`group flex flex-col justify-between p-6 rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] ${card.cardBorder} transition-all duration-200 hover:shadow-premium hover:-translate-y-1`}
+                className={`group flex flex-col justify-between p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] ${card.cardBorder} transition-all duration-200 hover:shadow-premium hover:-translate-y-1`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

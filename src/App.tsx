@@ -11,6 +11,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import { AnnouncementBar } from './components/common/AnnouncementBar';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { LocationModal } from './components/common/LocationModal';
 import { CartDrawer } from './components/common/CartDrawer';
 import { AuthModal } from './components/common/AuthModal';
@@ -52,7 +53,7 @@ export const App: React.FC = () => {
                     <Header />
 
                     {/* Main Routed Content Area */}
-                    <main className="flex-1">
+                    <main className="flex-1 pb-16 md:pb-0">
                       <Routes>
                         <Route path="/" element={<HomePage />} />
                         <Route path="/vehicles" element={<VehiclesListingPage />} />
@@ -80,6 +81,9 @@ export const App: React.FC = () => {
 
                     {/* Global Footer */}
                     <Footer />
+
+                    {/* Mobile Native-Style Bottom Navigation Bar */}
+                    <MobileBottomNav />
 
                     {/* Global Modals & Drawers */}
                     <LocationModal />

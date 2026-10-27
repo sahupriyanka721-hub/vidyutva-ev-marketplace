@@ -65,12 +65,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         Strictly NON-WHITE background: Deep Midnight Oceanic Navy (#06152B -> #0B2545)
         Clean Emblem + E-VAHAN Typography (Zero extra text underneath)
       */}
-      <div className="relative flex items-center gap-2.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] border border-emerald-500/40 shadow-md ring-1 ring-emerald-500/20 group-hover:border-emerald-400 group-hover:shadow-[0_0_16px_rgba(22,163,74,0.4)] transition-all">
+      <div className="relative flex items-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] border border-emerald-500/40 shadow-md ring-1 ring-emerald-500/20 group-hover:border-emerald-400 group-hover:shadow-[0_0_16px_rgba(22,163,74,0.4)] transition-all">
         
         {/* Pulsing Green Live Tech Dot */}
-        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+        <span className="absolute -top-1 -right-1 flex h-2 sm:h-2.5 w-2 sm:w-2.5">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#B7F34A] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16A34A]"></span>
+          <span className="relative inline-flex rounded-full h-2 sm:h-2.5 w-2 sm:w-2.5 bg-[#16A34A]"></span>
         </span>
 
         {/* Scooter & Leaf Emblem */}
@@ -78,12 +78,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <img
             src="/logo-icon-light.png"
             alt="E-VAHAN"
-            className="h-8 sm:h-9 w-auto object-contain transform group-hover:scale-105 transition-transform filter drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]"
+            className="h-6 sm:h-9 w-auto object-contain transform group-hover:scale-105 transition-transform filter drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]"
           />
         </div>
 
         {/* Brand Typography: Clean E-VAHAN */}
-        <div className="flex items-baseline font-black tracking-tight leading-none text-xl sm:text-2xl pr-1">
+        <div className="flex items-baseline font-black tracking-tight leading-none text-lg sm:text-2xl pr-0.5 sm:pr-1">
           <span className="text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]">E-</span>
           <span className="text-white">VAHAN</span>
         </div>

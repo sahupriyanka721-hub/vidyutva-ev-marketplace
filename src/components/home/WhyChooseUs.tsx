@@ -68,13 +68,13 @@ export const WhyChooseUs: React.FC = () => {
         </div>
 
         {/* Feature Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {FEATURES.map((item, idx) => {
             const Icon = item.icon;
             return (
               <div
                 key={idx}
-                className="p-6 rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] hover:border-emerald-500/60 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
+                className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] hover:border-emerald-500/60 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
               >
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-white text-[#14532D] border border-gray-200/80 flex items-center justify-center mb-4 shadow-subtle">

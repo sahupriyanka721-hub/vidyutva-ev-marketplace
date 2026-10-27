@@ -163,7 +163,7 @@ export const AdminDashboardPage: React.FC = () => {
   if (!isAdminAuthenticated) {
     return (
       <div className="bg-[#F0F4F8] min-h-[85vh] flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-gray-200/90 relative">
+        <div className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-8 shadow-xl border border-gray-200/90 relative">
           
           {/* Brand Logo with stylish non-white dark badge (Strictly non-white background!) */}
           <div className="text-center mb-6">

@@ -99,17 +99,17 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#D8E4F0] shadow-xs transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-20 gap-2 sm:gap-3">
           
           {/* Item 1: Brand logo & Mobile Hamburger */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 -ml-2 text-gray-700 hover:text-[#16A34A] hover:bg-gray-100 rounded-xl focus:outline-none transition-colors"
+              className="lg:hidden p-1.5 sm:p-2 -ml-1 text-gray-700 hover:text-[#16A34A] hover:bg-gray-100 rounded-xl focus:outline-none transition-colors"
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
 
             {/* Logo in Non-White Luxury Emblem Badge */}
@@ -305,10 +305,10 @@ export const Header: React.FC = () => {
               ) : (
                 <button
                   onClick={() => openAuthModal()}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-sm"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-sm shrink-0"
                 >
                   <UserIcon className="w-3.5 h-3.5 text-[#B7F34A]" />
-                  <span>Login</span>
+                  <span className="hidden sm:inline">Login</span>
                 </button>
               )}
 
@@ -384,6 +384,28 @@ export const Header: React.FC = () => {
 
           </div>
         </div>
+      </div>
+
+      {/* Mobile Quick Location & Search Strip */}
+      <div className="md:hidden px-3 py-2 bg-[#F4F8FC] border-t border-[#DCE8F2] flex items-center gap-2">
+        <button
+          onClick={openLocationModal}
+          className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-[#D5E3F0] text-[11px] font-bold text-gray-800 shadow-2xs"
+          title="Change City"
+        >
+          <MapPin className="w-3 h-3 text-[#16A34A]" />
+          <span className="max-w-[75px] truncate">{city}</span>
+        </button>
+        <form onSubmit={handleSearchSubmit} className="flex-1 relative">
+          <input
+            type="text"
+            placeholder="Search scooters, autos, parts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D5E3F0] rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
+          />
+          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </form>
       </div>
 
       {/* Mobile Drawer Menu */}

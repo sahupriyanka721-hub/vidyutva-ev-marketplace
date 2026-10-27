@@ -77,7 +77,7 @@ export const SparePartsPreview: React.FC = () => {
         </div>
 
         {/* Parts Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {filteredParts.slice(0, 8).map((part) => (
             <PartCard key={part.id} part={part} />
           ))}

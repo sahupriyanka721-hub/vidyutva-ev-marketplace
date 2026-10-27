@@ -73,26 +73,26 @@ export const HeroSection: React.FC = () => {
             </div>
 
             {/* Trust Badges */}
-            <div className="pt-6 border-t border-gray-200/80 grid grid-cols-3 gap-2 sm:gap-4 max-w-lg mx-auto lg:mx-0 text-left">
-              <div className="flex items-start gap-2 bg-white p-3 rounded-2xl border border-gray-200/80 shadow-subtle">
-                <ShieldCheck className="w-4 h-4 text-[#16A34A] shrink-0 mt-0.5" />
+            <div className="pt-5 border-t border-gray-200/80 grid grid-cols-3 gap-1.5 sm:gap-4 max-w-lg mx-auto lg:mx-0 text-left">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1 sm:gap-2 bg-white/95 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-[#D5E3F0] shadow-2xs">
+                <ShieldCheck className="w-4 h-4 text-[#16A34A] shrink-0 sm:mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 leading-tight">100% Verified</h4>
-                  <p className="text-[10px] text-gray-500">ARAI/FAME-II Certified</p>
+                  <h4 className="text-[11px] sm:text-xs font-bold text-gray-900 leading-tight">100% Verified</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500">ARAI Certified</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 bg-white p-3 rounded-2xl border border-gray-200/80 shadow-subtle">
-                <Sparkles className="w-4 h-4 text-[#16A34A] shrink-0 mt-0.5" />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1 sm:gap-2 bg-white/95 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-[#D5E3F0] shadow-2xs">
+                <Sparkles className="w-4 h-4 text-[#16A34A] shrink-0 sm:mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 leading-tight">Zero Emission</h4>
-                  <p className="text-[10px] text-gray-500">Up to 80% Running Savings</p>
+                  <h4 className="text-[11px] sm:text-xs font-bold text-gray-900 leading-tight">Zero Emission</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500">80% Savings</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 bg-white p-3 rounded-2xl border border-gray-200/80 shadow-subtle">
-                <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0 mt-0.5" />
+              <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1 sm:gap-2 bg-white/95 p-2 sm:p-3 rounded-xl sm:rounded-2xl border border-[#D5E3F0] shadow-2xs">
+                <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0 sm:mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900 leading-tight">Doorstep Van</h4>
-                  <p className="text-[10px] text-gray-500">Service at Your Home</p>
+                  <h4 className="text-[11px] sm:text-xs font-bold text-gray-900 leading-tight">Doorstep Van</h4>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500">Service at Home</p>
                 </div>
               </div>
             </div>

@@ -116,14 +116,14 @@ export const CategoryGrid: React.FC = () => {
         </div>
 
         {/* 8 Categories Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
           {CATEGORIES.map((cat) => {
             const Icon = cat.icon;
             return (
               <Link
                 key={cat.id}
                 to={cat.link}
-                className="group relative rounded-3xl overflow-hidden bg-white border border-[#E3E9E4] hover:border-emerald-500/80 p-4 sm:p-5 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
+                className="group relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#E3E9E4] hover:border-emerald-500/80 p-3 sm:p-5 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
               >
                 {/* Visual Thumbnail & Icon */}
                 <div className="flex items-center justify-between mb-3">

@@ -17,7 +17,7 @@ export const PartCard: React.FC<PartCardProps> = ({ part }) => {
   const discountPercent = Math.round(((part.mrpPrice - part.sellingPrice) / part.mrpPrice) * 100);
 
   return (
-    <div className="group bg-white rounded-3xl border border-[#E3E9E4] hover:border-emerald-500/70 p-4 sm:p-5 transition-all duration-300 hover:shadow-elevated flex flex-col justify-between relative">
+    <div className="group bg-white rounded-2xl sm:rounded-3xl border border-[#E3E9E4] hover:border-emerald-500/70 p-3 sm:p-5 transition-all duration-300 hover:shadow-elevated flex flex-col justify-between relative">
       
       <div>
         {/* Top badges: OEM Verified & Wishlist */}
@@ -109,10 +109,10 @@ export const PartCard: React.FC<PartCardProps> = ({ part }) => {
 
         <button
           onClick={() => addItem(part, 1)}
-          className="py-2.5 px-3 bg-[#14532D] hover:bg-[#0d381e] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+          className="py-2.5 px-2 sm:px-3 bg-[#14532D] hover:bg-[#0d381e] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-sm"
         >
           <ShoppingBag className="w-3.5 h-3.5 text-[#B7F34A]" />
-          <span>Add to Cart</span>
+          <span>Add<span className="hidden sm:inline"> to Cart</span></span>
         </button>
       </div>
 

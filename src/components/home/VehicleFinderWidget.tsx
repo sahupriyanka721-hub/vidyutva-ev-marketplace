@@ -54,7 +54,7 @@ export const VehicleFinderWidget: React.FC = () => {
         </div>
 
         {/* Finder Interactive Control Panel */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E3E9E4] shadow-premium mb-10">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-[#E3E9E4] shadow-premium mb-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             
             {/* 1. Category */}
