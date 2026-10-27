@@ -298,7 +298,13 @@ class StorageService {
   }
 
   getPincodeServiceability(pincode: string) {
-    const match = INDIAN_PINCODES.find(p => p.pincode === pincode.trim());
+    const raw = pincode.trim().toLowerCase();
+    const match = INDIAN_PINCODES.find(p => 
+      p.pincode === raw || 
+      p.city.toLowerCase() === raw ||
+      p.city.toLowerCase().startsWith(raw) ||
+      p.city.toLowerCase().includes(raw)
+    );
     if (match) {
       return {
         isKnown: true,
@@ -310,14 +316,14 @@ class StorageService {
     return {
       isKnown: false,
       pincode: pincode.trim(),
-      city: 'Local Area',
+      city: isValidPin ? `City (${pincode.trim()})` : (pincode.trim() || 'All India'),
       state: 'India',
       tier: 3 as const,
       vehicleDelivery: isValidPin,
       doorstepService: false,
       testDriveHome: false,
       partsShippingExpress: isValidPin,
-      nearestDealership: 'Regional Authorized Dealership Point'
+      nearestDealership: 'E-VAHAN Authorized Regional Dealership Hub'
     };
   }
 

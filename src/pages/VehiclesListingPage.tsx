@@ -46,7 +46,13 @@ export const VehiclesListingPage: React.FC = () => {
     const cat = searchParams.get('category');
     if (cat) setSelectedCategory(cat);
     const q = searchParams.get('search');
-    if (q) setSearchQuery(q);
+    if (q !== null) {
+      setSearchQuery(q);
+      if (q.trim()) {
+        setSelectedCategory('ALL');
+        setSelectedBrand('ALL');
+      }
+    }
   }, [searchParams]);
 
   // Unique Brands list

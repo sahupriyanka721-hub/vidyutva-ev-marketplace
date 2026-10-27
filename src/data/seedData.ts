@@ -16,39 +16,97 @@ export interface IndianPincodeInfo {
 export const INDIAN_PINCODES: IndianPincodeInfo[] = [
   // Delhi NCR
   { pincode: '110001', city: 'New Delhi', state: 'Delhi', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Flagship Hub, Connaught Place' },
-  { pincode: '110020', city: 'South Delhi', state: 'Delhi', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Okhla Experience Centre' },
-  { pincode: '122001', city: 'Gurugram', state: 'Haryana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Cyber Hub Galleria' },
-  { pincode: '201301', city: 'Noida', state: 'Uttar Pradesh', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Sector 62 EV Pavilion' },
+  { pincode: '110020', city: 'South Delhi', state: 'Delhi', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Okhla Experience Centre' },
+  { pincode: '110058', city: 'West Delhi (Janakpuri)', state: 'Delhi', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN West Delhi Hub' },
+  { pincode: '110092', city: 'East Delhi (Laxmi Nagar)', state: 'Delhi', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN East Delhi Hub' },
+  { pincode: '122001', city: 'Gurugram', state: 'Haryana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Cyber Hub Galleria' },
+  { pincode: '201301', city: 'Noida', state: 'Uttar Pradesh', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sector 62 EV Pavilion' },
+  { pincode: '201310', city: 'Greater Noida', state: 'Uttar Pradesh', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Pari Chowk Hub' },
+  { pincode: '121001', city: 'Faridabad', state: 'Haryana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Neelam Bata Road Hub' },
+  { pincode: '201001', city: 'Ghaziabad', state: 'Uttar Pradesh', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Raj Nagar Hub' },
 
-  // Bengaluru
-  { pincode: '560001', city: 'Bengaluru', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva MG Road Flagship' },
-  { pincode: '560038', city: 'Bengaluru (Indiranagar)', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva 100ft Road Experience Hub' },
-  { pincode: '560100', city: 'Bengaluru (Electronic City)', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Electronic City South' },
+  // Mumbai & Maharashtra
+  { pincode: '400001', city: 'Mumbai', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Fort Mobility Centre' },
+  { pincode: '400050', city: 'Mumbai (Bandra)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Linking Road Galleria' },
+  { pincode: '400058', city: 'Mumbai (Andheri)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Andheri West Hub' },
+  { pincode: '400703', city: 'Navi Mumbai', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Vashi EV Hub' },
+  { pincode: '400601', city: 'Thane', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Ghodbunder Road Centre' },
+  { pincode: '411001', city: 'Pune', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Shivajinagar Hub' },
+  { pincode: '411028', city: 'Pune (Hadapsar)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Magarpatta EV Hub' },
+  { pincode: '411057', city: 'Pune (Hinjewadi)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Hinjewadi IT Park Hub' },
+  { pincode: '440001', city: 'Nagpur', state: 'Maharashtra', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sitabuldi Nagpur Centre' },
+  { pincode: '422001', city: 'Nashik', state: 'Maharashtra', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN College Road Nashik' },
+  { pincode: '431001', city: 'Aurangabad (Chhatrapati Sambhajinagar)', state: 'Maharashtra', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN CIDCO Hub' },
 
-  // Mumbai & Pune
-  { pincode: '400001', city: 'Mumbai', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Fort Mobility Centre' },
-  { pincode: '400050', city: 'Mumbai (Bandra)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Linking Road Galleria' },
-  { pincode: '411001', city: 'Pune', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Shivajinagar Hub' },
-  { pincode: '411028', city: 'Pune (Hadapsar)', state: 'Maharashtra', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Magarpatta EV Hub' },
+  // Bengaluru & Karnataka
+  { pincode: '560001', city: 'Bengaluru', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN MG Road Flagship' },
+  { pincode: '560038', city: 'Bengaluru (Indiranagar)', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN 100ft Road Experience Hub' },
+  { pincode: '560100', city: 'Bengaluru (Electronic City)', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Electronic City South' },
+  { pincode: '560066', city: 'Bengaluru (Whitefield)', state: 'Karnataka', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN ITPL Whitefield Centre' },
+  { pincode: '570001', city: 'Mysuru', state: 'Karnataka', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sayyaji Rao Road Hub' },
+  { pincode: '575001', city: 'Mangaluru', state: 'Karnataka', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN KS Rao Road Centre' },
+  { pincode: '580020', city: 'Hubballi', state: 'Karnataka', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Gokul Road Hub' },
 
-  // Hyderabad
-  { pincode: '500001', city: 'Hyderabad', state: 'Telangana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Abids Experience Hub' },
-  { pincode: '500081', city: 'Hyderabad (Hitec City)', state: 'Telangana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Madhapur EV Station' },
+  // Hyderabad & Telangana / Andhra Pradesh
+  { pincode: '500001', city: 'Hyderabad', state: 'Telangana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Abids Experience Hub' },
+  { pincode: '500081', city: 'Hyderabad (Hitec City)', state: 'Telangana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Madhapur EV Station' },
+  { pincode: '500003', city: 'Secunderabad', state: 'Telangana', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN MG Road Secunderabad' },
+  { pincode: '530001', city: 'Visakhapatnam', state: 'Andhra Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Waltair Uplands Hub' },
+  { pincode: '520001', city: 'Vijayawada', state: 'Andhra Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN MG Road Vijayawada' },
+  { pincode: '506001', city: 'Warangal', state: 'Telangana', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Hanamkonda Hub' },
 
-  // Chennai
-  { pincode: '600001', city: 'Chennai', state: 'Tamil Nadu', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva George Town Hub' },
-  { pincode: '600028', city: 'Chennai (Adyar)', state: 'Tamil Nadu', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva OMR Adyar Pavilion' },
+  // Chennai & Tamil Nadu / Kerala
+  { pincode: '600001', city: 'Chennai', state: 'Tamil Nadu', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN George Town Hub' },
+  { pincode: '600028', city: 'Chennai (Adyar)', state: 'Tamil Nadu', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN OMR Adyar Pavilion' },
+  { pincode: '600040', city: 'Chennai (Anna Nagar)', state: 'Tamil Nadu', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN 2nd Avenue Hub' },
+  { pincode: '641001', city: 'Coimbatore', state: 'Tamil Nadu', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Avinashi Road Centre' },
+  { pincode: '625001', city: 'Madurai', state: 'Tamil Nadu', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Town Hall Road Hub' },
+  { pincode: '682001', city: 'Kochi (Cochin)', state: 'Kerala', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Marine Drive Kochi' },
+  { pincode: '695001', city: 'Thiruvananthapuram', state: 'Kerala', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN MG Road Trivandrum' },
 
-  // Ahmedabad
-  { pincode: '380001', city: 'Ahmedabad', state: 'Gujarat', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Ashram Road Centre' },
-  { pincode: '380015', city: 'Ahmedabad (SG Highway)', state: 'Gujarat', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva SG Highway Mobility Hub' },
+  // Kolkata & West Bengal / East
+  { pincode: '700001', city: 'Kolkata', state: 'West Bengal', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Park Street Flagship' },
+  { pincode: '700091', city: 'Kolkata (Salt Lake)', state: 'West Bengal', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sector V EV Galleria' },
+  { pincode: '711101', city: 'Howrah', state: 'West Bengal', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN GT Road Howrah' },
+  { pincode: '734001', city: 'Siliguri', state: 'West Bengal', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sevoke Road Centre' },
+  { pincode: '800001', city: 'Patna', state: 'Bihar', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Fraser Road Patna' },
+  { pincode: '834001', city: 'Ranchi', state: 'Jharkhand', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Main Road Ranchi' },
+  { pincode: '831001', city: 'Jamshedpur', state: 'Jharkhand', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Bistupur Hub' },
+  { pincode: '751001', city: 'Bhubaneswar', state: 'Odisha', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Janpath Bhubaneswar' },
+  { pincode: '781001', city: 'Guwahati', state: 'Assam', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN GS Road Guwahati' },
 
-  // Tier 2 Cities
-  { pincode: '302001', city: 'Jaipur', state: 'Rajasthan', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: false, nearestDealership: 'Vidyutva MI Road Dealership' },
-  { pincode: '226001', city: 'Lucknow', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: false, nearestDealership: 'Vidyutva Hazratganj Partner Point' },
-  { pincode: '160017', city: 'Chandigarh', state: 'Punjab', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'Vidyutva Sector 17 Mobility Hub' },
-  { pincode: '452001', city: 'Indore', state: 'Madhya Pradesh', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: false, nearestDealership: 'Vidyutva AB Road Authorised Showroom' },
-  { pincode: '641001', city: 'Coimbatore', state: 'Tamil Nadu', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: false, nearestDealership: 'Vidyutva Avinashi Road Centre' },
+  // Gujarat
+  { pincode: '380001', city: 'Ahmedabad', state: 'Gujarat', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Ashram Road Centre' },
+  { pincode: '380015', city: 'Ahmedabad (SG Highway)', state: 'Gujarat', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN SG Highway Mobility Hub' },
+  { pincode: '395001', city: 'Surat', state: 'Gujarat', tier: 1, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Ring Road Surat' },
+  { pincode: '390001', city: 'Vadodara', state: 'Gujarat', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Alkapuri Centre' },
+  { pincode: '360001', city: 'Rajkot', state: 'Gujarat', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Yagnik Road Hub' },
+
+  // Rajasthan
+  { pincode: '302001', city: 'Jaipur', state: 'Rajasthan', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN MI Road Dealership' },
+  { pincode: '342001', city: 'Jodhpur', state: 'Rajasthan', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN High Court Road Hub' },
+  { pincode: '313001', city: 'Udaipur', state: 'Rajasthan', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Chetak Circle Centre' },
+  { pincode: '324001', city: 'Kota', state: 'Rajasthan', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Aerodrome Circle Hub' },
+
+  // Uttar Pradesh & Uttarakhand
+  { pincode: '226001', city: 'Lucknow', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Hazratganj Centre' },
+  { pincode: '208001', city: 'Kanpur', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Mall Road Kanpur' },
+  { pincode: '221001', city: 'Varanasi', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Cantt EV Hub' },
+  { pincode: '282001', city: 'Agra', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sanjay Place Agra' },
+  { pincode: '211001', city: 'Prayagraj (Allahabad)', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Civil Lines Hub' },
+  { pincode: '250001', city: 'Meerut', state: 'Uttar Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Delhi Road Meerut' },
+  { pincode: '248001', city: 'Dehradun', state: 'Uttarakhand', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Rajpur Road Dehradun' },
+
+  // Punjab, Haryana & Chandigarh
+  { pincode: '160017', city: 'Chandigarh', state: 'Punjab', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Sector 17 Mobility Hub' },
+  { pincode: '141001', city: 'Ludhiana', state: 'Punjab', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Ferozepur Road Hub' },
+  { pincode: '143001', city: 'Amritsar', state: 'Punjab', tier: 2, vehicleDelivery: true, doorstepService: false, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Mall Road Amritsar' },
+
+  // Madhya Pradesh, Chhattisgarh & Central India
+  { pincode: '452001', city: 'Indore', state: 'Madhya Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN AB Road Centre' },
+  { pincode: '462001', city: 'Bhopal', state: 'Madhya Pradesh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN MP Nagar Bhopal' },
+  { pincode: '492001', city: 'Raipur', state: 'Chhattisgarh', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: false, partsShippingExpress: true, nearestDealership: 'E-VAHAN Telibandha Raipur' },
+  { pincode: '403001', city: 'Goa (Panaji)', state: 'Goa', tier: 2, vehicleDelivery: true, doorstepService: true, testDriveHome: true, partsShippingExpress: true, nearestDealership: 'E-VAHAN Panaji EV Pavilion' },
 ];
 
 export const VEHICLES_DATA: VehicleItem[] = [

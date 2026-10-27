@@ -31,6 +31,13 @@ export const SparePartsListingPage: React.FC = () => {
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setSelectedCategory(cat);
+    const search = searchParams.get('search');
+    if (search !== null) {
+      setSearchQuery(search);
+      if (search.trim()) {
+        setSelectedCategory('ALL');
+      }
+    }
   }, [searchParams]);
 
   // Categories list
