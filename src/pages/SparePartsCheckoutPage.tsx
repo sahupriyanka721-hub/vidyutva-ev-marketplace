@@ -24,9 +24,9 @@ export const SparePartsCheckoutPage: React.FC = () => {
   const { user } = useAuth();
   const { city: defaultCity, pincode: defaultPin } = useLocation();
 
-  const [fullName, setFullName] = useState(user?.fullName || 'Arjun Singhania');
-  const [phone, setPhone] = useState(user?.phone || '9876543210');
-  const [streetAddress, setStreetAddress] = useState('B-42, Gulmohar Enclave');
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [streetAddress, setStreetAddress] = useState('');
   const [city, setCity] = useState(defaultCity);
   const [state, setState] = useState('Delhi');
   const [pincode, setPincode] = useState(defaultPin);
@@ -37,7 +37,7 @@ export const SparePartsCheckoutPage: React.FC = () => {
 
   if (items.length === 0 && !confirmedOrder) {
     return (
-      <div className="bg-[#F8FAF8] min-h-screen py-16 text-center">
+      <div className="bg-[#F0F4F8] min-h-screen py-16 text-center">
         <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-gray-200 shadow-subtle space-y-4">
           <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 text-[#14532D] flex items-center justify-center">
             <ShoppingBag className="w-8 h-8" />
@@ -105,7 +105,7 @@ export const SparePartsCheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb */}

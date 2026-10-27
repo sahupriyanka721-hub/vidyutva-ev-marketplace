@@ -44,7 +44,7 @@ export const CartPage: React.FC = () => {
 
   if (items.length === 0) {
     return (
-      <div className="bg-[#F8FAF8] min-h-[60vh] flex items-center justify-center py-16">
+      <div className="bg-[#F0F4F8] min-h-[60vh] flex items-center justify-center py-16">
         <div className="text-center max-w-md mx-auto p-8 bg-white rounded-3xl border border-gray-200 shadow-subtle space-y-4">
           <div className="w-16 h-16 rounded-full bg-emerald-50 text-[#14532D] flex items-center justify-center mx-auto">
             <ShoppingBag className="w-8 h-8" />
@@ -65,7 +65,7 @@ export const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Header */}

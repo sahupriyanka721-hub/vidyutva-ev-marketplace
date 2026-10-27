@@ -74,7 +74,7 @@ export const WhyChooseUs: React.FC = () => {
             return (
               <div
                 key={idx}
-                className="p-6 rounded-3xl bg-[#F8FAF8] border border-[#E3E9E4] hover:border-emerald-500/60 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
+                className="p-6 rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] hover:border-emerald-500/60 transition-all duration-300 hover:shadow-premium flex flex-col justify-between"
               >
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-white text-[#14532D] border border-gray-200/80 flex items-center justify-center mb-4 shadow-subtle">

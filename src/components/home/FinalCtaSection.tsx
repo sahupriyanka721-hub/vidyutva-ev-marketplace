@@ -4,11 +4,11 @@ import { Zap, FileText, Wrench } from 'lucide-react';
 
 export const FinalCtaSection: React.FC = () => {
   return (
-    <section className="py-20 bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white text-gray-900 text-center relative overflow-hidden border-t border-gray-200">
+    <section className="py-20 bg-gradient-to-br from-[#EAF2FB] via-[#F2F7FD] to-[#EBF3FC] text-gray-900 text-center relative overflow-hidden border-t border-[#D5E3F0]">
       
-      {/* Decorative accent glow spheres */}
-      <div className="absolute top-1/2 left-10 -translate-y-1/2 w-80 h-80 bg-emerald-200/30 rounded-full filter blur-3xl pointer-events-none"></div>
-      <div className="absolute top-1/2 right-10 -translate-y-1/2 w-80 h-80 bg-[#B7F34A]/20 rounded-full filter blur-3xl pointer-events-none"></div>
+      {/* Decorative soft blue accent glow spheres */}
+      <div className="absolute top-1/2 left-10 -translate-y-1/2 w-80 h-80 bg-blue-200/35 rounded-full filter blur-3xl pointer-events-none"></div>
+      <div className="absolute top-1/2 right-10 -translate-y-1/2 w-80 h-80 bg-sky-200/25 rounded-full filter blur-3xl pointer-events-none"></div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 space-y-6">
         

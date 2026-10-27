@@ -64,7 +64,7 @@ export const QuickActionCards: React.FC = () => {
               <Link
                 key={card.id}
                 to={card.link}
-                className={`group flex flex-col justify-between p-6 rounded-3xl bg-[#F8FAF8] border border-[#E3E9E4] ${card.cardBorder} transition-all duration-200 hover:shadow-premium hover:-translate-y-1`}
+                className={`group flex flex-col justify-between p-6 rounded-3xl bg-[#F0F4F8] border border-[#E3E9E4] ${card.cardBorder} transition-all duration-200 hover:shadow-premium hover:-translate-y-1`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

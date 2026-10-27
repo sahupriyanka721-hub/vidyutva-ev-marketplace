@@ -101,7 +101,7 @@ export const LegalPage: React.FC = () => {
   const doc = LEGAL_DOCUMENTS[activeSlug] || LEGAL_DOCUMENTS['terms-and-conditions'];
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
         
         {/* Breadcrumb */}

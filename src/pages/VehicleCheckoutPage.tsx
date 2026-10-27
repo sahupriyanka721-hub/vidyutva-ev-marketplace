@@ -43,14 +43,14 @@ export const VehicleCheckoutPage: React.FC = () => {
 
   // Address
   const defaultAddress = user?.savedAddresses?.find(a => a.isDefault) || user?.savedAddresses?.[0];
-  const [fullName, setFullName] = useState(defaultAddress?.fullName || user?.fullName || 'Arjun Singhania');
-  const [phone, setPhone] = useState(defaultAddress?.phone || user?.phone || '9876543210');
-  const [email, setEmail] = useState(user?.email || 'arjun.singhania@example.com');
+  const [fullName, setFullName] = useState(defaultAddress?.fullName || user?.fullName || '');
+  const [phone, setPhone] = useState(defaultAddress?.phone || user?.phone || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [pincode, setPincode] = useState(defaultAddress?.pincode || defaultPin || '110001');
   const [city, setCity] = useState(defaultAddress?.city || defaultCity || 'New Delhi');
   const [state, setState] = useState(defaultAddress?.state || 'Delhi');
-  const [streetAddress, setStreetAddress] = useState(defaultAddress?.line1 || 'B-42, Gulmohar Enclave');
-  const [landmark, setLandmark] = useState(defaultAddress?.landmark || 'Opposite Green View Tower');
+  const [streetAddress, setStreetAddress] = useState(defaultAddress?.line1 || '');
+  const [landmark, setLandmark] = useState(defaultAddress?.landmark || '');
 
   // Purchase Preference: TOKEN_BOOKING | FULL_PAYMENT | FINANCE_LOAN
   const [purchasePreference, setPurchasePreference] = useState<'TOKEN_BOOKING' | 'FULL_PAYMENT' | 'FINANCE_LOAN'>('TOKEN_BOOKING');
@@ -153,7 +153,7 @@ export const VehicleCheckoutPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Checkout Header & Progress Indicator */}

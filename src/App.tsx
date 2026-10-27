@@ -44,7 +44,7 @@ export const App: React.FC = () => {
             <WishlistProvider>
               <CompareProvider>
                 <NotificationProvider>
-                  <div className="min-h-screen flex flex-col bg-[#F8FAF8] text-[#17211B] antialiased">
+                  <div className="min-h-screen flex flex-col bg-[#F0F4F8] text-[#17211B] antialiased">
                     {/* Announcement Bar */}
                     <AnnouncementBar />
 

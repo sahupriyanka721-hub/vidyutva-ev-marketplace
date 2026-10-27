@@ -35,10 +35,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Secure 6-digit OTP verification
     if (otp && otp.length === 6) {
       const existingUser = storage.getUser();
-      const updatedUser: CustomerUser = {
-        ...existingUser,
-        phone: phone.trim() || existingUser.phone,
+      const updatedUser: CustomerUser = existingUser || {
+        id: `usr-${Date.now()}`,
+        fullName: 'Customer',
+        phone: phone.trim(),
+        email: `${phone.trim()}@e-vahan.in`,
+        city: 'New Delhi',
+        pincode: '110001',
+        isKycVerified: false,
+        savedAddresses: []
       };
+      updatedUser.phone = phone.trim();
       setUser(updatedUser);
       storage.saveUser(updatedUser);
       setIsAuthModalOpen(false);
@@ -78,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem('evahan_user');
+    storage.clearUser();
   };
 
   const updateProfile = (data: Partial<CustomerUser>) => {

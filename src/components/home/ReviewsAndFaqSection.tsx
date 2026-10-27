@@ -36,7 +36,7 @@ export const ReviewsAndFaqSection: React.FC = () => {
             {CUSTOMER_REVIEWS.map((rev) => (
               <div
                 key={rev.id}
-                className="bg-[#F8FAF8] rounded-3xl p-6 border border-[#E3E9E4] flex flex-col justify-between hover:shadow-premium transition-all"
+                className="bg-[#F0F4F8] rounded-3xl p-6 border border-[#E3E9E4] flex flex-col justify-between hover:shadow-premium transition-all"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -110,7 +110,7 @@ export const ReviewsAndFaqSection: React.FC = () => {
               return (
                 <div
                   key={index}
-                  className="rounded-2xl border border-gray-200 bg-[#F8FAF8] overflow-hidden transition-colors"
+                  className="rounded-2xl border border-gray-200 bg-[#F0F4F8] overflow-hidden transition-colors"
                 >
                   <button
                     onClick={() => setOpenFaqIndex(isOpen ? null : index)}

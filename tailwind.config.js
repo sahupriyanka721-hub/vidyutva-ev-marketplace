@@ -28,14 +28,14 @@ export default {
           accent: '#B7F34A',
           'accent-dark': '#9dd632',
           'accent-light': '#d4ff78',
-          // Surfaces
-          bg: '#F8FAF8',
+          // Surfaces (Light Bluish Executive EV Palette)
+          bg: '#F0F4F8',
           surface: '#FFFFFF',
           text: '#06152B',
-          muted: '#647067',
-          border: '#E3E9E4',
+          muted: '#64748B',
+          border: '#DCE5EE',
           card: '#FFFFFF',
-          tag: '#ECFDF5',
+          tag: '#EDF4FB',
         }
       },
       fontFamily: {

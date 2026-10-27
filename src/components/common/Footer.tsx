@@ -21,11 +21,11 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-gray-100 text-gray-700 pt-16 pb-12 border-t border-gray-200 shadow-inner">
+    <footer className="bg-[#EAEFF5] text-slate-700 pt-16 pb-12 border-t border-[#D5E1ED] shadow-inner">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#D5E1ED]">
           
           {/* Col 1: Brand & Mission */}
           <div className="lg:col-span-2 space-y-4">

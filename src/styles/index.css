@@ -5,18 +5,18 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    color: #17211B;
-    background-color: #F8FAF8;
+    color: #0F172A;
+    background-color: #F0F4F8;
   }
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar with subtle bluish track */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F2;
+  background: #E8EFF6;
 }
 ::-webkit-scrollbar-thumb {
   background: #CBD5E1;

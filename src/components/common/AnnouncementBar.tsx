@@ -26,16 +26,16 @@ export const AnnouncementBar: React.FC = () => {
   const Icon = current.icon;
 
   return (
-    <div className="bg-emerald-50 text-emerald-950 text-xs sm:text-sm py-2 px-4 transition-all duration-300 relative border-b border-emerald-200/70">
+    <div className="bg-gradient-to-r from-[#EBF3FB] via-[#F1F6FD] to-[#EBF3FB] text-slate-800 text-xs sm:text-sm py-2 px-4 transition-all duration-300 relative border-b border-[#D5E3F0]">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex-1 flex items-center justify-center space-x-2 text-center overflow-hidden">
-          <span className="inline-flex items-center justify-center p-1 rounded-full bg-[#16A34A] text-white shadow-sm">
+          <span className="inline-flex items-center justify-center p-1 rounded-full bg-[#0B2545] text-[#B7F34A] shadow-xs">
             <Icon className="w-3.5 h-3.5" />
           </span>
-          <span className="font-semibold text-emerald-900 truncate">{current.text}</span>
+          <span className="font-semibold text-slate-800 truncate">{current.text}</span>
           <Link
             to={current.link}
-            className="hidden sm:inline-flex items-center font-bold text-[#16A34A] hover:underline ml-1"
+            className="hidden sm:inline-flex items-center font-bold text-blue-700 hover:text-blue-900 ml-1"
           >
             {current.linkText}
             <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
@@ -44,7 +44,7 @@ export const AnnouncementBar: React.FC = () => {
 
         <button
           onClick={() => setIsVisible(false)}
-          className="text-emerald-700 hover:text-emerald-950 p-1 rounded-md transition-colors ml-2"
+          className="text-slate-500 hover:text-slate-900 p-1 rounded-md transition-colors ml-2"
           aria-label="Close Announcement Bar"
         >
           <X className="w-4 h-4" />

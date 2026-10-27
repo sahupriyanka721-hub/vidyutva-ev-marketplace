@@ -30,12 +30,12 @@ export const TestDrivePage: React.FC = () => {
   const currentVehicle = VEHICLES_DATA.find(v => v.id === selectedVehicleId) || VEHICLES_DATA[0];
 
   const [testDriveMode, setTestDriveMode] = useState<'DOORSTEP' | 'DEALERSHIP'>('DOORSTEP');
-  const [customerName, setCustomerName] = useState(user?.fullName || 'Arjun Singhania');
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || '9876543210');
-  const [customerEmail, setCustomerEmail] = useState(user?.email || 'arjun.singhania@example.com');
+  const [customerName, setCustomerName] = useState(user?.fullName || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
+  const [customerEmail, setCustomerEmail] = useState(user?.email || '');
   const [city, setCity] = useState(defaultCity);
   const [pincode, setPincode] = useState(defaultPincode);
-  const [address, setAddress] = useState('B-42, Gulmohar Enclave, Near Community Park');
+  const [address, setAddress] = useState('');
   
   // Date selection (disallow past dates, only next 14 days)
   const tomorrow = new Date();
@@ -94,7 +94,7 @@ export const TestDrivePage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb */}

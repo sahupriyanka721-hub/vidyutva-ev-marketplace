@@ -14,44 +14,7 @@ import {
 } from '../types';
 import { INDIAN_PINCODES } from '../data/seedData';
 
-const DEFAULT_USER: CustomerUser = {
-  id: 'usr-ev-78291',
-  fullName: 'Arjun Singhania',
-  phone: '9876543210',
-  email: 'arjun.singhania@example.com',
-  city: 'New Delhi',
-  pincode: '110001',
-  drivingLicenseNo: 'DL-0420230089124',
-  isKycVerified: true,
-  savedAddresses: [
-    {
-      id: 'addr-1',
-      label: 'HOME',
-      fullName: 'Arjun Singhania',
-      phone: '9876543210',
-      line1: 'B-42, Gulmohar Enclave',
-      line2: 'Near Community Park',
-      landmark: 'Opposite Green View Tower',
-      city: 'New Delhi',
-      state: 'Delhi',
-      pincode: '110001',
-      isDefault: true,
-    },
-    {
-      id: 'addr-2',
-      label: 'OFFICE',
-      fullName: 'Arjun Singhania',
-      phone: '9876543210',
-      line1: 'Regus Tech Hub, 5th Floor',
-      line2: 'Barakhamba Road, Connaught Place',
-      city: 'New Delhi',
-      state: 'Delhi',
-      pincode: '110001',
-      isDefault: false,
-    }
-  ]
-};
-
+// Guest starts logged out. Only saved when user actually logs in via SMS OTP.
 const INITIAL_NOTIFICATIONS: AppNotification[] = [
   {
     id: 'notif-1',
@@ -98,7 +61,7 @@ const INITIAL_SERVICE_BOOKINGS: ServiceBookingItem[] = [
     problemDescription: 'Routine 5,000 km check-up and front brake squeak inspection.',
     appointmentDate: '2026-10-28',
     appointmentSlot: '10:00 AM - 12:00 PM',
-    customerName: 'Arjun Singhania',
+    customerName: 'Vikas Malhotra',
     customerPhone: '9876543210',
     pincode: '110001',
     city: 'New Delhi',
@@ -156,7 +119,7 @@ const INITIAL_VEHICLE_ORDERS: VehicleOrderItem[] = [
     bookingAmountPaid: 2999,
     balanceDue: 118300,
     deliveryAddress: {
-      fullName: 'Arjun Singhania',
+      fullName: 'Neha Sharma',
       phone: '9876543210',
       line1: 'B-42, Gulmohar Enclave',
       city: 'New Delhi',
@@ -179,9 +142,9 @@ const INITIAL_TEST_DRIVES: TestDriveBookingItem[] = [
     vehicleId: 'veh-eglide-pro',
     vehicleName: 'Electra Glide Pro',
     vehicleImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
-    customerName: 'Arjun Singhania',
+    customerName: 'Rohit Verma',
     customerPhone: '9876543210',
-    customerEmail: 'arjun.singhania@example.com',
+    customerEmail: 'rohit.verma@e-vahan.in',
     city: 'New Delhi',
     pincode: '110001',
     testDriveMode: 'DOORSTEP',
@@ -198,9 +161,9 @@ const INITIAL_QUOTATIONS: QuotationRequestItem[] = [
     id: 'qt-01',
     quotationNumber: 'QT-2026-9812',
     userId: 'usr-ev-78291',
-    customerName: 'Arjun Singhania',
+    customerName: 'Rohit Verma',
     customerPhone: '9876543210',
-    customerEmail: 'arjun.singhania@example.com',
+    customerEmail: 'rohit.verma@e-vahan.in',
     customerType: 'BUSINESS',
     companyName: 'Singhania Eco Deliveries LLP',
     gstin: '07AAACS1429B1Z2',
@@ -240,7 +203,7 @@ const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [
       {
         id: 'msg-1',
         sender: 'CUSTOMER',
-        senderName: 'Arjun Singhania',
+        senderName: 'Customer',
         text: 'Hello, I have submitted my Aadhaar and address proof for the RTO registration. How long does the approval take?',
         timestamp: '2026-10-26T14:30:00.000Z'
       },
@@ -248,7 +211,7 @@ const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [
         id: 'msg-2',
         sender: 'SUPPORT_AGENT',
         senderName: 'Priya Sharma (E-VAHAN Support)',
-        text: 'Hi Arjun! Our RTO liaison team at Connaught Place hub has received your documents. Verification typically takes 24 hours. We will notify you once registration docket is initiated at the transport department.',
+        text: 'Hello! Our RTO liaison team at Connaught Place hub has received your documents. Verification typically takes 24 hours. We will notify you once registration docket is initiated at the transport department.',
         timestamp: '2026-10-26T15:10:00.000Z'
       }
     ]
@@ -283,16 +246,32 @@ class StorageService {
   }
 
   // --- User & Auth ---
-  getUser(): CustomerUser {
-    return this.get<CustomerUser>('user', DEFAULT_USER);
+  getUser(): CustomerUser | null {
+    const user = this.get<CustomerUser | null>('user', null);
+    // Purge legacy "Arjun Singhania" if persisted in localStorage
+    if (user && (user.fullName === 'Arjun Singhania' || user.id === 'usr-ev-78291')) {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.removeItem('evahan_user');
+      }
+      return null;
+    }
+    return user;
   }
 
   saveUser(user: CustomerUser): void {
     this.set('user', user);
   }
 
+  clearUser(): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.removeItem('evahan_user');
+    }
+    this.memoryStore['user'] = null;
+  }
+
   updateAddress(address: CustomerAddress): void {
     const user = this.getUser();
+    if (!user) return;
     const index = user.savedAddresses.findIndex(a => a.id === address.id);
     if (index >= 0) {
       user.savedAddresses[index] = address;
@@ -304,6 +283,7 @@ class StorageService {
 
   deleteAddress(addressId: string): void {
     const user = this.getUser();
+    if (!user) return;
     user.savedAddresses = user.savedAddresses.filter(a => a.id !== addressId);
     this.saveUser(user);
   }
@@ -530,7 +510,7 @@ class StorageService {
         taxAmount: 482,
         grandTotal: 3164,
         deliveryAddress: {
-          fullName: 'Arjun Singhania',
+          fullName: 'Kunal Kapoor',
           phone: '9876543210',
           line1: 'B-42, Gulmohar Enclave',
           city: 'New Delhi',
@@ -597,7 +577,7 @@ class StorageService {
         {
           id: `msg-${Date.now()}`,
           sender: 'CUSTOMER',
-          senderName: this.getUser().fullName,
+          senderName: this.getUser()?.fullName || 'Customer',
           text: initialMessage,
           timestamp: new Date().toISOString()
         }
@@ -615,7 +595,7 @@ class StorageService {
       tickets[idx].messages.push({
         id: `msg-${Date.now()}`,
         sender: 'CUSTOMER',
-        senderName: this.getUser().fullName,
+        senderName: this.getUser()?.fullName || 'Customer',
         text,
         timestamp: new Date().toISOString()
       });

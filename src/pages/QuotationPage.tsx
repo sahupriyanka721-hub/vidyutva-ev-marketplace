@@ -34,9 +34,9 @@ export const QuotationPage: React.FC = () => {
   const [customerType, setCustomerType] = useState<'INDIVIDUAL' | 'BUSINESS'>('INDIVIDUAL');
   const [companyName, setCompanyName] = useState('');
   const [gstin, setGstin] = useState('');
-  const [name, setName] = useState(user?.fullName || 'Arjun Singhania');
-  const [phone, setPhone] = useState(user?.phone || '9876543210');
-  const [email, setEmail] = useState(user?.email || 'arjun.singhania@example.com');
+  const [name, setName] = useState(user?.fullName || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [city, setCity] = useState(defaultCity);
   const [pincode, setPincode] = useState(defaultPincode);
 
@@ -115,7 +115,7 @@ export const QuotationPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb */}

@@ -162,7 +162,7 @@ export const AdminDashboardPage: React.FC = () => {
   // If Admin is NOT authenticated, present the secure Registered Mobile Login Gate
   if (!isAdminAuthenticated) {
     return (
-      <div className="bg-[#F8FAF8] min-h-[85vh] flex items-center justify-center p-4">
+      <div className="bg-[#F0F4F8] min-h-[85vh] flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-gray-200/90 relative">
           
           {/* Brand Logo with stylish non-white dark badge (Strictly non-white background!) */}
@@ -309,7 +309,7 @@ export const AdminDashboardPage: React.FC = () => {
                        partsOrders.reduce((sum, p) => sum + (p.grandTotal || 0), 0);
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-6 sm:py-8">
+    <div className="bg-[#F0F4F8] min-h-screen py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Admin Master Header with Logout button */}

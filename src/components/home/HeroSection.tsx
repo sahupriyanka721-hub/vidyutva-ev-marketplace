@@ -7,11 +7,11 @@ export const HeroSection: React.FC = () => {
   const { city, pincode, openLocationModal } = useLocation();
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-white via-emerald-50/25 to-[#F8FAF8] pt-10 pb-20 sm:pt-14 sm:pb-24 border-b border-gray-200/80">
+    <section className="relative overflow-hidden bg-gradient-to-b from-[#EBF3FB] via-[#F1F6FC] to-[#F0F4F8] pt-10 pb-20 sm:pt-14 sm:pb-24 border-b border-[#D8E4F0]">
       
-      {/* Background Soft Glows */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-100/40 rounded-full filter blur-3xl pointer-events-none -z-0"></div>
-      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#B7F34A]/20 rounded-full filter blur-3xl pointer-events-none -z-0"></div>
+      {/* Background Soft Bluish Glows */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/30 rounded-full filter blur-3xl pointer-events-none -z-0"></div>
+      <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-sky-200/25 rounded-full filter blur-3xl pointer-events-none -z-0"></div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -20,7 +20,7 @@ export const HeroSection: React.FC = () => {
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             
             {/* Pill Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-bold text-[#14532D] shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 text-xs font-bold text-blue-950 shadow-xs">
               <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse"></span>
               <span>India&apos;s Dedicated Electric Mobility Marketplace</span>
               <span className="text-gray-300">|</span>

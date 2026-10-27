@@ -37,9 +37,9 @@ export const ServiceBookingPage: React.FC = () => {
   // Step 1: Location
   const [pincode, setPincode] = useState(searchParams.get('pincode') || defaultPincode);
   const [city, setCity] = useState(defaultCity);
-  const [address, setAddress] = useState('B-42, Gulmohar Enclave, Near Community Park');
-  const [customerName, setCustomerName] = useState(user?.fullName || 'Arjun Singhania');
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || '9876543210');
+  const [address, setAddress] = useState('');
+  const [customerName, setCustomerName] = useState(user?.fullName || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
 
   // Step 2: Vehicle
   const initialVehicleId = searchParams.get('vehicle') || VEHICLES_DATA[0].id;
@@ -111,7 +111,7 @@ export const ServiceBookingPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb */}

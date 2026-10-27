@@ -36,7 +36,7 @@ export const VehicleFinderWidget: React.FC = () => {
   };
 
   return (
-    <section className="py-16 bg-[#F8FAF8] border-b border-gray-200/70">
+    <section className="py-16 bg-[#F0F4F8] border-b border-gray-200/70">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}

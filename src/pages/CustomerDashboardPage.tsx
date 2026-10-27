@@ -60,8 +60,8 @@ export const CustomerDashboardPage: React.FC = () => {
   const [newAddressModal, setNewAddressModal] = useState(false);
   const [addressForm, setAddressForm] = useState<Omit<CustomerAddress, 'id'>>({
     label: 'HOME',
-    fullName: user?.fullName || 'Arjun Singhania',
-    phone: user?.phone || '9876543210',
+    fullName: user?.fullName || '',
+    phone: user?.phone || '',
     line1: '',
     line2: '',
     city: 'New Delhi',
@@ -131,7 +131,7 @@ export const CustomerDashboardPage: React.FC = () => {
   const wishlistedParts = SPARE_PARTS_DATA.filter(p => savedPartIds.includes(p.id));
 
   return (
-    <div className="bg-[#F8FAF8] min-h-screen py-8 sm:py-12">
+    <div className="bg-[#F0F4F8] min-h-screen py-8 sm:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Profile Header */}
