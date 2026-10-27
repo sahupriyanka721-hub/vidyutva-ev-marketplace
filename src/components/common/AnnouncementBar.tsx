@@ -27,7 +27,7 @@ export const AnnouncementBar: React.FC = () => {
 
   return (
     <div className="bg-gradient-to-r from-[#EBF3FB] via-[#F1F6FD] to-[#EBF3FB] text-slate-800 text-xs sm:text-sm py-2 px-4 transition-all duration-300 relative border-b border-[#D5E3F0]">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 flex items-center justify-between">
         <div className="flex-1 flex items-center justify-center space-x-2 text-center overflow-hidden">
           <span className="inline-flex items-center justify-center p-1 rounded-full bg-[#0B2545] text-[#B7F34A] shadow-xs">
             <Icon className="w-3.5 h-3.5" />
