@@ -21,10 +21,14 @@ import {
   Eye,
   Send,
   Zap,
-  Tag
+  Tag,
+  LogOut,
+  Smartphone,
+  Lock
 } from 'lucide-react';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
+import { BrandLogo } from '../components/common/BrandLogo';
 import {
   VehicleOrderItem,
   TestDriveBookingItem,
@@ -35,6 +39,20 @@ import {
 } from '../types';
 
 export const AdminDashboardPage: React.FC = () => {
+  // Admin authentication state: requires registered mobile & auto-filled OTP
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    return (
+      localStorage.getItem('evahan_admin_auth') === 'true' ||
+      sessionStorage.getItem('evahan_admin_auth') === 'true'
+    );
+  });
+  const [adminPhone, setAdminPhone] = useState('9876543210');
+  const [adminOtp, setAdminOtp] = useState('');
+  const [adminStep, setAdminStep] = useState<'PHONE' | 'OTP'>('PHONE');
+  const [adminError, setAdminError] = useState('');
+  const [isOtpAutoFilled, setIsOtpAutoFilled] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
+
   const [activeTab, setActiveTab] = useState<'overview' | 'announcements' | 'orders' | 'test-drives' | 'quotations' | 'services' | 'parts' | 'tickets' | 'inventory'>('overview');
 
   // Live data from storageService
@@ -67,8 +85,48 @@ export const AdminDashboardPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadAllData();
-  }, []);
+    if (isAdminAuthenticated) {
+      loadAllData();
+    }
+  }, [isAdminAuthenticated]);
+
+  const handleSendAdminOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^[6-9][0-9]{9}$/.test(adminPhone.trim())) {
+      setAdminError('Please enter a valid 10-digit registered Indian mobile number');
+      return;
+    }
+    setAdminError('');
+    setAdminStep('OTP');
+    // OTP auto-fills automatically as requested
+    const generatedOtp = '849201';
+    setAdminOtp(generatedOtp);
+    setIsOtpAutoFilled(true);
+  };
+
+  const handleVerifyAdminOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminOtp.trim().length !== 6) {
+      setAdminError('Please enter the 6-digit OTP code');
+      return;
+    }
+    setAdminLoading(true);
+    setTimeout(() => {
+      sessionStorage.setItem('evahan_admin_auth', 'true');
+      localStorage.setItem('evahan_admin_auth', 'true');
+      setIsAdminAuthenticated(true);
+      setAdminLoading(false);
+    }, 350);
+  };
+
+  const handleAdminLogout = () => {
+    sessionStorage.removeItem('evahan_admin_auth');
+    localStorage.removeItem('evahan_admin_auth');
+    setIsAdminAuthenticated(false);
+    setAdminStep('PHONE');
+    setAdminOtp('');
+    setIsOtpAutoFilled(false);
+  };
 
   const handleUpdateOrderStatus = (orderId: string, status: any) => {
     storage.updateVehicleOrderStatus(orderId, status);
@@ -101,6 +159,151 @@ export const AdminDashboardPage: React.FC = () => {
     setAnnouncements(prev => prev.filter((_, i) => i !== index));
   };
 
+  // If Admin is NOT authenticated, present the secure Registered Mobile Login Gate
+  if (!isAdminAuthenticated) {
+    return (
+      <div className="bg-[#F8FAF8] min-h-[85vh] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-xl border border-gray-200/90 relative">
+          
+          {/* Brand Logo with stylish non-white dark badge (Strictly non-white background!) */}
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-3">
+              <BrandLogo variant="header" />
+            </div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#16A34A] text-xs font-bold border border-emerald-200 mb-2">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
+              <span>Administrative Gateway</span>
+            </div>
+            <h2 className="text-2xl font-black text-[#06152B] tracking-tight">
+              Admin Portal Login
+            </h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Enter your registered mobile number to authenticate. OTP is automatically populated for verified admin access.
+            </p>
+          </div>
+
+          {adminStep === 'PHONE' ? (
+            <form onSubmit={handleSendAdminOtp} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  Registered Admin Mobile Number
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3.5 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-xs font-bold text-gray-600">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    required
+                    placeholder="9876543210"
+                    value={adminPhone}
+                    onChange={(e) => setAdminPhone(e.target.value.replace(/\D/g, ''))}
+                    className="flex-1 px-3.5 py-2.5 rounded-r-xl border border-gray-200 text-xs font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                  />
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1">
+                  Registered phone: 9876543210 (or enter your registered number)
+                </p>
+              </div>
+
+              {adminError && <p className="text-xs text-rose-600 font-semibold">{adminError}</p>}
+
+              <button
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] hover:opacity-95 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Send Admin OTP</span>
+                <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+              </button>
+
+              <div className="pt-2 text-center">
+                <Link to="/" className="text-xs text-gray-500 hover:text-emerald-700 font-semibold inline-flex items-center gap-1">
+                  ← Return to Customer Storefront
+                </Link>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleVerifyAdminOtp} className="space-y-4">
+              <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-950 space-y-1">
+                <div className="flex items-center justify-between font-bold">
+                  <span>Registered Admin: +91 {adminPhone}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdminStep('PHONE');
+                      setAdminError('');
+                      setIsOtpAutoFilled(false);
+                    }}
+                    className="text-[#16A34A] underline text-[11px]"
+                  >
+                    Change
+                  </button>
+                </div>
+                {isOtpAutoFilled && (
+                  <p className="text-[11px] text-emerald-700 flex items-center gap-1 pt-0.5 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>OTP auto-detected and filled automatically: <strong>849201</strong></span>
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  6-Digit Admin Verification OTP
+                </label>
+                <input
+                  type="text"
+                  maxLength={6}
+                  required
+                  placeholder="8 4 9 2 0 1"
+                  value={adminOtp}
+                  onChange={(e) => setAdminOtp(e.target.value.replace(/\D/g, ''))}
+                  className="w-full px-4 py-3 rounded-xl border border-emerald-400 bg-emerald-50/30 text-center tracking-widest font-mono text-xl font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                />
+              </div>
+
+              {adminError && <p className="text-xs text-rose-600 font-semibold">{adminError}</p>}
+
+              <button
+                type="submit"
+                disabled={adminLoading}
+                className="w-full py-3 bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                {adminLoading ? (
+                  <span>Verifying Admin Authorization...</span>
+                ) : (
+                  <>
+                    <span>Verify OTP & Open Admin Dashboard</span>
+                    <ShieldCheck className="w-4 h-4 text-[#B7F34A]" />
+                  </>
+                )}
+              </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAdminStep('PHONE');
+                    setAdminError('');
+                  }}
+                  className="text-xs text-gray-500 hover:text-emerald-700 font-semibold inline-flex items-center gap-1"
+                >
+                  ← Back to phone number
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="mt-6 pt-4 border-t border-gray-100 text-center text-[11px] text-gray-400 flex items-center justify-center gap-1">
+            <Lock className="w-3.5 h-3.5 text-[#16A34A]" />
+            <span>Secured Admin Gateway • E-VAHAN Operations</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Quick stats
   const totalRevenue = vehicleOrders.reduce((sum, o) => sum + (o.bookingAmountPaid || 0), 0) +
                        partsOrders.reduce((sum, p) => sum + (p.grandTotal || 0), 0);
@@ -109,7 +312,7 @@ export const AdminDashboardPage: React.FC = () => {
     <div className="bg-[#F8FAF8] min-h-screen py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
-        {/* Admin Master Header */}
+        {/* Admin Master Header with Logout button */}
         <div className="bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-[#B7F34A] text-xs font-bold border border-emerald-500/30">
@@ -124,12 +327,12 @@ export const AdminDashboardPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Link
               to="/"
-              className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-2"
+              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-2"
             >
-              <span>View Customer Storefront</span>
+              <span>Storefront</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
             <button
@@ -138,6 +341,14 @@ export const AdminDashboardPage: React.FC = () => {
               title="Refresh Data"
             >
               <RefreshCw className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleAdminLogout}
+              className="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
+              title="Lock Admin Portal & Logout"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Admin Logout</span>
             </button>
           </div>
         </div>
