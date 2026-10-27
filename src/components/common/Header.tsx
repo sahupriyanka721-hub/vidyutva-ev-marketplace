@@ -167,7 +167,7 @@ export const Header: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => openAuthModal()}
+                  onClick={() => openAuthModal('/dashboard')}
                   className="inline-flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-sm shrink-0"
                 >
                   <UserIcon className="w-3.5 h-3.5 text-[#B7F34A]" />
@@ -319,6 +319,14 @@ export const Header: React.FC = () => {
               className="p-3 bg-purple-50 text-purple-800 rounded-xl hover:bg-purple-100 border border-purple-200 font-bold"
             >
               ⚡ Admin Panel
+            </Link>
+            <Link
+              to="/dashboard"
+              onClick={() => setMobileMenuOpen(false)}
+              className="col-span-2 p-3 bg-emerald-50 text-[#14532D] rounded-xl hover:bg-emerald-100 border border-emerald-200 font-bold flex items-center justify-center gap-2"
+            >
+              <UserIcon className="w-4 h-4 text-emerald-600" />
+              <span>{isAuthenticated ? `Customer Panel (${user?.fullName?.split(' ')[0] || 'My Account'})` : 'Customer Login / Panel'}</span>
             </Link>
             <Link
               to="/quotation"

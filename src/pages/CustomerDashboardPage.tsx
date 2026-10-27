@@ -85,7 +85,22 @@ export const CustomerDashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+    if (!isAuthenticated && !user) {
+      openAuthModal('/dashboard');
+    }
+  }, [isAuthenticated, user]);
+
+  useEffect(() => {
+    if (user) {
+      setAddressForm(prev => ({
+        ...prev,
+        fullName: user.fullName || prev.fullName,
+        phone: user.phone || prev.phone,
+        city: user.city || prev.city,
+        pincode: user.pincode || prev.pincode
+      }));
+    }
+  }, [user]);
 
   const handleTabChange = (tab: string) => {
     setSearchParams({ tab });
@@ -135,45 +150,78 @@ export const CustomerDashboardPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Profile Header */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-subtle mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#06152B] to-[#0B2545] text-[#B7F34A] border border-emerald-500/40 flex items-center justify-center font-black text-2xl shadow-md">
-              {user?.fullName?.charAt(0) || 'U'}
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-gray-900">
-                  Welcome back, {user?.fullName || 'Guest Rider'}!
-                </h1>
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> KYC Verified
-                </span>
+        {!isAuthenticated || !user ? (
+          <div className="bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#134074] text-white rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-xl mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-in fade-in duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-[#B7F34A]/10 border border-[#B7F34A]/40 flex items-center justify-center text-[#B7F34A] shrink-0">
+                <UserIcon className="w-8 h-8" />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                +91 {user?.phone} • {user?.email} • Location: {user?.city} ({user?.pincode})
-              </p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black text-white">
+                    Customer Panel & Dashboard
+                  </h1>
+                  <span className="text-[10px] font-bold text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    Login Required
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-300 mt-1">
+                  Apne active vehicle bookings, doorstep test-drive schedules, spare parts tracking, aur instant quotations dekhne ke liye please login karein.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => openAuthModal('/dashboard')}
+                className="px-5 py-3 bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-600 hover:to-emerald-500 text-white text-xs sm:text-sm font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+              >
+                <UserIcon className="w-4 h-4 text-[#B7F34A]" />
+                <span>Login to Customer Panel</span>
+              </button>
             </div>
           </div>
+        ) : (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-subtle mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-in fade-in duration-200">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#06152B] to-[#0B2545] text-[#B7F34A] border border-emerald-500/40 flex items-center justify-center font-black text-2xl shadow-md">
+                {user?.fullName?.charAt(0) || 'U'}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl sm:text-2xl font-black text-gray-900">
+                    Welcome back, {user?.fullName}!
+                  </h1>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> Verified Customer
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  +91 {user?.phone} • {user?.email} • Location: {user?.city} ({user?.pincode})
+                </p>
+              </div>
+            </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              to="/vehicles"
-              className="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#14532D] text-xs font-bold rounded-xl transition-colors"
-            >
-              Browse Vehicles
-            </Link>
-            <button
-              onClick={() => {
-                logout();
-                navigate('/');
-              }}
-              className="px-4 py-2.5 bg-gray-100 hover:bg-rose-50 text-gray-700 hover:text-rose-600 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/vehicles"
+                className="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-[#14532D] text-xs font-bold rounded-xl transition-colors"
+              >
+                Browse Vehicles
+              </Link>
+              <button
+                onClick={() => {
+                  logout();
+                  navigate('/');
+                }}
+                className="px-4 py-2.5 bg-gray-100 hover:bg-rose-50 text-gray-700 hover:text-rose-600 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Sign Out</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Dashboard 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

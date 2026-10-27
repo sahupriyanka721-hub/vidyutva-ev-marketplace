@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Smartphone, Mail, Lock, ShieldCheck, ArrowRight, User as UserIcon, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { BrandLogo } from './BrandLogo';
 
 export const AuthModal: React.FC = () => {
-  const { isAuthModalOpen, closeAuthModal, login, signup } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthModalOpen, closeAuthModal, login, signup, authRedirectUrl } = useAuth();
   const [mode, setMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
   const [phone, setPhone] = useState('9876543210');
@@ -39,8 +41,9 @@ export const AuthModal: React.FC = () => {
     setLoading(true);
     setError('');
 
+    let success = false;
     if (mode === 'SIGNUP') {
-      await signup({
+      success = await signup({
         fullName: fullName || 'EV Customer',
         phone,
         email: email || `${phone}@e-vahan.in`,
@@ -54,8 +57,16 @@ export const AuthModal: React.FC = () => {
         setLoading(false);
         return;
       }
+      success = true;
     }
+
     setLoading(false);
+    if (success) {
+      closeAuthModal();
+      // Customer login hone ke baad customer panel automatically open hota hai
+      const destination = authRedirectUrl || '/dashboard';
+      navigate(destination);
+    }
   };
 
   return (

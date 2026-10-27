@@ -83,6 +83,9 @@ const AppContent: React.FC = () => {
           <Route path="/service" element={<ServiceBookingPage />} />
           <Route path="/compare" element={<CompareVehiclesPage />} />
           <Route path="/dashboard" element={<CustomerDashboardPage />} />
+          <Route path="/customer" element={<CustomerDashboardPage />} />
+          <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
+          <Route path="/customer-panel" element={<CustomerDashboardPage />} />
           <Route path="/contact" element={<CustomerSupportPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/legal/:slug" element={<LegalPage />} />

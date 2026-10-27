@@ -89,7 +89,7 @@ export const MobileBottomNav: React.FC = () => {
           </Link>
         ) : (
           <button
-            onClick={() => openAuthModal()}
+            onClick={() => openAuthModal('/dashboard')}
             className="flex flex-col items-center justify-center py-1 text-gray-500 hover:text-[#16A34A] transition-colors"
           >
             <User className="w-5 h-5 stroke-2" />
