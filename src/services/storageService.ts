@@ -13,6 +13,7 @@ import {
   CustomerAddress
 } from '../types';
 import { INDIAN_PINCODES } from '../data/seedData';
+import { lookupCityOrPincode } from '../data/indianCitiesPincodes';
 
 // Guest starts logged out. Only saved when user actually logs in via SMS OTP.
 const INITIAL_NOTIFICATIONS: AppNotification[] = [
@@ -311,20 +312,21 @@ class StorageService {
         ...match
       };
     }
-    // Generic fallback for any other location / PIN in India
-    const isValidPin = /^[1-9][0-9]{5}$/.test(pincode.trim());
+    // Lookup in comprehensive 289+ Indian cities and postal database
+    const cityInfo = lookupCityOrPincode(pincode);
     const isTestUnknown = raw === '999999';
+
     return {
       isKnown: !isTestUnknown,
-      pincode: isValidPin ? pincode.trim() : '110001',
-      city: isValidPin ? `City (${pincode.trim()})` : (pincode.trim() || 'Selected Location'),
-      state: 'India',
-      tier: isTestUnknown ? (3 as const) : (2 as const),
+      pincode: cityInfo.pincode,
+      city: cityInfo.city,
+      state: cityInfo.state,
+      tier: isTestUnknown ? (3 as const) : (cityInfo.tier as 1 | 2 | 3),
       vehicleDelivery: !isTestUnknown,
       doorstepService: !isTestUnknown,
       testDriveHome: !isTestUnknown,
       partsShippingExpress: !isTestUnknown,
-      nearestDealership: 'E-VAHAN Authorized Regional Dealership Hub'
+      nearestDealership: `E-VAHAN ${cityInfo.city} Authorized Dealership Hub`
     };
   }
 
