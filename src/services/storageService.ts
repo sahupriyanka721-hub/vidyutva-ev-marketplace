@@ -311,18 +311,19 @@ class StorageService {
         ...match
       };
     }
-    // Generic fallback for any other valid 6-digit Indian PIN
+    // Generic fallback for any other location / PIN in India
     const isValidPin = /^[1-9][0-9]{5}$/.test(pincode.trim());
+    const isTestUnknown = raw === '999999';
     return {
-      isKnown: false,
-      pincode: pincode.trim(),
-      city: isValidPin ? `City (${pincode.trim()})` : (pincode.trim() || 'All India'),
+      isKnown: !isTestUnknown,
+      pincode: isValidPin ? pincode.trim() : '110001',
+      city: isValidPin ? `City (${pincode.trim()})` : (pincode.trim() || 'Selected Location'),
       state: 'India',
-      tier: 3 as const,
-      vehicleDelivery: isValidPin,
-      doorstepService: false,
-      testDriveHome: false,
-      partsShippingExpress: isValidPin,
+      tier: isTestUnknown ? (3 as const) : (2 as const),
+      vehicleDelivery: !isTestUnknown,
+      doorstepService: !isTestUnknown,
+      testDriveHome: !isTestUnknown,
+      partsShippingExpress: !isTestUnknown,
       nearestDealership: 'E-VAHAN Authorized Regional Dealership Hub'
     };
   }

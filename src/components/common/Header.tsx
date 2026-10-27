@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   MapPin,
-  Search,
   Heart,
   ShoppingCart,
   User as UserIcon,
@@ -22,24 +21,22 @@ import { useAuth } from '../../context/AuthContext';
 import { useLocation } from '../../context/LocationContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
-import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../../data/seedData';
 import { BrandLogo } from './BrandLogo';
 
 /**
  * Section 3: GLOBAL HEADER AND NAVIGATION
- * Strictly contains the 12 required items:
+ * Ultra-clean navbar with:
  * 1. Brand logo
- * 2. Location selector for city and PIN code
- * 3. Search bar with autocomplete
- * 4. Electric Scooters
- * 5. Electric Autos
- * 6. Spare Parts
- * 7. Book a Test Drive
- * 8. Book a Service
- * 9. Get a Quotation
- * 10. Account / Login
- * 11. Wishlist
- * 12. Cart icon with item count
+ * 2. Universal location selector for any Indian city / PIN code
+ * 3. Electric Scooters
+ * 4. Electric Autos
+ * 5. Spare Parts
+ * 6. Book a Test Drive
+ * 7. Book a Service
+ * 8. Get a Quotation
+ * 9. Wishlist
+ * 10. Cart icon with item count
+ * 11. Account / Login (with Admin Dashboard link)
  */
 export const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -49,23 +46,12 @@ export const Header: React.FC = () => {
   const { totalWishlistCount } = useWishlist();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
 
-  // Close search/account dropdown on outside click
+  // Close account dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsSearchFocused(false);
-      }
-      if (mobileSearchRef.current && !mobileSearchRef.current.contains(event.target as Node)) {
-        setMobileSearchFocused(false);
-      }
       if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
         setAccountDropdownOpen(false);
       }
@@ -74,54 +60,12 @@ export const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filtered autocomplete search results
-  const q = searchQuery.toLowerCase().trim();
-  const matchedVehicles = q
-    ? VEHICLES_DATA.filter(
-        v =>
-          v.name.toLowerCase().includes(q) ||
-          v.brand.toLowerCase().includes(q) ||
-          v.tagline.toLowerCase().includes(q)
-      ).slice(0, 4)
-    : [];
-
-  const matchedParts = q
-    ? SPARE_PARTS_DATA.filter(
-        p =>
-          p.name.toLowerCase().includes(q) ||
-          p.sku.toLowerCase().includes(q) ||
-          p.categoryName.toLowerCase().includes(q)
-      ).slice(0, 4)
-    : [];
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = searchQuery.trim();
-    if (!query) return;
-
-    setIsSearchFocused(false);
-    setMobileSearchFocused(false);
-    setMobileMenuOpen(false);
-
-    // Smart routing: check if query is for spare parts or vehicle
-    const qLower = query.toLowerCase();
-    const isSparePartQuery = 
-      (matchedParts.length > 0 && matchedVehicles.length === 0) ||
-      ['battery', 'charger', 'controller', 'brake', 'tyre', 'tire', 'motor', 'horn', 'light', 'cable', 'wire', 'plug', 'accelerator', 'throttle', 'spare', 'part', 'disc', 'pad', 'mirror', 'fuse', 'tube'].some(kw => qLower.includes(kw));
-
-    if (isSparePartQuery) {
-      navigate(`/spare-parts?search=${encodeURIComponent(query)}`);
-    } else {
-      navigate(`/vehicles?search=${encodeURIComponent(query)}`);
-    }
-  };
-
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#D8E4F0] shadow-xs transition-all">
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10">
+      <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-10">
         <div className="flex items-center justify-between h-14 sm:h-20 gap-2 sm:gap-4">
           
-          {/* Item 1: Brand logo & Mobile Hamburger */}
+          {/* Left Cluster: Hamburger, Brand Logo & Location Selector */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -134,173 +78,41 @@ export const Header: React.FC = () => {
             {/* Logo in Non-White Luxury Emblem Badge */}
             <BrandLogo variant="header" />
 
-            {/* Item 2: Location selector for city and PIN code */}
+            {/* Location selector for any city / PIN code (available on both mobile and desktop) */}
             <button
               onClick={openLocationModal}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 hover:bg-emerald-50 text-xs text-gray-800 border border-gray-200 hover:border-emerald-400 transition-all ml-1 shadow-2xs"
-              title="Change City and PIN Code"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gray-100 hover:bg-emerald-50 text-xs text-gray-800 border border-gray-200 hover:border-emerald-400 transition-all ml-1 shadow-2xs"
+              title="Change Delivery Location"
             >
-              <MapPin className="w-3.5 h-3.5 text-[#16A34A]" />
-              <span className="font-bold max-w-[100px] truncate">{city}</span>
-              <span className="text-gray-500 font-mono text-[11px]">({pincode})</span>
+              <MapPin className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+              <span className="font-bold max-w-[85px] sm:max-w-[120px] truncate">{city}</span>
+              <span className="hidden sm:inline text-gray-500 font-mono text-[11px]">({pincode})</span>
               <ChevronDown className="w-3 h-3 text-gray-400" />
             </button>
           </div>
 
-          {/* Item 3: Search bar with autocomplete */}
-          <div ref={searchRef} className="flex-1 max-w-sm lg:max-w-md relative hidden md:block">
-            <form onSubmit={handleSearchSubmit} className="relative">
-              <input
-                type="text"
-                placeholder="Search scooters, autos, parts, SKUs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                className="w-full pl-9 pr-4 py-2 text-xs sm:text-sm bg-gray-100 hover:bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#16A34A] rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all text-gray-900 placeholder-gray-400 shadow-2xs"
-              />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </form>
-
-            {/* Autocomplete Dropdown */}
-            {isSearchFocused && searchQuery.trim() && (
-              <div 
-                onMouseDown={(e) => e.preventDefault()}
-                className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in duration-150 text-gray-900"
-              >
-                {matchedVehicles.length === 0 && matchedParts.length === 0 ? (
-                  <div className="p-4 text-center text-xs text-gray-500">
-                    No electric vehicles or spare parts found matching &quot;{searchQuery}&quot;
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
-                    {matchedVehicles.length > 0 && (
-                      <div className="p-3">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">
-                          Electric Vehicles
-                        </div>
-                        {matchedVehicles.map(v => (
-                          <Link
-                            key={v.id}
-                            to={`/vehicles/${v.modelSlug}`}
-                            onClick={() => {
-                              setIsSearchFocused(false);
-                              setSearchQuery('');
-                            }}
-                            className="flex items-center gap-3 p-2 rounded-xl hover:bg-emerald-50/70 transition-colors group"
-                          >
-                            <img
-                              src={v.images[0]?.url || ''}
-                              alt={v.name}
-                              className="w-10 h-10 object-cover rounded-lg bg-gray-100 shrink-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold text-gray-900 group-hover:text-[#16A34A] truncate">
-                                {v.name}
-                              </p>
-                              <p className="text-[11px] text-gray-500">
-                                {v.brand} • ₹{v.exShowroomPrice.toLocaleString('en-IN')}
-                              </p>
-                            </div>
-                            <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
-                              EV Model
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-
-                    {matchedParts.length > 0 && (
-                      <div className="p-3">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">
-                          Genuine Spare Parts
-                        </div>
-                        {matchedParts.map(p => (
-                          <Link
-                            key={p.id}
-                            to={`/spare-parts/${p.slug}`}
-                            onClick={() => {
-                              setIsSearchFocused(false);
-                              setSearchQuery('');
-                            }}
-                            className="flex items-center gap-3 p-2 rounded-xl hover:bg-emerald-50/70 transition-colors group"
-                          >
-                            <img
-                              src={p.imageUrl}
-                              alt={p.name}
-                              className="w-10 h-10 object-cover rounded-lg bg-gray-100 shrink-0"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-bold text-gray-900 group-hover:text-[#16A34A] truncate">
-                                {p.name}
-                              </p>
-                              <p className="text-[11px] text-gray-500">
-                                SKU: {p.sku} • ₹{p.sellingPrice.toLocaleString('en-IN')}
-                              </p>
-                            </div>
-                            <span className="text-[10px] font-semibold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
-                              Spare Part
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="p-2.5 bg-gray-50 flex items-center justify-between border-t border-gray-100 text-xs">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsSearchFocused(false);
-                          navigate(`/vehicles?search=${encodeURIComponent(searchQuery.trim())}`);
-                        }}
-                        className="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors"
-                      >
-                        All Vehicles ({matchedVehicles.length}) →
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsSearchFocused(false);
-                          navigate(`/spare-parts?search=${encodeURIComponent(searchQuery.trim())}`);
-                        }}
-                        className="font-semibold text-blue-700 hover:text-blue-800 transition-colors"
-                      >
-                        All Spare Parts ({matchedParts.length}) →
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Items 4, 5, 6, 7, 8, 9: Core Navigation Links */}
+          {/* Center Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-5 text-sm font-semibold text-gray-700">
-            {/* Item 4 */}
             <Link to="/vehicles?category=ELECTRIC_SCOOTER" className="hover:text-[#16A34A] transition-colors">
               Electric Scooters
             </Link>
             
-            {/* Item 5 */}
             <Link to="/vehicles?category=ELECTRIC_PASSENGER_AUTO" className="hover:text-[#16A34A] transition-colors">
               Electric Autos
             </Link>
             
-            {/* Item 6 */}
             <Link to="/spare-parts" className="hover:text-[#16A34A] transition-colors">
               Spare Parts
             </Link>
             
-            {/* Item 7 */}
             <Link to="/test-drive" className="hover:text-[#16A34A] transition-colors">
               Book a Test Drive
             </Link>
             
-            {/* Item 8 */}
             <Link to="/service" className="hover:text-[#16A34A] transition-colors">
               Book a Service
             </Link>
             
-            {/* Item 9 */}
             <Link
               to="/quotation"
               className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#16A34A] to-[#22C55E] text-white hover:from-emerald-700 hover:to-emerald-600 font-bold transition-all shadow-sm text-xs shrink-0"
@@ -309,10 +121,10 @@ export const Header: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Items 10, 11, 12: Account/Login, Wishlist, Cart */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Right Cluster: Wishlist, Cart, Account/Login */}
+          <div className="flex items-center space-x-1.5 sm:space-x-3">
             
-            {/* Item 11: Wishlist */}
+            {/* Wishlist */}
             <Link
               to="/dashboard?tab=wishlist"
               className="p-2 text-gray-700 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors relative"
@@ -326,7 +138,7 @@ export const Header: React.FC = () => {
               )}
             </Link>
 
-            {/* Item 12: Cart icon with item count */}
+            {/* Cart icon with item count */}
             <button
               onClick={openCartDrawer}
               className="p-2 text-gray-700 hover:text-[#16A34A] hover:bg-emerald-50 rounded-full transition-colors relative"
@@ -340,7 +152,7 @@ export const Header: React.FC = () => {
               )}
             </button>
 
-            {/* Item 10: Account / Login */}
+            {/* Account / Login */}
             <div ref={accountRef} className="relative">
               {isAuthenticated ? (
                 <button
@@ -363,7 +175,7 @@ export const Header: React.FC = () => {
                 </button>
               )}
 
-              {/* Account Dropdown Menu (Includes Direct Admin Panel Link) */}
+              {/* Account Dropdown Menu */}
               {accountDropdownOpen && isAuthenticated && (
                 <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in duration-150 text-gray-800">
                   <div className="px-4 py-2 border-b border-gray-100">
@@ -397,6 +209,13 @@ export const Header: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-[#16A34A]"
                   >
                     <Sparkles className="w-4 h-4 text-emerald-600" /> My Vehicle Orders
+                  </Link>
+                  <Link
+                    to="/dashboard?tab=parts-orders"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-[#16A34A]"
+                  >
+                    <ShoppingCart className="w-4 h-4 text-emerald-600" /> Spare Parts Orders
                   </Link>
                   <Link
                     to="/dashboard?tab=test-drives"
@@ -437,142 +256,6 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Quick Location & Search Strip */}
-      <div ref={mobileSearchRef} className="md:hidden px-3 py-2 bg-[#F4F8FC] border-t border-[#DCE8F2] relative">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={openLocationModal}
-            className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white border border-[#D5E3F0] text-[11px] font-bold text-gray-800 shadow-2xs"
-            title="Change City"
-          >
-            <MapPin className="w-3 h-3 text-[#16A34A]" />
-            <span className="max-w-[75px] truncate">{city}</span>
-          </button>
-          <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Search scooters, autos, parts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setMobileSearchFocused(true)}
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-[#D5E3F0] rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-2xs"
-            />
-            <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </form>
-        </div>
-
-        {/* Mobile Autocomplete Dropdown */}
-        {mobileSearchFocused && searchQuery.trim() && (
-          <div
-            onMouseDown={(e) => e.preventDefault()}
-            className="absolute left-2 right-2 top-full mt-1 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 animate-in fade-in duration-150 text-gray-900 max-h-80 overflow-y-auto"
-          >
-            {matchedVehicles.length === 0 && matchedParts.length === 0 ? (
-              <div className="p-3 text-center text-xs text-gray-500">
-                No EV or spare parts found for &quot;{searchQuery}&quot;
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {matchedVehicles.length > 0 && (
-                  <div className="p-2">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1">
-                      Electric Vehicles
-                    </div>
-                    {matchedVehicles.map(v => (
-                      <Link
-                        key={v.id}
-                        to={`/vehicles/${v.modelSlug}`}
-                        onClick={() => {
-                          setMobileSearchFocused(false);
-                          setSearchQuery('');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-emerald-50 active:bg-emerald-100 transition-colors"
-                      >
-                        <img
-                          src={v.images[0]?.url || ''}
-                          alt={v.name}
-                          className="w-9 h-9 object-cover rounded-lg bg-gray-100 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-900 truncate">
-                            {v.name}
-                          </p>
-                          <p className="text-[10px] text-gray-500">
-                            {v.brand} • ₹{v.exShowroomPrice.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        <span className="text-[9px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded-full shrink-0">
-                          EV
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                {matchedParts.length > 0 && (
-                  <div className="p-2">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1">
-                      Genuine Parts
-                    </div>
-                    {matchedParts.map(p => (
-                      <Link
-                        key={p.id}
-                        to={`/spare-parts/${p.slug}`}
-                        onClick={() => {
-                          setMobileSearchFocused(false);
-                          setSearchQuery('');
-                        }}
-                        className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-emerald-50 active:bg-emerald-100 transition-colors"
-                      >
-                        <img
-                          src={p.imageUrl}
-                          alt={p.name}
-                          className="w-9 h-9 object-cover rounded-lg bg-gray-100 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-900 truncate">
-                            {p.name}
-                          </p>
-                          <p className="text-[10px] text-gray-500">
-                            SKU: {p.sku} • ₹{p.sellingPrice.toLocaleString('en-IN')}
-                          </p>
-                        </div>
-                        <span className="text-[9px] font-semibold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded-full shrink-0">
-                          Part
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-
-                <div className="p-2 bg-gray-50 flex items-center justify-between text-[11px] border-t border-gray-100">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileSearchFocused(false);
-                      navigate(`/vehicles?search=${encodeURIComponent(searchQuery.trim())}`);
-                    }}
-                    className="font-bold text-emerald-700 p-1"
-                  >
-                    All Vehicles →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileSearchFocused(false);
-                      navigate(`/spare-parts?search=${encodeURIComponent(searchQuery.trim())}`);
-                    }}
-                    className="font-bold text-blue-700 p-1"
-                  >
-                    All Spare Parts →
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden border-t border-gray-200 bg-white px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top-2 text-gray-800 shadow-xl">
@@ -592,18 +275,6 @@ export const Header: React.FC = () => {
               Change Location
             </button>
           </div>
-
-          {/* Mobile Search */}
-          <form onSubmit={handleSearchSubmit} className="relative">
-            <input
-              type="text"
-              placeholder="Search electric scooters, autos, parts..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 text-xs bg-gray-100 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900 placeholder-gray-400"
-            />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          </form>
 
           {/* Links for Mobile */}
           <div className="grid grid-cols-2 gap-2 text-xs font-semibold pt-2">

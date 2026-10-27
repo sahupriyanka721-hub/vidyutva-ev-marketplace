@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { MapPin, X, CheckCircle2, Search, ArrowRight, ShieldCheck, Check } from 'lucide-react';
+import { MapPin, X, CheckCircle2, Check } from 'lucide-react';
 import { useLocation } from '../../context/LocationContext';
 import { INDIAN_PINCODES } from '../../data/seedData';
 
@@ -8,7 +8,7 @@ export const LocationModal: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Live filtered locations based on user input (by city name, state, or PIN code)
+  // Live filtered locations based on user input (matching city name, state, or PIN code)
   const filteredLocations = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return [];
@@ -17,11 +17,8 @@ export const LocationModal: React.FC = () => {
         p.city.toLowerCase().includes(q) ||
         p.state.toLowerCase().includes(q) ||
         p.pincode.includes(q)
-    ).slice(0, 12);
+    ).slice(0, 10);
   }, [searchQuery]);
-
-  // Check if input is a valid 6-digit PIN code
-  const isCustomPincode = /^[1-9][0-9]{5}$/.test(searchQuery.trim());
 
   if (!isLocationModalOpen) return null;
 
@@ -32,15 +29,38 @@ export const LocationModal: React.FC = () => {
     closeLocationModal();
   };
 
-  const handleCustomPinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const pin = searchQuery.trim();
-    if (!/^[1-9][0-9]{5}$/.test(pin)) {
-      setErrorMsg('Please enter a valid city name or 6-digit PIN code');
+  // Submit any custom location (city name, town, locality or PIN code)
+  const handleLocationSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const val = searchQuery.trim();
+    if (!val) {
+      setErrorMsg('Please enter a city name, area, or PIN code');
       return;
     }
-    const result = checkPincode(pin);
-    handleSelectLocation(result.city, result.pincode);
+
+    // 1. If user typed a 6-digit Indian PIN code
+    if (/^[1-9][0-9]{5}$/.test(val)) {
+      const res = checkPincode(val);
+      handleSelectLocation(res.city, res.pincode);
+      return;
+    }
+
+    // 2. If user typed a city name matching a known hub
+    const qLower = val.toLowerCase();
+    const matched = INDIAN_PINCODES.find(
+      p => p.city.toLowerCase() === qLower || p.city.toLowerCase().includes(qLower)
+    );
+    if (matched) {
+      handleSelectLocation(matched.city, matched.pincode);
+      return;
+    }
+
+    // 3. Any custom city, town, district, or area anywhere
+    const formattedCity = val
+      .split(' ')
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+    handleSelectLocation(formattedCity, pincode || '110001');
   };
 
   return (
@@ -71,7 +91,7 @@ export const LocationModal: React.FC = () => {
               Select Delivery Location
             </h3>
             <p className="text-xs text-gray-500">
-              Search by City or PIN code to check EV delivery & doorstep service
+              Enter any city, area, or PIN code across India
             </p>
           </div>
         </div>
@@ -94,39 +114,29 @@ export const LocationModal: React.FC = () => {
           </span>
         </div>
 
-        {/* Live Search Input (Accepts City Names OR PIN Codes) */}
-        <form onSubmit={handleCustomPinSubmit} className="mb-4">
+        {/* Location Input Field (No Search Symbol) */}
+        <form onSubmit={handleLocationSubmit} className="mb-4">
           <label className="block text-xs font-bold text-gray-700 mb-1.5">
-            Search City Name or 6-Digit PIN Code
+            Enter City Name, Area or 6-Digit PIN Code
           </label>
           <div className="relative flex items-center">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               autoFocus
-              placeholder="e.g. Mumbai, Pune, Patna, Lucknow, 400001, 800001..."
+              placeholder="e.g. Mumbai, Ranchi, Patna, Lucknow, 400001, 800001..."
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setErrorMsg('');
               }}
-              className="w-full pl-10 pr-24 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-[#16A34A] text-gray-900 placeholder-gray-400 font-medium"
+              className="w-full px-4 pr-28 py-2.5 rounded-xl border border-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-[#16A34A] text-gray-900 placeholder-gray-400 font-medium"
             />
-            {isCustomPincode && (
+            {searchQuery.trim().length > 0 && (
               <button
                 type="submit"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#14532D] hover:bg-[#0d381e] text-white text-xs font-bold rounded-lg shadow-sm"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-[#14532D] hover:bg-[#0d381e] text-white text-xs font-bold rounded-lg shadow-sm transition-colors"
               >
-                Set PIN
-              </button>
-            )}
-            {searchQuery && !isCustomPincode && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1"
-              >
-                <X className="w-4 h-4" />
+                Set Location
               </button>
             )}
           </div>
@@ -136,71 +146,73 @@ export const LocationModal: React.FC = () => {
         {/* Scrollable Results Area */}
         <div className="overflow-y-auto flex-1 space-y-4 pr-1">
           
-          {/* Live Search Results (if typing) */}
+          {/* Live Matching Results (if typing) */}
           {searchQuery.trim().length > 0 && (
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
-                Matching Locations ({filteredLocations.length})
-              </span>
-              {filteredLocations.length === 0 ? (
-                <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 text-center space-y-2">
-                  <p className="text-xs text-gray-600 font-medium">
-                    No pre-listed hub found matching &quot;{searchQuery}&quot;
-                  </p>
-                  {isCustomPincode ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const res = checkPincode(searchQuery.trim());
-                        handleSelectLocation(res.city, res.pincode);
-                      }}
-                      className="px-4 py-2 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm"
-                    >
-                      Set Location to PIN {searchQuery.trim()}
-                    </button>
-                  ) : (
-                    <p className="text-[11px] text-gray-400">
-                      Tip: You can enter any 6-digit Indian PIN code to check serviceability!
-                    </p>
-                  )}
+            <div className="space-y-3">
+              {/* Quick 1-click set for typed location */}
+              <button
+                type="button"
+                onClick={() => handleLocationSubmit()}
+                className="w-full text-left p-3 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center justify-between hover:bg-emerald-100 transition-colors shadow-2xs group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <MapPin className="w-4 h-4 text-[#16A34A] shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-emerald-950 block">
+                      Use &quot;{searchQuery.trim()}&quot;
+                    </span>
+                    <span className="text-[11px] text-emerald-700">
+                      Click to set as your delivery location
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="divide-y divide-gray-100 rounded-2xl border border-gray-200 overflow-hidden bg-white">
-                  {filteredLocations.map((loc) => {
-                    const isSelected = pincode === loc.pincode;
-                    return (
-                      <button
-                        key={loc.pincode}
-                        type="button"
-                        onClick={() => handleSelectLocation(loc.city, loc.pincode)}
-                        className={`w-full text-left p-3 flex items-center justify-between hover:bg-emerald-50/70 transition-colors ${
-                          isSelected ? 'bg-emerald-50/90 text-emerald-950 font-bold' : 'text-gray-800'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <MapPin className={`w-4 h-4 ${isSelected ? 'text-[#16A34A]' : 'text-gray-400'}`} />
-                          <div>
-                            <span className="text-xs sm:text-sm font-bold block">{loc.city}</span>
-                            <span className="text-[11px] text-gray-500">
-                              {loc.state} • PIN: <strong className="font-mono text-gray-800">{loc.pincode}</strong>
-                            </span>
+                <span className="text-xs font-bold text-[#14532D] bg-white px-2.5 py-1 rounded-lg border border-emerald-200">
+                  Select →
+                </span>
+              </button>
+
+              {filteredLocations.length > 0 && (
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
+                    Matching Locations ({filteredLocations.length})
+                  </span>
+                  <div className="divide-y divide-gray-100 rounded-2xl border border-gray-200 overflow-hidden bg-white">
+                    {filteredLocations.map((loc) => {
+                      const isSelected = pincode === loc.pincode;
+                      return (
+                        <button
+                          key={loc.pincode}
+                          type="button"
+                          onClick={() => handleSelectLocation(loc.city, loc.pincode)}
+                          className={`w-full text-left p-3 flex items-center justify-between hover:bg-emerald-50/70 transition-colors ${
+                            isSelected ? 'bg-emerald-50/90 text-emerald-950 font-bold' : 'text-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <MapPin className={`w-4 h-4 ${isSelected ? 'text-[#16A34A]' : 'text-gray-400'}`} />
+                            <div>
+                              <span className="text-xs sm:text-sm font-bold block">{loc.city}</span>
+                              <span className="text-[11px] text-gray-500">
+                                {loc.state} • PIN: <strong className="font-mono text-gray-800">{loc.pincode}</strong>
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                            Tier {loc.tier} Delivery
-                          </span>
-                          {isSelected && <Check className="w-4 h-4 text-[#16A34A] ml-1" />}
-                        </div>
-                      </button>
-                    );
-                  })}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                              Tier {loc.tier} Delivery
+                            </span>
+                            {isSelected && <Check className="w-4 h-4 text-[#16A34A] ml-1" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Quick Select Top EV Cities */}
+          {/* Quick Select Top EV Cities (when not typing) */}
           {searchQuery.trim().length === 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
@@ -225,13 +237,11 @@ export const LocationModal: React.FC = () => {
                           : 'border-gray-200 hover:border-emerald-300 hover:bg-gray-50 text-gray-800'
                       }`}
                     >
-                      <div className="font-bold truncate flex items-center justify-between">
-                        <span>{p.city.split(' (')[0]}</span>
-                        {isCurrent && <Check className="w-3 h-3 text-[#14532D]" />}
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-gray-900 truncate">{p.city}</span>
+                        {isCurrent && <Check className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />}
                       </div>
-                      <div className="text-[11px] text-gray-500 font-mono mt-0.5">
-                        {p.pincode}
-                      </div>
+                      <span className="text-[11px] text-gray-500 font-mono block">PIN: {p.pincode}</span>
                     </button>
                   );
                 })}
@@ -239,21 +249,6 @@ export const LocationModal: React.FC = () => {
             </div>
           )}
 
-        </div>
-
-        {/* Modal Footer Guarantee */}
-        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
-          <span className="flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
-            <span>Pan-India Vehicle Delivery & RTO Support</span>
-          </span>
-          <button
-            type="button"
-            onClick={closeLocationModal}
-            className="text-xs font-bold text-gray-600 hover:text-gray-900"
-          >
-            Cancel
-          </button>
         </div>
 
       </div>
