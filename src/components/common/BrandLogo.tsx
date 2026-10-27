@@ -19,9 +19,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         className={`inline-flex items-center gap-2 group ${className}`}
         title="E-VAHAN — Home"
       >
-        <div className="relative p-1.5 rounded-xl bg-gradient-to-br from-[#06152B] via-[#0B2545] to-[#081E3B] border border-emerald-500/40 shadow-md group-hover:border-emerald-400 transition-all">
+        <div className="relative p-2 rounded-2xl bg-gradient-to-br from-[#06152B] via-[#0B2545] to-[#081E3B] border border-emerald-500/40 shadow-md group-hover:border-emerald-400 transition-all">
           <img
-            src="/logo-light.png"
+            src="/logo-icon-light.png"
             alt="E-VAHAN"
             className="h-8 w-auto object-contain filter drop-shadow-[0_0_8px_rgba(22,163,74,0.4)]"
           />
@@ -37,29 +37,29 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         className={`inline-flex flex-col gap-2 group ${className}`}
         title="E-VAHAN — India's Premier EV Marketplace"
       >
-        {/* Dark container: Never plain white! */}
-        <div className="relative inline-flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-[#030B17] via-[#081E3B] to-[#06152B] border border-emerald-500/30 shadow-xl group-hover:border-emerald-400/60 transition-all">
-          <div className="relative shrink-0">
+        {/* Strictly NON-WHITE container: Luxury Midnight Oceanic Navy */}
+        <div className="relative inline-flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#030B17] via-[#0B2545] to-[#06152B] border border-emerald-500/40 shadow-xl group-hover:border-emerald-400/70 transition-all">
+          <div className="relative shrink-0 flex items-center justify-center">
             <img
-              src="/logo-light.png"
-              alt="E-VAHAN Official Logo"
-              className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_0_12px_rgba(34,197,94,0.45)]"
+              src="/logo-icon-light.png"
+              alt="E-VAHAN Emblem"
+              className="h-10 sm:h-11 w-auto object-contain filter drop-shadow-[0_0_10px_rgba(34,197,94,0.5)] transform group-hover:scale-105 transition-transform"
             />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col text-left">
             <div className="flex items-baseline font-black tracking-tight leading-none text-xl sm:text-2xl">
               <span className="text-[#22C55E]">E-</span>
               <span className="text-white">VAHAN</span>
             </div>
             {showPillars && (
-              <div className="flex items-center gap-1 mt-1 text-[9px] font-bold uppercase tracking-wider">
-                <span className="px-1.5 py-0.5 rounded bg-[#0B2545] text-blue-200 border border-blue-400/30">
+              <div className="flex items-center gap-1.5 mt-1 text-[9px] font-bold uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 rounded bg-[#12396B]/90 text-blue-200 border border-blue-400/40">
                   New EV
                 </span>
-                <span className="px-1.5 py-0.5 rounded bg-[#B7F34A] text-[#06152B]">
+                <span className="px-1.5 py-0.5 rounded bg-[#B7F34A] text-[#06152B] font-extrabold shadow-sm">
                   Spare Parts
                 </span>
-                <span className="px-1.5 py-0.5 rounded bg-[#0B2545] text-blue-200 border border-blue-400/30">
+                <span className="px-1.5 py-0.5 rounded bg-[#12396B]/90 text-blue-200 border border-blue-400/40">
                   Service
                 </span>
               </div>
@@ -78,11 +78,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       title="E-VAHAN — New EV | Spare Parts | Service"
     >
       {/* 
-        Ultra-Premium Dark Glassmorphic Badge 
-        Strictly NON-WHITE background as required: 
-        Deep Midnight Navy (#06152B -> #0B2545) with vibrant emerald aura & glowing border 
+        Luxury Automotive Emblem Badge
+        Strictly NON-WHITE background: Deep Midnight Oceanic Navy (#06152B -> #0B2545)
+        with radiant emerald rim, glowing live energy dot, and crisp pillars
       */}
-      <div className="relative flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-gradient-to-r from-[#06152B]/95 via-[#0B2545]/90 to-[#081E3B]/95 border border-emerald-500/40 shadow-md ring-1 ring-emerald-500/20 group-hover:border-emerald-400 group-hover:shadow-[0_0_15px_rgba(22,163,74,0.35)] transition-all">
+      <div className="relative flex items-center gap-3 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] border border-emerald-500/40 shadow-md ring-1 ring-emerald-500/20 group-hover:border-emerald-400 group-hover:shadow-[0_0_16px_rgba(22,163,74,0.4)] transition-all">
         
         {/* Pulsing Green Live Tech Dot */}
         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -90,16 +90,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#16A34A]"></span>
         </span>
 
-        {/* Logo Graphic */}
+        {/* Scooter & Leaf Emblem */}
         <div className="relative shrink-0 flex items-center justify-center">
           <img
-            src="/logo-light.png"
+            src="/logo-icon-light.png"
             alt="E-VAHAN Emblem"
-            className="h-9 sm:h-10 w-auto object-contain transform group-hover:scale-105 transition-transform filter drop-shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+            className="h-8 sm:h-9 w-auto object-contain transform group-hover:scale-105 transition-transform filter drop-shadow-[0_0_8px_rgba(34,197,94,0.45)]"
           />
         </div>
 
-        {/* Brand Typography & 3 Pillars from Logo */}
+        {/* Brand Typography & Official 3 Pillars */}
         <div className="flex flex-col text-left">
           <div className="flex items-baseline font-black tracking-tight leading-none text-lg sm:text-xl">
             <span className="text-[#22C55E] drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]">E-</span>
@@ -107,7 +107,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           </div>
 
           {showPillars && (
-            <div className="hidden sm:flex items-center gap-1 mt-1 text-[8px] font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-1 mt-1 text-[8px] font-bold uppercase tracking-wider">
               <span className="px-1.5 py-0.5 rounded bg-[#12396B]/80 text-blue-200 border border-blue-400/40">
                 New EV
               </span>

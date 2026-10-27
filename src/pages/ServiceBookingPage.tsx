@@ -81,7 +81,7 @@ export const ServiceBookingPage: React.FC = () => {
 
     setTimeout(() => {
       const newBooking = storage.createServiceBooking({
-        userId: user?.id || 'usr-demo-001',
+        userId: user?.id || 'usr-ev-78291',
         serviceCategoryKey: activeService.key,
         serviceCategoryName: activeService.name,
         vehicleType: vehicleCategory,

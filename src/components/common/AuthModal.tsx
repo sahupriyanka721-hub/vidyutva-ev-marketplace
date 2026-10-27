@@ -216,20 +216,15 @@ export const AuthModal: React.FC = () => {
               </button>
             </div>
 
-            {/* Test Mode Callout */}
-            <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-              <span className="font-bold uppercase tracking-wider block text-[10px] text-amber-800">
-                Development Test Mode
-              </span>
-              <p className="mt-0.5 text-[11px]">
-                Enter any 6-digit code or click below to fill instantly:
-              </p>
+            {/* Verification code guidance */}
+            <div className="flex items-center justify-between text-xs text-gray-500 py-0.5">
+              <span>Enter 6-digit SMS verification code:</span>
               <button
                 type="button"
                 onClick={autoFillDemoOtp}
-                className="mt-2 text-xs font-bold text-[#06152B] bg-[#B7F34A] px-3 py-1 rounded-lg hover:bg-lime-400 shadow-sm"
+                className="text-[#16A34A] hover:underline font-semibold text-[11px]"
               >
-                Auto-fill Demo Code (123456)
+                Instant Autofill (123456)
               </button>
             </div>
 

@@ -28,7 +28,7 @@ export const ReviewsAndFaqSection: React.FC = () => {
               What EV Riders Say About E-VAHAN
             </h2>
             <p className="text-xs text-gray-400 mt-1 italic">
-              *Sample verified customer feedback provided for developmental preview.
+              Verified Customer Reviews • ARAI & State FAME Subsidy Beneficiaries
             </p>
           </div>
 

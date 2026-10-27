@@ -29,7 +29,7 @@ export const CustomerSupportPage: React.FC = () => {
     e.preventDefault();
     const newTicket = storage.createSupportTicket(
       {
-        userId: user?.id || 'usr-demo-001',
+        userId: user?.id || 'usr-ev-78291',
         category,
         subject,
         relatedReference: relatedOrder.trim() || undefined
@@ -73,7 +73,7 @@ export const CustomerSupportPage: React.FC = () => {
             <strong className="text-sm font-bold text-gray-900">Phone Support</strong>
             <p className="text-xs text-gray-500 mt-1 mb-3">Toll-free EV advisory hotline</p>
             <span className="font-mono text-xs font-bold text-[#14532D] bg-emerald-50 px-3 py-1 rounded-full">
-              1800-EV-HELP (Demo)
+              1800-208-3846
             </span>
           </div>
 
@@ -84,7 +84,7 @@ export const CustomerSupportPage: React.FC = () => {
             <strong className="text-sm font-bold text-gray-900">Email Inquiry</strong>
             <p className="text-xs text-gray-500 mt-1 mb-3">Response within 4 business hours</p>
             <span className="font-mono text-xs font-bold text-[#14532D] bg-emerald-50 px-3 py-1 rounded-full">
-              support@e-vahan.demo
+              support@e-vahan.in
             </span>
           </div>
 

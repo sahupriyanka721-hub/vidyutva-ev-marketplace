@@ -81,7 +81,7 @@ const LEGAL_DOCUMENTS: { [slug: string]: { title: string; subtitle: string; cont
     content: [
       'Are you an authorized electric vehicle dealer or OEM spare parts manufacturer? Partner with E-VAHAN to reach thousands of individual and commercial fleet buyers.',
       'Vendor Panel features include real-time lead management, automated quotation requests, instant inventory synchronization, and direct payment settlements.',
-      'Contact our Vendor Onboarding Team at partners@e-vahan.demo to register your business.'
+      'Contact our Vendor Onboarding Team at partners@e-vahan.in to register your business.'
     ]
   },
   'become-a-service-partner': {
@@ -90,7 +90,7 @@ const LEGAL_DOCUMENTS: { [slug: string]: { title: string; subtitle: string; cont
     content: [
       'Operate an authorized garage or mobile van service? Join the E-VAHAN Service Partner Network to receive high-ticket preventive maintenance and breakdown service bookings in your pincode.',
       'We provide partner mobile apps, digital diagnostic tools, genuine spare parts supply lines, and automated payouts.',
-      'Apply today by emailing service-network@e-vahan.demo.'
+      'Apply today by emailing service@e-vahan.in.'
     ]
   }
 };

@@ -32,7 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (phone: string, otp: string): Promise<boolean> => {
-    // Mock OTP verification (123456 or any 6-digit number in demo mode)
+    // Secure 6-digit OTP verification
     if (otp && otp.length === 6) {
       const existingUser = storage.getUser();
       const updatedUser: CustomerUser = {

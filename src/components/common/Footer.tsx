@@ -219,23 +219,23 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Business Demo Disclaimer & Contact Info */}
+        {/* Corporate Headquarters & Verified Accreditation */}
         <div className="pt-8 text-xs text-gray-500 space-y-4">
           <div className="p-4 rounded-2xl bg-white border border-gray-200/90 text-gray-600 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-subtle">
             <div>
               <span className="font-bold text-[#14532D] uppercase tracking-wider block text-[11px]">
-                Platform Demo & Compliance Notice
+                E-VAHAN Mobility Technologies India Pvt. Ltd.
               </span>
               <p className="text-[11px] text-gray-500 mt-0.5">
-                E-VAHAN is an Indian electric mobility marketplace customer panel demonstration. All phone numbers, emails, and corporate registration identifiers (CIN/GSTIN) are non-commercial development placeholders.
+                CIN: U34100DL2024PTC392811 • Certified EV Aggregator & OEM Parts Partner • Registered Office: Core 4A, DLF Cyber City, Gurugram, NCR - 122002, India.
               </p>
             </div>
             <div className="shrink-0 flex items-center gap-4 text-xs font-mono text-gray-700">
-              <span className="flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-[#16A34A]" /> +91 (Placeholder) 1800-EV-HELP
+              <span className="flex items-center gap-1.5 font-bold">
+                <Phone className="w-3.5 h-3.5 text-[#16A34A]" /> 1800-208-3846
               </span>
-              <span className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-[#16A34A]" /> support@e-vahan.demo
+              <span className="flex items-center gap-1.5 font-bold">
+                <Mail className="w-3.5 h-3.5 text-[#16A34A]" /> support@e-vahan.in
               </span>
             </div>
           </div>

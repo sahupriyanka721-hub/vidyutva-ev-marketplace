@@ -72,7 +72,7 @@ export const SparePartsCheckoutPage: React.FC = () => {
     });
 
     const newOrder = storage.createSparePartsOrder({
-      userId: user?.id || 'usr-demo-001',
+      userId: user?.id || 'usr-ev-78291',
       items: items.map(i => ({
         partId: i.sparePart.id,
         name: i.sparePart.name,

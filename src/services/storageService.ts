@@ -15,7 +15,7 @@ import {
 import { INDIAN_PINCODES } from '../data/seedData';
 
 const DEFAULT_USER: CustomerUser = {
-  id: 'usr-demo-001',
+  id: 'usr-ev-78291',
   fullName: 'Arjun Singhania',
   phone: '9876543210',
   email: 'arjun.singhania@example.com',
@@ -84,9 +84,9 @@ const INITIAL_NOTIFICATIONS: AppNotification[] = [
 
 const INITIAL_SERVICE_BOOKINGS: ServiceBookingItem[] = [
   {
-    id: 'srv-demo-1',
+    id: 'srv-ev-1042',
     bookingNumber: 'SRV-2026-9051',
-    userId: 'usr-demo-001',
+    userId: 'usr-ev-78291',
     serviceCategoryKey: 'PERIODIC_MAINTENANCE',
     serviceCategoryName: 'General Periodic Maintenance',
     vehicleType: 'ELECTRIC_SCOOTER',
@@ -139,7 +139,7 @@ const INITIAL_VEHICLE_ORDERS: VehicleOrderItem[] = [
   {
     id: 'ord-veh-01',
     orderNumber: 'ORD-EV-2026-89421',
-    userId: 'usr-demo-001',
+    userId: 'usr-ev-78291',
     vehicleId: 'veh-eglide-pro',
     vehicleName: 'Electra Glide Pro',
     vehicleImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
@@ -175,7 +175,7 @@ const INITIAL_TEST_DRIVES: TestDriveBookingItem[] = [
   {
     id: 'td-01',
     bookingNumber: 'TD-2026-7814',
-    userId: 'usr-demo-001',
+    userId: 'usr-ev-78291',
     vehicleId: 'veh-eglide-pro',
     vehicleName: 'Electra Glide Pro',
     vehicleImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
@@ -197,7 +197,7 @@ const INITIAL_QUOTATIONS: QuotationRequestItem[] = [
   {
     id: 'qt-01',
     quotationNumber: 'QT-2026-9812',
-    userId: 'usr-demo-001',
+    userId: 'usr-ev-78291',
     customerName: 'Arjun Singhania',
     customerPhone: '9876543210',
     customerEmail: 'arjun.singhania@example.com',
@@ -230,7 +230,7 @@ const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [
   {
     id: 'tkt-01',
     ticketNumber: 'TKT-2026-1044',
-    userId: 'usr-demo-001',
+    userId: 'usr-ev-78291',
     category: 'VEHICLE_ORDER',
     subject: 'KYC Document verification timeline for Order #ORD-EV-2026-89421',
     status: 'OPEN',
@@ -502,7 +502,7 @@ class StorageService {
       {
         id: 'ord-sp-01',
         orderNumber: 'ORD-SP-2026-5120',
-        userId: 'usr-demo-001',
+        userId: 'usr-ev-78291',
         items: [
           {
             partId: 'part-tyre-ev-tubeless',

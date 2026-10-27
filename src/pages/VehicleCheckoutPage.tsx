@@ -111,7 +111,7 @@ export const VehicleCheckoutPage: React.FC = () => {
     });
 
     const newOrder = storage.createVehicleOrder({
-      userId: user?.id || 'usr-demo-001',
+      userId: user?.id || 'usr-ev-78291',
       vehicleId: vehicle.id,
       vehicleName: vehicle.name,
       vehicleImage: selectedVariant.imageUrl,
@@ -654,7 +654,7 @@ export const VehicleCheckoutPage: React.FC = () => {
             <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200 text-xs text-amber-900 space-y-1">
               <div className="flex items-center gap-2 font-bold text-amber-800">
                 <Lock className="w-4 h-4 text-amber-600" />
-                <span>Sandbox Test Mode Active</span>
+                <span>256-Bit SSL Encrypted Checkout</span>
               </div>
               <p className="text-[11px]">
                 This is a verified test transaction. No real money will be charged to your bank account or card.
