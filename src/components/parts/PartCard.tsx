@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ShieldCheck, Heart, ShoppingBag, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Heart, ShoppingBag, Zap } from 'lucide-react';
 import { SparePartItem } from '../../types';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -10,11 +10,17 @@ interface PartCardProps {
 }
 
 export const PartCard: React.FC<PartCardProps> = ({ part }) => {
+  const navigate = useNavigate();
   const { addItem } = useCart();
   const { isPartWishlisted, togglePartWishlist } = useWishlist();
 
   const isWishlisted = isPartWishlisted(part.id);
   const discountPercent = Math.round(((part.mrpPrice - part.sellingPrice) / part.mrpPrice) * 100);
+
+  const handleBuyNow = () => {
+    addItem(part, 1);
+    navigate('/checkout/spare-parts');
+  };
 
   return (
     <div className="group bg-white rounded-2xl sm:rounded-3xl border border-[#E3E9E4] hover:border-emerald-500/70 p-3 sm:p-5 transition-all duration-300 hover:shadow-elevated flex flex-col justify-between relative">
@@ -41,12 +47,16 @@ export const PartCard: React.FC<PartCardProps> = ({ part }) => {
           </button>
         </div>
 
-        {/* Thumbnail */}
-        <Link to={`/spare-parts/${part.slug}`} className="block relative rounded-2xl overflow-hidden bg-gray-100 aspect-square mb-3.5">
+        {/* Thumbnail - Clicking the Image opens the Details page */}
+        <Link 
+          to={`/spare-parts/${part.slug}`} 
+          className="block relative rounded-2xl overflow-hidden bg-gray-100 aspect-square mb-3.5 cursor-pointer group/img"
+          title={`Click to view details of ${part.name}`}
+        >
           <img
             src={part.imageUrl}
             alt={part.name}
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-cover transform group-hover/img:scale-105 transition-transform duration-500"
           />
 
           {discountPercent > 0 && (
@@ -60,12 +70,12 @@ export const PartCard: React.FC<PartCardProps> = ({ part }) => {
           </div>
         </Link>
 
-        {/* Category & Name */}
+        {/* Category & Name - Clicking the Title also opens Details */}
         <div className="mb-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
             {part.categoryName}
           </span>
-          <Link to={`/spare-parts/${part.slug}`}>
+          <Link to={`/spare-parts/${part.slug}`} title={`View details of ${part.name}`}>
             <h3 className="text-xs sm:text-sm font-bold text-gray-900 hover:text-[#14532D] transition-colors line-clamp-2 leading-snug">
               {part.name}
             </h3>
@@ -98,18 +108,19 @@ export const PartCard: React.FC<PartCardProps> = ({ part }) => {
         </div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons: Buy Now (replaces Details) & Add to Cart */}
       <div className="grid grid-cols-2 gap-2 pt-1 border-t border-gray-100">
-        <Link
-          to={`/spare-parts/${part.slug}`}
-          className="py-2.5 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold rounded-xl text-center transition-colors"
+        <button
+          onClick={handleBuyNow}
+          className="py-2.5 px-3 bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold rounded-xl text-center transition-all shadow-sm flex items-center justify-center gap-1 active:scale-[0.98]"
         >
-          Details
-        </Link>
+          <Zap className="w-3.5 h-3.5 text-[#B7F34A]" />
+          <span>Buy Now</span>
+        </button>
 
         <button
           onClick={() => addItem(part, 1)}
-          className="py-2.5 px-2 sm:px-3 bg-[#14532D] hover:bg-[#0d381e] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-sm"
+          className="py-2.5 px-2 sm:px-3 bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1 sm:gap-1.5 transition-colors shadow-sm active:scale-[0.98]"
         >
           <ShoppingBag className="w-3.5 h-3.5 text-[#B7F34A]" />
           <span>Add<span className="hidden sm:inline"> to Cart</span></span>
