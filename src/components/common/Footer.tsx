@@ -215,11 +215,6 @@ export const Footer: React.FC = () => {
                   Become a Service Partner <ExternalLink className="w-3 h-3" />
                 </Link>
               </li>
-              <li>
-                <Link to="/admin" className="text-purple-700 hover:underline font-bold flex items-center gap-1">
-                  Admin Control Panel <ExternalLink className="w-3 h-3" />
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

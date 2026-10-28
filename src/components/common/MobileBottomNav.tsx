@@ -13,7 +13,7 @@ export const MobileBottomNav: React.FC = () => {
   const isHome = currentPath === '/';
   const isVehicles = currentPath.startsWith('/vehicles');
   const isParts = currentPath.startsWith('/spare-parts');
-  const isDashboard = currentPath.startsWith('/dashboard') || currentPath.startsWith('/admin');
+  const isDashboard = currentPath.startsWith('/dashboard') || currentPath.startsWith('/customer');
 
   return (
     <nav

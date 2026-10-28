@@ -14,8 +14,7 @@ import {
   Clock,
   Sparkles,
   LogOut,
-  SlidersHorizontal,
-  LayoutDashboard
+  SlidersHorizontal
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLocation } from '../../context/LocationContext';
@@ -186,19 +185,6 @@ export const Header: React.FC = () => {
                     <p className="text-[11px] text-emerald-700 font-mono font-semibold truncate">+91 {user?.phone}</p>
                     {user?.email && <p className="text-[10px] text-gray-500 truncate">{user.email}</p>}
                   </div>
-                  
-                  {/* Admin Portal Link */}
-                  <Link
-                    to="/admin"
-                    onClick={() => setAccountDropdownOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors"
-                  >
-                    <LayoutDashboard className="w-4 h-4 text-purple-600" />
-                    <span>Admin Control Panel</span>
-                    <span className="ml-auto text-[9px] bg-purple-600 text-white px-1.5 py-0.5 rounded font-bold">
-                      STAFF
-                    </span>
-                  </Link>
 
                   <Link
                     to="/dashboard?tab=overview"
@@ -316,13 +302,6 @@ export const Header: React.FC = () => {
               className="p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 text-gray-800 border border-gray-100"
             >
               Book a Service
-            </Link>
-            <Link
-              to="/admin"
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-3 bg-purple-50 text-purple-800 rounded-xl hover:bg-purple-100 border border-purple-200 font-bold"
-            >
-              ⚡ Admin Panel
             </Link>
             <Link
               to="/dashboard"
