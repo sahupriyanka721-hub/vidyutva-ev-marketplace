@@ -73,7 +73,7 @@ export const MobileBottomNav: React.FC = () => {
         </button>
 
         {/* 5. Account / Login */}
-        {isAuthenticated ? (
+        {isAuthenticated && user ? (
           <Link
             to="/dashboard"
             className={`flex flex-col items-center justify-center py-1 transition-colors ${
@@ -81,10 +81,10 @@ export const MobileBottomNav: React.FC = () => {
             }`}
           >
             <div className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
-              {user?.fullName?.charAt(0) || 'U'}
+              {user.fullName.charAt(0)}
             </div>
-            <span className="text-[10px] tracking-tight mt-0.5 truncate max-w-[50px]">
-              {user?.fullName?.split(' ')[0] || 'Account'}
+            <span className="text-[10px] tracking-tight mt-0.5 truncate max-w-[60px] font-bold">
+              {user.fullName.split(' ')[0]}
             </span>
           </Link>
         ) : (

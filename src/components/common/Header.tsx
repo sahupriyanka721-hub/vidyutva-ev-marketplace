@@ -154,16 +154,19 @@ export const Header: React.FC = () => {
 
             {/* Account / Login */}
             <div ref={accountRef} className="relative">
-              {isAuthenticated ? (
+              {isAuthenticated && user ? (
                 <button
                   onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                  className="flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold text-[#14532D] transition-all shadow-2xs"
+                  className="flex items-center gap-1.5 pl-2 pr-2.5 sm:pr-3 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold text-[#14532D] transition-all shadow-2xs"
+                  title={`Logged in as ${user.fullName}`}
                 >
-                  <div className="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-xs">
-                    {user?.fullName.charAt(0)}
+                  <div className="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-xs font-black shrink-0">
+                    {user.fullName.charAt(0)}
                   </div>
-                  <span className="hidden sm:inline max-w-[85px] truncate">{user?.fullName.split(' ')[0]}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-emerald-700" />
+                  <span className="font-bold text-xs text-[#14532D] max-w-[100px] sm:max-w-[130px] truncate">
+                    {user.fullName}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
                 </button>
               ) : (
                 <button
@@ -178,9 +181,10 @@ export const Header: React.FC = () => {
               {/* Account Dropdown Menu */}
               {accountDropdownOpen && isAuthenticated && (
                 <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in duration-150 text-gray-800">
-                  <div className="px-4 py-2 border-b border-gray-100">
-                    <p className="text-xs font-bold text-gray-900 truncate">{user?.fullName}</p>
-                    <p className="text-[11px] text-gray-500 font-mono truncate">{user?.phone}</p>
+                  <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 rounded-t-2xl">
+                    <p className="text-xs font-black text-gray-900 truncate">{user?.fullName}</p>
+                    <p className="text-[11px] text-emerald-700 font-mono font-semibold truncate">+91 {user?.phone}</p>
+                    {user?.email && <p className="text-[10px] text-gray-500 truncate">{user.email}</p>}
                   </div>
                   
                   {/* Admin Portal Link */}

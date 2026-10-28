@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Smartphone, Mail, Lock, ShieldCheck, ArrowRight, User as UserIcon, CheckCircle2 } from 'lucide-react';
+import { X, Smartphone, Mail, Lock, ShieldCheck, ArrowRight, User as UserIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { CustomerUser } from '../../types';
 import { BrandLogo } from './BrandLogo';
 
 export const AuthModal: React.FC = () => {
   const navigate = useNavigate();
-  const { isAuthModalOpen, closeAuthModal, login, signup, authRedirectUrl } = useAuth();
+  const { isAuthModalOpen, closeAuthModal, login, signup, authRedirectUrl, getRegisteredUser } = useAuth();
   const [mode, setMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
   const [phone, setPhone] = useState('9876543210');
@@ -15,6 +16,7 @@ export const AuthModal: React.FC = () => {
   const [email, setEmail] = useState('');
   const [city, setCity] = useState('New Delhi');
   const [pincode, setPincode] = useState('110001');
+  const [matchedCustomer, setMatchedCustomer] = useState<CustomerUser | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,10 +24,27 @@ export const AuthModal: React.FC = () => {
 
   const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!/^[6-9][0-9]{9}$/.test(phone.trim())) {
-      setError('Please enter a valid 10-digit Indian mobile number');
+    const cleanPhone = phone.replace(/\D/g, '').trim();
+    if (!/^[6-9][0-9]{9}$/.test(cleanPhone)) {
+      setError('Kripya 10-digit valid Indian mobile number enter karein');
       return;
     }
+
+    if (mode === 'LOGIN') {
+      const registered = getRegisteredUser(cleanPhone);
+      if (!registered) {
+        setError(`❌ Mobile number +91 ${cleanPhone} registered nahi hai. Kripya pehle 'New Registration' karein.`);
+        return;
+      }
+      setMatchedCustomer(registered);
+    } else {
+      const existing = getRegisteredUser(cleanPhone);
+      if (existing) {
+        setError(`⚠️ Mobile number +91 ${cleanPhone} already registered hai (${existing.fullName}). Kripya 'Login with OTP' karein.`);
+        return;
+      }
+    }
+
     setError('');
     setStep('OTP');
     // OTP auto-fills automatically for seamless verification
@@ -35,7 +54,7 @@ export const AuthModal: React.FC = () => {
   const handleOtpVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.length !== 6) {
-      setError('Please enter the 6-digit verification code');
+      setError('Kripya 6-digit verification code enter karein');
       return;
     }
     setLoading(true);
@@ -44,16 +63,16 @@ export const AuthModal: React.FC = () => {
     let success = false;
     if (mode === 'SIGNUP') {
       success = await signup({
-        fullName: fullName || 'EV Customer',
-        phone,
-        email: email || `${phone}@e-vahan.in`,
-        city: city || 'New Delhi',
-        pincode: pincode || '110001'
+        fullName: fullName.trim() || 'EV Customer',
+        phone: phone.replace(/\D/g, '').trim(),
+        email: email.trim() || `${phone.replace(/\D/g, '').trim()}@e-vahan.in`,
+        city: city.trim() || 'New Delhi',
+        pincode: pincode.trim() || '110001'
       });
     } else {
       const ok = await login(phone, otp);
       if (!ok) {
-        setError('Verification failed. Please check OTP and try again');
+        setError('Verification failed. Kripya registered mobile number aur OTP check karein.');
         setLoading(false);
         return;
       }
@@ -80,18 +99,18 @@ export const AuthModal: React.FC = () => {
           <X className="w-5 h-5" />
         </button>
 
-        {/* Brand header with stylish dark badge logo (Never white background!) */}
+        {/* Brand header */}
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
             <BrandLogo variant="header" />
           </div>
           <h3 className="text-xl font-black text-gray-900">
-            {mode === 'LOGIN' ? 'Welcome to E-VAHAN' : 'Create Customer Account'}
+            {mode === 'LOGIN' ? 'Registered Customer Login' : 'New Customer Registration'}
           </h3>
           <p className="text-xs text-gray-500 mt-1">
             {mode === 'LOGIN'
-              ? 'Log in to track vehicle bookings, quotations & doorstep service'
-              : 'Join India’s premier electric mobility platform'}
+              ? 'Enter your registered mobile number to open your customer panel'
+              : 'Register to unlock your personal EV customer portal & bookings'}
           </p>
         </div>
 
@@ -131,22 +150,26 @@ export const AuthModal: React.FC = () => {
             {mode === 'SIGNUP' && (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Customer Full Name <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ramesh Kumar"
+                    placeholder="e.g. Ramesh Kumar Sharma"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 font-medium"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Email Address <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="email"
                     required
-                    placeholder="ramesh@example.com"
+                    placeholder="ramesh.sharma@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -158,7 +181,7 @@ export const AuthModal: React.FC = () => {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Bengaluru"
+                      placeholder="e.g. New Delhi"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -170,7 +193,7 @@ export const AuthModal: React.FC = () => {
                       type="text"
                       maxLength={6}
                       required
-                      placeholder="560001"
+                      placeholder="110001"
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -182,7 +205,7 @@ export const AuthModal: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
-                Indian Mobile Number
+                {mode === 'LOGIN' ? 'Registered Indian Mobile Number' : 'Indian Mobile Number'} <span className="text-rose-500">*</span>
               </label>
               <div className="flex">
                 <span className="inline-flex items-center px-3.5 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-xs font-bold text-gray-600">
@@ -194,34 +217,102 @@ export const AuthModal: React.FC = () => {
                   required
                   placeholder="98765 43210"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) => {
+                    setPhone(e.target.value.replace(/\D/g, ''));
+                    if (error) setError('');
+                  }}
                   className="flex-1 px-3.5 py-2.5 rounded-r-xl border border-gray-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                 />
               </div>
             </div>
 
-            {error && <p className="text-xs text-rose-600">{error}</p>}
+            {/* Quick-select registered accounts chip helpers for fast testing */}
+            {mode === 'LOGIN' && (
+              <div className="space-y-1.5 pt-1">
+                <p className="text-[11px] font-bold text-gray-500 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
+                  <span>Registered Accounts (Tap to fill):</span>
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { phone: '9876543210', name: 'Ramesh Sharma' },
+                    { phone: '9810012345', name: 'Priya Verma' },
+                    { phone: '9988776655', name: 'Amit Patel' },
+                  ].map((acc) => (
+                    <button
+                      key={acc.phone}
+                      type="button"
+                      onClick={() => {
+                        setPhone(acc.phone);
+                        setError('');
+                      }}
+                      className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-[#14532D] border border-emerald-200 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <span className="font-mono">{acc.phone}</span>
+                      <span className="text-gray-500 font-normal">({acc.name})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-left animate-in fade-in duration-150">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <p className="text-xs text-rose-700 font-medium leading-relaxed">{error}</p>
+                </div>
+                {mode === 'LOGIN' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('SIGNUP');
+                      setStep('PHONE');
+                      setError('');
+                    }}
+                    className="w-full py-2 bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                  >
+                    <span>New Registration Karein (+91 {phone})</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#B7F34A]" />
+                  </button>
+                )}
+              </div>
+            )}
 
             <button
               type="submit"
               className="w-full py-3 bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-600 hover:to-emerald-500 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
             >
-              <span>Get 6-Digit OTP</span>
+              <span>{mode === 'LOGIN' ? 'Verify & Get OTP' : 'Continue with OTP'}</span>
               <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
             </button>
           </form>
         ) : (
           /* Step 2: OTP Entry */
           <form onSubmit={handleOtpVerify} className="space-y-4">
-            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100 text-xs text-emerald-900">
-              OTP sent to <strong>+91 {phone}</strong>
-              <button
-                type="button"
-                onClick={() => setStep('PHONE')}
-                className="text-[#16A34A] font-bold ml-2 underline"
-              >
-                Change
-              </button>
+            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
+              {mode === 'LOGIN' && matchedCustomer && (
+                <div className="flex items-center gap-1.5 font-black text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
+                  <span>Customer: {matchedCustomer.fullName}</span>
+                </div>
+              )}
+              {mode === 'SIGNUP' && fullName && (
+                <div className="flex items-center gap-1.5 font-black text-emerald-900">
+                  <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
+                  <span>New Customer: {fullName}</span>
+                </div>
+              )}
+              <div className="text-[11px] text-emerald-700 flex items-center justify-between">
+                <span>OTP sent to <strong>+91 {phone}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setStep('PHONE')}
+                  className="text-[#16A34A] font-bold underline"
+                >
+                  Change
+                </button>
+              </div>
             </div>
 
             {/* Verification code guidance */}
@@ -246,14 +337,14 @@ export const AuthModal: React.FC = () => {
               />
             </div>
 
-            {error && <p className="text-xs text-rose-600">{error}</p>}
+            {error && <p className="text-xs text-rose-600 font-semibold">{error}</p>}
 
             <button
               type="submit"
               disabled={loading}
               className="w-full py-3 bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-600 hover:to-emerald-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
             >
-              {loading ? <span>Verifying...</span> : <span>Verify & Continue</span>}
+              {loading ? <span>Verifying...</span> : <span>Open Customer Panel</span>}
             </button>
           </form>
         )}

@@ -7,6 +7,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (phone: string, otp: string) => Promise<boolean>;
   signup: (data: { fullName: string; phone: string; email: string; city: string; pincode: string }) => Promise<boolean>;
+  isPhoneRegistered: (phone: string) => boolean;
+  getRegisteredUser: (phone: string) => CustomerUser | undefined;
   logout: () => void;
   updateProfile: (data: Partial<CustomerUser>) => void;
   addAddress: (address: Omit<CustomerAddress, 'id'>) => void;
@@ -31,23 +33,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(loadedUser);
   }, []);
 
+  const isPhoneRegistered = (phone: string): boolean => {
+    return !!storage.findRegisteredUserByPhone(phone);
+  };
+
+  const getRegisteredUser = (phone: string): CustomerUser | undefined => {
+    return storage.findRegisteredUserByPhone(phone);
+  };
+
   const login = async (phone: string, otp: string): Promise<boolean> => {
-    // Secure 6-digit OTP verification
+    const cleanPhone = phone.replace(/\D/g, '').trim();
+    // 1. Strictly verify that the mobile number is registered
+    const registeredUser = storage.findRegisteredUserByPhone(cleanPhone);
+    if (!registeredUser) {
+      return false; // Not registered! Login not allowed
+    }
+
+    // 2. Verify 6-digit OTP
     if (otp && otp.length === 6) {
-      const existingUser = storage.getUser();
-      const updatedUser: CustomerUser = existingUser || {
-        id: `usr-${Date.now()}`,
-        fullName: 'Customer',
-        phone: phone.trim(),
-        email: `${phone.trim()}@e-vahan.in`,
-        city: 'New Delhi',
-        pincode: '110001',
-        isKycVerified: false,
-        savedAddresses: []
-      };
-      updatedUser.phone = phone.trim();
-      setUser(updatedUser);
-      storage.saveUser(updatedUser);
+      setUser(registeredUser);
+      storage.saveUser(registeredUser);
       setIsAuthModalOpen(false);
       return true;
     }
@@ -55,28 +60,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signup = async (data: { fullName: string; phone: string; email: string; city: string; pincode: string }): Promise<boolean> => {
+    const cleanPhone = data.phone.replace(/\D/g, '').trim();
     const newUser: CustomerUser = {
       id: `usr-${Date.now()}`,
-      fullName: data.fullName,
-      phone: data.phone,
-      email: data.email,
-      city: data.city,
-      pincode: data.pincode,
-      isKycVerified: false,
+      fullName: data.fullName.trim(),
+      phone: cleanPhone,
+      email: data.email.trim(),
+      city: data.city.trim(),
+      pincode: data.pincode.trim(),
+      isKycVerified: true,
       savedAddresses: [
         {
           id: `addr-${Date.now()}`,
           label: 'HOME',
-          fullName: data.fullName,
-          phone: data.phone,
-          line1: `${data.city} Residential Area`,
-          city: data.city,
+          fullName: data.fullName.trim(),
+          phone: cleanPhone,
+          line1: `${data.city.trim()} Residential Area`,
+          city: data.city.trim(),
           state: 'India',
-          pincode: data.pincode,
+          pincode: data.pincode.trim(),
           isDefault: true,
         }
       ]
     };
+    storage.saveRegisteredUser(newUser);
     setUser(newUser);
     storage.saveUser(newUser);
     setIsAuthModalOpen(false);
@@ -93,6 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updated = { ...user, ...data };
     setUser(updated);
     storage.saveUser(updated);
+    storage.saveRegisteredUser(updated);
   };
 
   const addAddress = (addressData: Omit<CustomerAddress, 'id'>) => {
@@ -102,12 +110,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `addr-${Date.now()}`,
     };
     storage.updateAddress(newAddress);
-    setUser(storage.getUser());
+    const updated = storage.getUser();
+    if (updated) {
+      setUser(updated);
+      storage.saveRegisteredUser(updated);
+    }
   };
 
   const deleteAddress = (id: string) => {
     storage.deleteAddress(id);
-    setUser(storage.getUser());
+    const updated = storage.getUser();
+    if (updated) {
+      setUser(updated);
+      storage.saveRegisteredUser(updated);
+    }
   };
 
   const setDefaultAddress = (id: string) => {
@@ -135,6 +151,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated: !!user,
         login,
         signup,
+        isPhoneRegistered,
+        getRegisteredUser,
         logout,
         updateProfile,
         addAddress,

@@ -247,10 +247,101 @@ class StorageService {
   }
 
   // --- User & Auth ---
+  private defaultRegisteredUsers: CustomerUser[] = [
+    {
+      id: 'usr-ramesh-7821',
+      fullName: 'Ramesh Kumar Sharma',
+      phone: '9876543210',
+      email: 'ramesh.sharma@gmail.com',
+      city: 'New Delhi',
+      pincode: '110001',
+      isKycVerified: true,
+      savedAddresses: [
+        {
+          id: 'addr-ramesh-1',
+          label: 'HOME',
+          fullName: 'Ramesh Kumar Sharma',
+          phone: '9876543210',
+          line1: 'B-42, Sector 14, Connaught Place',
+          city: 'New Delhi',
+          state: 'Delhi',
+          pincode: '110001',
+          isDefault: true
+        }
+      ]
+    },
+    {
+      id: 'usr-priya-9012',
+      fullName: 'Priya Verma',
+      phone: '9810012345',
+      email: 'priya.verma@outlook.com',
+      city: 'Bengaluru',
+      pincode: '560001',
+      isKycVerified: true,
+      savedAddresses: [
+        {
+          id: 'addr-priya-1',
+          label: 'HOME',
+          fullName: 'Priya Verma',
+          phone: '9810012345',
+          line1: '402, Green Glen Layout, Bellandur',
+          city: 'Bengaluru',
+          state: 'Karnataka',
+          pincode: '560001',
+          isDefault: true
+        }
+      ]
+    },
+    {
+      id: 'usr-amit-4321',
+      fullName: 'Amit Patel',
+      phone: '9988776655',
+      email: 'amit.patel@gmail.com',
+      city: 'Ahmedabad',
+      pincode: '380001',
+      isKycVerified: true,
+      savedAddresses: [
+        {
+          id: 'addr-amit-1',
+          label: 'OFFICE',
+          fullName: 'Amit Patel',
+          phone: '9988776655',
+          line1: 'Sarkhej - Gandhinagar Hwy, Bodakdev',
+          city: 'Ahmedabad',
+          state: 'Gujarat',
+          pincode: '380001',
+          isDefault: true
+        }
+      ]
+    }
+  ];
+
+  getRegisteredUsers(): CustomerUser[] {
+    return this.get<CustomerUser[]>('registered_users', this.defaultRegisteredUsers);
+  }
+
+  saveRegisteredUser(newUser: CustomerUser): void {
+    const list = this.getRegisteredUsers();
+    const cleanPhone = newUser.phone.replace(/\D/g, '').trim();
+    const index = list.findIndex(u => u.phone.replace(/\D/g, '').trim() === cleanPhone);
+    if (index >= 0) {
+      list[index] = { ...list[index], ...newUser };
+    } else {
+      list.push(newUser);
+    }
+    this.set('registered_users', list);
+  }
+
+  findRegisteredUserByPhone(phone: string): CustomerUser | undefined {
+    const cleanPhone = phone.replace(/\D/g, '').trim();
+    const list = this.getRegisteredUsers();
+    return list.find(u => u.phone.replace(/\D/g, '').trim() === cleanPhone);
+  }
+
   getUser(): CustomerUser | null {
     const user = this.get<CustomerUser | null>('user', null);
-    // Purge legacy "Arjun Singhania" if persisted in localStorage
-    if (user && (user.fullName === 'Arjun Singhania' || user.id === 'usr-ev-78291')) {
+    // Purge legacy "Arjun Singhania" or generic "Customer" so real registered customer name is used
+    if (user && (user.fullName === 'Arjun Singhania' || user.id === 'usr-ev-78291' || user.fullName === 'Customer')) {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem('evahan_user');
       }
@@ -280,6 +371,7 @@ class StorageService {
       user.savedAddresses.push(address);
     }
     this.saveUser(user);
+    this.saveRegisteredUser(user);
   }
 
   deleteAddress(addressId: string): void {
@@ -287,6 +379,7 @@ class StorageService {
     if (!user) return;
     user.savedAddresses = user.savedAddresses.filter(a => a.id !== addressId);
     this.saveUser(user);
+    this.saveRegisteredUser(user);
   }
 
   // --- Location ---
