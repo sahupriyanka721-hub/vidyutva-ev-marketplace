@@ -15,7 +15,13 @@ export const CompareProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [comparedVehicleIds, setComparedVehicleIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('evahan_compare_ids');
-      return saved ? JSON.parse(saved) : ['veh-eglide-pro', 'veh-sprint-plus'];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+      return ['veh-eglide-pro', 'veh-sprint-plus'];
     } catch {
       return ['veh-eglide-pro', 'veh-sprint-plus'];
     }

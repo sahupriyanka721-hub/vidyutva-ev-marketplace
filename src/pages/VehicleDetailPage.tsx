@@ -191,12 +191,13 @@ export const VehicleDetailPage: React.FC = () => {
                       if (isInCompare) removeVehicleFromCompare(vehicle.id);
                       else addVehicleToCompare(vehicle.id);
                     }}
-                    className={`p-2 rounded-xl transition-all ${
-                      isInCompare ? 'bg-[#14532D] text-[#B7F34A]' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                    className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold ${
+                      isInCompare ? 'bg-[#14532D] text-[#B7F34A]' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                     }`}
-                    title="Compare"
+                    title={isInCompare ? 'Remove from Compare' : 'Add to Compare'}
                   >
-                    <SlidersHorizontal className="w-4 h-4" />
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>{isInCompare ? 'In Compare ✓' : 'Compare'}</span>
                   </button>
 
                   <button

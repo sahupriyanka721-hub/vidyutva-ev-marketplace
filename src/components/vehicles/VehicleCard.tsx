@@ -63,7 +63,7 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
           </span>
 
           <div className="flex items-center gap-1">
-            {/* Compare Button */}
+            {/* Compare Button with Clear Text Label */}
             <button
               onClick={() => {
                 if (isInCompare) {
@@ -72,15 +72,16 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
                   addVehicleToCompare(vehicle.id);
                 }
               }}
-              className={`p-2 rounded-xl transition-all ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
                 isInCompare
-                  ? 'bg-[#0B2545] text-[#B7F34A] shadow-sm'
-                  : 'bg-gray-100 hover:bg-gray-200/80 text-gray-600'
+                  ? 'bg-[#0B2545] text-[#B7F34A] shadow-sm border border-emerald-500/30'
+                  : 'bg-gray-100 hover:bg-gray-200/80 text-gray-700 hover:text-emerald-700'
               }`}
               title={isInCompare ? 'Remove from Compare' : 'Add to Compare'}
               aria-label="Toggle comparison"
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>{isInCompare ? 'Compared ✓' : 'Compare'}</span>
             </button>
 
             {/* Wishlist Button */}

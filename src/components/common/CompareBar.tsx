@@ -7,7 +7,20 @@ import { VEHICLES_DATA } from '../../data/seedData';
 export const CompareBar: React.FC = () => {
   const { comparedVehicleIds, removeVehicleFromCompare, clearCompare, maxVehicles } = useCompare();
 
-  if (comparedVehicleIds.length === 0) return null;
+  if (comparedVehicleIds.length === 0) {
+    return (
+      <div className="fixed bottom-16 md:bottom-5 right-4 z-40 animate-in fade-in">
+        <Link
+          to="/compare"
+          className="px-4 py-2.5 rounded-full bg-[#06152B] text-white shadow-2xl hover:bg-[#0B2545] border border-emerald-500/40 text-xs font-bold flex items-center gap-2 transition-all hover:scale-105"
+          title="Compare EV Vehicles"
+        >
+          <SlidersHorizontal className="w-4 h-4 text-[#B7F34A]" />
+          <span>Compare Vehicles</span>
+        </Link>
+      </div>
+    );
+  }
 
   const comparedVehicles = comparedVehicleIds
     .map(id => VEHICLES_DATA.find(v => v.id === id || v.modelSlug === id))
