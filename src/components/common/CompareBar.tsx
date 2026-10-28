@@ -14,7 +14,7 @@ export const CompareBar: React.FC = () => {
     .filter(Boolean);
 
   return (
-    <aside aria-label="Vehicle comparison dock" className="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-2xl p-3 sm:p-4 animate-in slide-in-from-bottom-6">
+    <aside aria-label="Vehicle comparison dock" className="fixed bottom-14 md:bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-2xl p-3 sm:p-4 animate-in slide-in-from-bottom-6">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-emerald-100 text-[#14532D] flex items-center justify-center">

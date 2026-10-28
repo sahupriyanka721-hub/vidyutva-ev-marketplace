@@ -1316,7 +1316,21 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Tab 10: Inventory Catalog */}
         {activeTab === 'inventory' && (
           <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
-            <h2 className="text-base font-bold text-gray-900">Master Catalog: Electric Vehicles & Genuine Spare Parts</h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+              <div>
+                <h2 className="text-base font-bold text-gray-900">Master Catalog: Electric Vehicles & Genuine Spare Parts</h2>
+                <p className="text-xs text-gray-500">Live inventory specifications, pricing, battery ratings, and vehicle benchmarking.</p>
+              </div>
+              <Link
+                to="/compare"
+                target="_blank"
+                className="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-emerald-50 text-gray-700 hover:text-[#16A34A] border border-gray-200 text-xs font-bold transition-all flex items-center gap-1.5 w-max"
+                title="Open Vehicle Specification Comparison Benchmark"
+              >
+                <span>Vehicle Comparison Matrix</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Vehicles */}
