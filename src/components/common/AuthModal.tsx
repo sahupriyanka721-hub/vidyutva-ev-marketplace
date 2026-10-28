@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Smartphone, Mail, Lock, ShieldCheck, ArrowRight, User as UserIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CustomerUser } from '../../types';
 import { BrandLogo } from './BrandLogo';
+import { lookupCityOrPincode, ALL_INDIAN_CITIES } from '../../data/indianCitiesPincodes';
 
 export const AuthModal: React.FC = () => {
   const navigate = useNavigate();
@@ -19,6 +20,47 @@ export const AuthModal: React.FC = () => {
   const [matchedCustomer, setMatchedCustomer] = useState<CustomerUser | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Reset all modal fields whenever the modal is closed so old phone/OTP is NEVER retained
+  useEffect(() => {
+    if (!isAuthModalOpen) {
+      setPhone('');
+      setOtp('');
+      setFullName('');
+      setEmail('');
+      setCity('');
+      setPincode('');
+      setError('');
+      setMatchedCustomer(null);
+      setStep('PHONE');
+      setLoading(false);
+    }
+  }, [isAuthModalOpen]);
+
+  // When city is selected or typed, automatically determine and populate its PIN code
+  const handleCityChange = (val: string) => {
+    setCity(val);
+    const trimmed = val.trim();
+    if (trimmed.length >= 2) {
+      const entry = lookupCityOrPincode(trimmed);
+      if (entry && entry.pincode && !entry.city.startsWith('PIN ')) {
+        setPincode(entry.pincode);
+        if (error.includes('PIN')) setError('');
+      }
+    }
+  };
+
+  // If PIN is entered first, auto-populate the corresponding city if empty
+  const handlePincodeChange = (val: string) => {
+    const cleanPin = val.replace(/\D/g, '').slice(0, 6);
+    setPincode(cleanPin);
+    if (cleanPin.length === 6) {
+      const entry = lookupCityOrPincode(cleanPin);
+      if (entry && entry.city && !entry.city.startsWith('PIN ') && !city) {
+        setCity(entry.city);
+      }
+    }
+  };
 
   if (!isAuthModalOpen) return null;
 
@@ -177,27 +219,45 @@ export const AuthModal: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">City <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      City <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
+                      list="signup-cities-list"
                       required
-                      placeholder="Enter city"
+                      placeholder="e.g. Darbhanga, Patna..."
                       value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                      onChange={(e) => handleCityChange(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 font-medium"
                     />
+                    <datalist id="signup-cities-list">
+                      {ALL_INDIAN_CITIES.map((c) => (
+                        <option key={`${c.city}-${c.pincode}`} value={c.city}>
+                          {c.city} ({c.state} - {c.pincode})
+                        </option>
+                      ))}
+                    </datalist>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">PIN Code <span className="text-rose-500">*</span></label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      PIN Code <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
                       maxLength={6}
                       required
                       placeholder="6-digit PIN"
                       value={pincode}
-                      onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) => handlePincodeChange(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
+                    {city && pincode && (
+                      <p className="text-[10px] text-emerald-700 font-bold mt-1 flex items-center gap-1 animate-in fade-in">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span className="truncate">Auto-PIN: {pincode}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
               </>

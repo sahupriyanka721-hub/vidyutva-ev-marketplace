@@ -28,6 +28,7 @@ import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
+import { lookupCityOrPincode, ALL_INDIAN_CITIES } from '../data/indianCitiesPincodes';
 import {
   VehicleOrderItem,
   TestDriveBookingItem,
@@ -86,10 +87,7 @@ export const CustomerDashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    if (!isAuthenticated && !user) {
-      openAuthModal('/dashboard');
-    }
-  }, [isAuthenticated, user]);
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -868,11 +866,36 @@ export const CustomerDashboardPage: React.FC = () => {
                             <label className="block font-bold text-gray-700 mb-1">City</label>
                             <input
                               type="text"
+                              list="dashboard-cities-list"
                               required
+                              placeholder="e.g. Darbhanga, Patna..."
                               value={addressForm.city}
-                              onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                const trimmed = val.trim();
+                                if (trimmed.length >= 2) {
+                                  const entry = lookupCityOrPincode(trimmed);
+                                  if (entry && entry.pincode && !entry.city.startsWith('PIN ')) {
+                                    setAddressForm(prev => ({
+                                      ...prev,
+                                      city: val,
+                                      pincode: entry.pincode,
+                                      state: entry.state || prev.state
+                                    }));
+                                    return;
+                                  }
+                                }
+                                setAddressForm(prev => ({ ...prev, city: val }));
+                              }}
                               className="w-full p-2 border rounded-xl"
                             />
+                            <datalist id="dashboard-cities-list">
+                              {ALL_INDIAN_CITIES.map((c) => (
+                                <option key={`dash-${c.city}-${c.pincode}`} value={c.city}>
+                                  {c.city} ({c.state} - {c.pincode})
+                                </option>
+                              ))}
+                            </datalist>
                           </div>
                           <div>
                             <label className="block font-bold text-gray-700 mb-1">PIN Code</label>
@@ -880,8 +903,19 @@ export const CustomerDashboardPage: React.FC = () => {
                               type="text"
                               maxLength={6}
                               required
+                              placeholder="6-digit PIN"
                               value={addressForm.pincode}
-                              onChange={(e) => setAddressForm({ ...addressForm, pincode: e.target.value })}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                if (val.length === 6) {
+                                  const entry = lookupCityOrPincode(val);
+                                  if (entry && entry.city && !entry.city.startsWith('PIN ') && !addressForm.city) {
+                                    setAddressForm(prev => ({ ...prev, pincode: val, city: entry.city, state: entry.state || prev.state }));
+                                    return;
+                                  }
+                                }
+                                setAddressForm(prev => ({ ...prev, pincode: val }));
+                              }}
                               className="w-full p-2 border rounded-xl font-mono"
                             />
                           </div>

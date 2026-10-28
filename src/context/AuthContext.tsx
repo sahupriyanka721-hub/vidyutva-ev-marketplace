@@ -93,6 +93,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     storage.clearUser();
+    setIsAuthModalOpen(false);
+    setAuthRedirectUrl(undefined);
   };
 
   const updateProfile = (data: Partial<CustomerUser>) => {
