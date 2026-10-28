@@ -11,7 +11,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
 }) => {
   const isFooter = variant === 'footer';
-  // Larger, prominent logo in navbar & footer as requested
+  // Prominent, crisp logo display
   const imgSize = isFooter ? 'h-12 sm:h-16' : 'h-11 sm:h-14 md:h-16';
 
   return (
@@ -20,18 +20,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       className={`inline-flex items-center group focus:outline-none ${className}`}
       title="E-VAHAN"
     >
-      {/* 
-        Strictly NON-WHITE background: Premium Light Bluish Frosted Badge
-        Matches the website's light-bluish theme perfectly
-      */}
-      <div className="relative flex items-center justify-center p-1 sm:p-1.5 rounded-2xl bg-gradient-to-br from-[#E2ECF7] via-[#EBF3FB] to-[#D8E6F5] border border-[#BFD7ED] shadow-xs group-hover:border-emerald-400 group-hover:shadow-[0_0_16px_rgba(22,163,74,0.3)] transition-all">
-        {/* User's Exact Circular EV Logo (Green E + Scooter + Leaf) with Light Bluish Foundation */}
-        <img
-          src="/logo-custom-bluish.png"
-          alt="E-VAHAN Logo"
-          className={`${imgSize} w-auto object-contain transform group-hover:scale-105 transition-transform`}
-        />
-      </div>
+      <img
+        src="/logo.png"
+        alt="E-VAHAN Logo"
+        className={`${imgSize} w-auto object-contain transform group-hover:scale-105 transition-transform`}
+      />
     </Link>
   );
 };
