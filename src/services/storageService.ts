@@ -285,6 +285,34 @@ class StorageService {
     return list.find(u => u.phone.replace(/\D/g, '').trim() === cleanPhone);
   }
 
+  // --- Admin Authorization (Only designated registered numbers can access admin portal) ---
+  getAdminAuthorizedPhones(): string[] {
+    return this.get<string[]>('admin_authorized_phones', [
+      '9876543210',
+      '9800000000',
+      '9999999999',
+      '9810012345',
+      '9899887766'
+    ]);
+  }
+
+  isAuthorizedAdminPhone(phone: string): boolean {
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) return false;
+    const authorized = this.getAdminAuthorizedPhones();
+    return authorized.includes(cleanPhone);
+  }
+
+  addAuthorizedAdminPhone(phone: string): void {
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    if (!cleanPhone || cleanPhone.length !== 10) return;
+    const authorized = this.getAdminAuthorizedPhones();
+    if (!authorized.includes(cleanPhone)) {
+      authorized.push(cleanPhone);
+      this.set('admin_authorized_phones', authorized);
+    }
+  }
+
   getUser(): CustomerUser | null {
     const user = this.get<CustomerUser | null>('user', null);
     // Purge any dummy or legacy users so only genuine registered customer is logged in
@@ -467,6 +495,17 @@ class StorageService {
     }
   }
 
+  updateTestDriveStatus(bookingId: string, status: any): boolean {
+    const bookings = this.getTestDrives();
+    const idx = bookings.findIndex(b => b.id === bookingId);
+    if (idx !== -1) {
+      bookings[idx].status = status;
+      this.set('test_drives', bookings);
+      return true;
+    }
+    return false;
+  }
+
   // --- Quotations ---
   getQuotations(): QuotationRequestItem[] {
     return this.get<QuotationRequestItem[]>('quotations', INITIAL_QUOTATIONS);
@@ -616,6 +655,17 @@ class StorageService {
     });
 
     return newOrder;
+  }
+
+  updateSparePartsOrderStatus(orderId: string, status: any): boolean {
+    const orders = this.getSparePartsOrders();
+    const idx = orders.findIndex(o => o.id === orderId);
+    if (idx !== -1) {
+      orders[idx].status = status;
+      this.set('spare_parts_orders', orders);
+      return true;
+    }
+    return false;
   }
 
   // --- Support Tickets ---
