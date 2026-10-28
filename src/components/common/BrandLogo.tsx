@@ -11,8 +11,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
 }) => {
   const isFooter = variant === 'footer';
-  // Prominent, crisp logo display
-  const imgSize = isFooter ? 'h-12 sm:h-16' : 'h-11 sm:h-14 md:h-16';
+  // Noticeably larger, bold, and prominent logo size across header, footer & admin
+  const imgSize = isFooter
+    ? 'h-16 sm:h-20 md:h-24'
+    : 'h-14 sm:h-16 md:h-20 lg:h-22';
 
   return (
     <Link
@@ -23,7 +25,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       <img
         src="/logo.png"
         alt="E-VAHAN Logo"
-        className={`${imgSize} w-auto object-contain transform group-hover:scale-105 transition-transform`}
+        className={`${imgSize} w-auto object-contain transform group-hover:scale-105 transition-transform drop-shadow-xs`}
       />
     </Link>
   );
