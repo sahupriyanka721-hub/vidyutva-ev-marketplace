@@ -247,77 +247,24 @@ class StorageService {
   }
 
   // --- User & Auth ---
-  private defaultRegisteredUsers: CustomerUser[] = [
-    {
-      id: 'usr-ramesh-7821',
-      fullName: 'Ramesh Kumar Sharma',
-      phone: '9876543210',
-      email: 'ramesh.sharma@gmail.com',
-      city: 'New Delhi',
-      pincode: '110001',
-      isKycVerified: true,
-      savedAddresses: [
-        {
-          id: 'addr-ramesh-1',
-          label: 'HOME',
-          fullName: 'Ramesh Kumar Sharma',
-          phone: '9876543210',
-          line1: 'B-42, Sector 14, Connaught Place',
-          city: 'New Delhi',
-          state: 'Delhi',
-          pincode: '110001',
-          isDefault: true
-        }
-      ]
-    },
-    {
-      id: 'usr-priya-9012',
-      fullName: 'Priya Verma',
-      phone: '9810012345',
-      email: 'priya.verma@outlook.com',
-      city: 'Bengaluru',
-      pincode: '560001',
-      isKycVerified: true,
-      savedAddresses: [
-        {
-          id: 'addr-priya-1',
-          label: 'HOME',
-          fullName: 'Priya Verma',
-          phone: '9810012345',
-          line1: '402, Green Glen Layout, Bellandur',
-          city: 'Bengaluru',
-          state: 'Karnataka',
-          pincode: '560001',
-          isDefault: true
-        }
-      ]
-    },
-    {
-      id: 'usr-amit-4321',
-      fullName: 'Amit Patel',
-      phone: '9988776655',
-      email: 'amit.patel@gmail.com',
-      city: 'Ahmedabad',
-      pincode: '380001',
-      isKycVerified: true,
-      savedAddresses: [
-        {
-          id: 'addr-amit-1',
-          label: 'OFFICE',
-          fullName: 'Amit Patel',
-          phone: '9988776655',
-          line1: 'Sarkhej - Gandhinagar Hwy, Bodakdev',
-          city: 'Ahmedabad',
-          state: 'Gujarat',
-          pincode: '380001',
-          isDefault: true
-        }
-      ]
-    }
-  ];
+  // --- User & Auth (Zero dummy users - strictly only real registered customers) ---
+  private defaultRegisteredUsers: CustomerUser[] = [];
 
   getRegisteredUsers(): CustomerUser[] {
-    return this.get<CustomerUser[]>('registered_users', this.defaultRegisteredUsers);
+    const list = this.get<CustomerUser[]>('registered_users', []);
+    // Purge any legacy dummy users so only customers who actually register exist
+    const cleanList = list.filter(u => 
+      u.id !== 'usr-ramesh-7821' && 
+      u.id !== 'usr-priya-9012' && 
+      u.id !== 'usr-amit-4321' && 
+      u.fullName !== 'Ramesh Kumar Sharma' && 
+      u.fullName !== 'Priya Verma' && 
+      u.fullName !== 'Amit Patel'
+    );
+    if (cleanList.length !== list.length) {
+      this.set('registered_users', cleanList);
+    }
+    return cleanList;
   }
 
   saveRegisteredUser(newUser: CustomerUser): void {
@@ -340,8 +287,18 @@ class StorageService {
 
   getUser(): CustomerUser | null {
     const user = this.get<CustomerUser | null>('user', null);
-    // Purge legacy "Arjun Singhania" or generic "Customer" so real registered customer name is used
-    if (user && (user.fullName === 'Arjun Singhania' || user.id === 'usr-ev-78291' || user.fullName === 'Customer')) {
+    // Purge any dummy or legacy users so only genuine registered customer is logged in
+    if (user && (
+      user.fullName === 'Arjun Singhania' || 
+      user.id === 'usr-ev-78291' || 
+      user.fullName === 'Customer' ||
+      user.id === 'usr-ramesh-7821' ||
+      user.id === 'usr-priya-9012' ||
+      user.id === 'usr-amit-4321' ||
+      user.fullName === 'Ramesh Kumar Sharma' ||
+      user.fullName === 'Priya Verma' ||
+      user.fullName === 'Amit Patel'
+    )) {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem('evahan_user');
       }

@@ -64,9 +64,9 @@ export const CustomerDashboardPage: React.FC = () => {
     phone: user?.phone || '',
     line1: '',
     line2: '',
-    city: 'New Delhi',
-    state: 'Delhi',
-    pincode: '110001',
+    city: user?.city || '',
+    state: 'India',
+    pincode: user?.pincode || '',
     isDefault: false
   });
 

@@ -10,12 +10,12 @@ export const AuthModal: React.FC = () => {
   const { isAuthModalOpen, closeAuthModal, login, signup, authRedirectUrl, getRegisteredUser } = useAuth();
   const [mode, setMode] = useState<'LOGIN' | 'SIGNUP'>('LOGIN');
   const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
-  const [phone, setPhone] = useState('9876543210');
+  const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [city, setCity] = useState('New Delhi');
-  const [pincode, setPincode] = useState('110001');
+  const [city, setCity] = useState('');
+  const [pincode, setPincode] = useState('');
   const [matchedCustomer, setMatchedCustomer] = useState<CustomerUser | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -156,7 +156,7 @@ export const AuthModal: React.FC = () => {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Ramesh Kumar Sharma"
+                    placeholder="Enter your full name"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 font-medium"
@@ -169,7 +169,7 @@ export const AuthModal: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="ramesh.sharma@example.com"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -177,23 +177,23 @@ export const AuthModal: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">City</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">City <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. New Delhi"
+                      placeholder="Enter city"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">PIN Code</label>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">PIN Code <span className="text-rose-500">*</span></label>
                     <input
                       type="text"
                       maxLength={6}
                       required
-                      placeholder="110001"
+                      placeholder="6-digit PIN"
                       value={pincode}
                       onChange={(e) => setPincode(e.target.value.replace(/\D/g, ''))}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
@@ -215,7 +215,7 @@ export const AuthModal: React.FC = () => {
                   type="tel"
                   maxLength={10}
                   required
-                  placeholder="98765 43210"
+                  placeholder="Enter 10-digit mobile number"
                   value={phone}
                   onChange={(e) => {
                     setPhone(e.target.value.replace(/\D/g, ''));
@@ -225,36 +225,6 @@ export const AuthModal: React.FC = () => {
                 />
               </div>
             </div>
-
-            {/* Quick-select registered accounts chip helpers for fast testing */}
-            {mode === 'LOGIN' && (
-              <div className="space-y-1.5 pt-1">
-                <p className="text-[11px] font-bold text-gray-500 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
-                  <span>Registered Accounts (Tap to fill):</span>
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    { phone: '9876543210', name: 'Ramesh Sharma' },
-                    { phone: '9810012345', name: 'Priya Verma' },
-                    { phone: '9988776655', name: 'Amit Patel' },
-                  ].map((acc) => (
-                    <button
-                      key={acc.phone}
-                      type="button"
-                      onClick={() => {
-                        setPhone(acc.phone);
-                        setError('');
-                      }}
-                      className="px-2.5 py-1 text-[11px] font-semibold bg-emerald-50 hover:bg-emerald-100 text-[#14532D] border border-emerald-200 rounded-lg transition-colors flex items-center gap-1"
-                    >
-                      <span className="font-mono">{acc.phone}</span>
-                      <span className="text-gray-500 font-normal">({acc.name})</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {error && (
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2 text-left animate-in fade-in duration-150">
@@ -272,7 +242,7 @@ export const AuthModal: React.FC = () => {
                     }}
                     className="w-full py-2 bg-gradient-to-r from-[#16A34A] to-[#15803D] hover:from-emerald-700 hover:to-emerald-600 text-white rounded-lg text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
                   >
-                    <span>New Registration Karein (+91 {phone})</span>
+                    <span>Naya Account Banayein (New Registration){phone ? ` (+91 ${phone})` : ''}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-[#B7F34A]" />
                   </button>
                 )}
