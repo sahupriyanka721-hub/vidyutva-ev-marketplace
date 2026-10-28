@@ -287,13 +287,27 @@ class StorageService {
 
   // --- Admin Authorization (Only designated registered numbers can access admin portal) ---
   getAdminAuthorizedPhones(): string[] {
-    return this.get<string[]>('admin_authorized_phones', [
+    const list = this.get<string[]>('admin_authorized_phones', [
+      '9244272627',
+      '8269288189',
       '9876543210',
       '9800000000',
       '9999999999',
       '9810012345',
       '9899887766'
     ]);
+    const required = ['9244272627', '8269288189', '9876543210'];
+    let changed = false;
+    required.forEach(num => {
+      if (!list.includes(num)) {
+        list.push(num);
+        changed = true;
+      }
+    });
+    if (changed) {
+      this.set('admin_authorized_phones', list);
+    }
+    return list;
   }
 
   isAuthorizedAdminPhone(phone: string): boolean {

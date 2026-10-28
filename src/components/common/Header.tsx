@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useLocation } from '../../context/LocationContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
+import { useCompare } from '../../context/CompareContext';
 import { BrandLogo } from './BrandLogo';
 
 /**
@@ -43,6 +44,7 @@ export const Header: React.FC = () => {
   const { city, pincode, openLocationModal } = useLocation();
   const { totalItemCount, openCartDrawer } = useCart();
   const { totalWishlistCount } = useWishlist();
+  const { comparedVehicleIds } = useCompare();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
@@ -111,6 +113,20 @@ export const Header: React.FC = () => {
             <Link to="/service" className="hover:text-[#16A34A] transition-colors">
               Book a Service
             </Link>
+
+            <Link
+              to="/compare"
+              className="hover:text-[#16A34A] transition-colors flex items-center gap-1.5"
+              title="Compare Electric Vehicles"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span>Compare</span>
+              {comparedVehicleIds.length > 0 && (
+                <span className="bg-[#16A34A] text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center shadow-xs">
+                  {comparedVehicleIds.length}
+                </span>
+              )}
+            </Link>
             
             <Link
               to="/quotation"
@@ -120,9 +136,23 @@ export const Header: React.FC = () => {
             </Link>
           </nav>
 
-          {/* Right Cluster: Wishlist, Cart, Account/Login */}
+          {/* Right Cluster: Compare, Wishlist, Cart, Account/Login */}
           <div className="flex items-center space-x-1.5 sm:space-x-3">
             
+            {/* Compare shortcut */}
+            <Link
+              to="/compare"
+              className="p-2 text-gray-700 hover:text-[#16A34A] hover:bg-emerald-50 rounded-full transition-colors relative"
+              title="Compare Vehicles"
+            >
+              <SlidersHorizontal className="w-5 h-5" />
+              {comparedVehicleIds.length > 0 && (
+                <span className="absolute top-1 right-1 bg-[#16A34A] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center shadow-xs">
+                  {comparedVehicleIds.length}
+                </span>
+              )}
+            </Link>
+
             {/* Wishlist */}
             <Link
               to="/dashboard?tab=wishlist"
@@ -302,6 +332,18 @@ export const Header: React.FC = () => {
               className="p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 text-gray-800 border border-gray-100"
             >
               Book a Service
+            </Link>
+            <Link
+              to="/compare"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-3 bg-gray-50 rounded-xl hover:bg-emerald-50 text-gray-800 border border-gray-100 flex items-center justify-between"
+            >
+              <span>Compare Vehicles</span>
+              {comparedVehicleIds.length > 0 && (
+                <span className="bg-[#16A34A] text-white text-[10px] font-bold rounded-full px-2 py-0.5">
+                  {comparedVehicleIds.length}
+                </span>
+              )}
             </Link>
             <Link
               to="/dashboard"

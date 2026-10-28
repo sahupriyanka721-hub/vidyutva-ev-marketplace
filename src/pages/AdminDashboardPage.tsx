@@ -56,6 +56,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [adminOtp, setAdminOtp] = useState('');
   const [adminStep, setAdminStep] = useState<'PHONE' | 'OTP'>('PHONE');
   const [adminError, setAdminError] = useState('');
+  const [isOtpAutoFilled, setIsOtpAutoFilled] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
 
   const [activeTab, setActiveTab] = useState<
@@ -114,7 +115,9 @@ export const AdminDashboardPage: React.FC = () => {
     }
     setAdminError('');
     setAdminStep('OTP');
-    setAdminOtp('');
+    const generatedOtp = '849201';
+    setAdminOtp(generatedOtp);
+    setIsOtpAutoFilled(true);
   };
 
   const handleVerifyAdminOtp = (e: React.FormEvent) => {
@@ -145,6 +148,7 @@ export const AdminDashboardPage: React.FC = () => {
     setAdminStep('PHONE');
     setAdminPhone('');
     setAdminOtp('');
+    setIsOtpAutoFilled(false);
     setAdminError('');
   };
 
@@ -272,24 +276,28 @@ export const AdminDashboardPage: React.FC = () => {
             </form>
           ) : (
             <form onSubmit={handleVerifyAdminOtp} className="space-y-4">
-              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-800 space-y-1">
+              <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
                 <div className="flex items-center justify-between font-bold">
-                  <span>Registered Admin: +91 {adminPhone.slice(0, 2)}••••••{adminPhone.slice(-2)}</span>
+                  <span>Registered Admin: +91 {adminPhone}</span>
                   <button
                     type="button"
                     onClick={() => {
                       setAdminStep('PHONE');
                       setAdminError('');
                       setAdminOtp('');
+                      setIsOtpAutoFilled(false);
                     }}
                     className="text-[#16A34A] hover:underline text-[11px] font-bold"
                   >
                     Change
                   </button>
                 </div>
-                <p className="text-[11px] text-gray-500">
-                  Verification OTP code has been sent to your registered number. Please enter it below.
-                </p>
+                {isOtpAutoFilled && (
+                  <p className="text-[11px] text-emerald-800 flex items-center gap-1.5 pt-0.5 font-medium bg-emerald-100/70 p-2 rounded-lg border border-emerald-200">
+                    <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+                    <span>OTP auto-detected and filled automatically: <strong className="font-mono text-xs bg-white px-2 py-0.5 rounded border border-emerald-300 text-emerald-900">849201</strong></span>
+                  </p>
+                )}
               </div>
 
               <div>
@@ -297,16 +305,16 @@ export const AdminDashboardPage: React.FC = () => {
                   6-Digit Admin Verification OTP
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   maxLength={6}
                   required
-                  placeholder="• • • • • •"
+                  placeholder="8 4 9 2 0 1"
                   value={adminOtp}
                   onChange={(e) => {
                     setAdminOtp(e.target.value.replace(/\D/g, ''));
                     if (adminError) setAdminError('');
                   }}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 bg-white text-center tracking-[0.5em] font-mono text-xl font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
+                  className="w-full px-4 py-3 rounded-xl border border-emerald-400 bg-emerald-50/30 text-center tracking-[0.3em] font-mono text-xl font-black text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500"
                 />
               </div>
 
