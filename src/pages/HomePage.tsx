@@ -29,11 +29,11 @@ export const HomePage: React.FC = () => {
       {/* F. Find the Right EV (Interactive Vehicle Finder) */}
       <VehicleFinderWidget />
 
-      {/* G. Why Choose Us */}
-      <WhyChooseUs />
-
-      {/* H. Spare Parts Marketplace Preview */}
+      {/* G. Spare Parts Marketplace Preview */}
       <SparePartsPreview />
+
+      {/* H. Why Choose Us */}
+      <WhyChooseUs />
 
       {/* I. Doorstep Service Section */}
       <DoorstepServiceBanner />
