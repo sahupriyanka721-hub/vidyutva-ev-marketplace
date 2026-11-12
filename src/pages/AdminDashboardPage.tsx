@@ -66,6 +66,9 @@ export const AdminDashboardPage: React.FC = () => {
     'overview' | 'customers' | 'announcements' | 'orders' | 'test-drives' | 'quotations' | 'services' | 'parts' | 'tickets' | 'inventory'
   >('overview');
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshNotification, setRefreshNotification] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
 
   // Live data from storageService (Zero dummy users - strictly only real platform data)
   const [registeredCustomers, setRegisteredCustomers] = useState<CustomerUser[]>([]);
@@ -136,6 +139,25 @@ export const AdminDashboardPage: React.FC = () => {
     setServices(storage.getServiceBookings());
     setPartsOrders(storage.getSparePartsOrders());
     setTickets(storage.getSupportTickets());
+  };
+
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    setRefreshNotification(null);
+    loadAllData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      setRefreshNotification('✓ Live Admin Database successfully reloaded from system storage!');
+      setTimeout(() => {
+        setRefreshNotification(null);
+      }, 3500);
+    }, 600);
+  };
+
+  const handleCopyReference = (ref: string) => {
+    navigator.clipboard?.writeText(ref);
+    setCopiedRef(ref);
+    setTimeout(() => setCopiedRef(null), 2000);
   };
 
   useEffect(() => {
@@ -446,11 +468,13 @@ export const AdminDashboardPage: React.FC = () => {
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
             <button
-              onClick={loadAllData}
-              className="p-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-[#B7F34A] transition-all border border-emerald-500/40"
-              title="Refresh Data"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-[#B7F34A] transition-all border border-emerald-500/40 text-xs font-bold flex items-center gap-2 shadow-sm"
+              title="Refresh Live Admin Data"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-white' : 'text-[#B7F34A]'}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
             </button>
             <button
               onClick={handleAdminLogout}
@@ -462,6 +486,22 @@ export const AdminDashboardPage: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Refresh Live Confirmation Banner */}
+        {refreshNotification && (
+          <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-emerald-950 font-bold text-xs flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+              <span>{refreshNotification}</span>
+            </div>
+            <button
+              onClick={() => setRefreshNotification(null)}
+              className="text-xs text-emerald-800 hover:text-emerald-950 font-bold px-2 py-0.5"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Mobile Slide-Over Drawer & Backdrop */}
         {isMobileSidebarOpen && (
@@ -536,6 +576,17 @@ export const AdminDashboardPage: React.FC = () => {
 
               {/* Mobile Drawer Bottom Actions */}
               <div className="p-4 border-t border-gray-100 bg-gray-50/90 space-y-2">
+                <button
+                  onClick={() => {
+                    setIsMobileSidebarOpen(false);
+                    handleManualRefresh();
+                  }}
+                  disabled={isRefreshing}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-all"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <span>{isRefreshing ? 'Refreshing Data...' : 'Refresh Live Database'}</span>
+                </button>
                 <Link
                   to="/"
                   onClick={() => setIsMobileSidebarOpen(false)}
@@ -668,6 +719,18 @@ export const AdminDashboardPage: React.FC = () => {
 
               {/* Sidebar Quick Footer Actions */}
               <div className="pt-3 border-t border-gray-100 space-y-2">
+                <button
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-2xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className={`w-4 h-4 text-emerald-600 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    <span>{isRefreshing ? 'Refreshing...' : 'Refresh Live Database'}</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-200/60 px-1.5 py-0.5 rounded">Sync</span>
+                </button>
+
                 <Link
                   to="/"
                   className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
@@ -1110,7 +1173,18 @@ export const AdminDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-100">
                   {vehicleOrders.map(o => (
                     <tr key={o.id} className="hover:bg-gray-50/60">
-                      <td className="p-3 font-mono font-bold text-[#06152B]">{o.orderNumber}</td>
+                      <td className="p-3 font-mono font-bold text-[#06152B]">
+                        <button
+                          onClick={() => handleCopyReference(o.orderNumber)}
+                          className="hover:text-emerald-600 inline-flex items-center gap-1.5 text-xs group"
+                          title="Click to copy Order Reference Number"
+                        >
+                          <span>{o.orderNumber}</span>
+                          <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 text-gray-500">
+                            {copiedRef === o.orderNumber ? '✓ Copied' : '📋 Copy'}
+                          </span>
+                        </button>
+                      </td>
                       <td className="p-3">
                         <div className="space-y-0.5">
                           <strong className="text-xs font-bold text-gray-900 block">
@@ -1184,7 +1258,18 @@ export const AdminDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-100">
                   {partsOrders.map(p => (
                     <tr key={p.id} className="hover:bg-gray-50/60">
-                      <td className="p-3 font-mono font-bold text-emerald-800">{p.orderNumber}</td>
+                      <td className="p-3 font-mono font-bold text-emerald-800">
+                        <button
+                          onClick={() => handleCopyReference(p.orderNumber)}
+                          className="hover:text-emerald-600 inline-flex items-center gap-1.5 text-xs group"
+                          title="Click to copy Parts Order Reference Number"
+                        >
+                          <span>{p.orderNumber}</span>
+                          <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 text-gray-500">
+                            {copiedRef === p.orderNumber ? '✓ Copied' : '📋'}
+                          </span>
+                        </button>
+                      </td>
                       <td className="p-3">
                         <div className="space-y-0.5">
                           <strong className="text-xs font-bold text-gray-900 block">{p.deliveryAddress?.fullName}</strong>
@@ -1259,7 +1344,18 @@ export const AdminDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-100">
                   {testDrives.map(td => (
                     <tr key={td.id} className="hover:bg-gray-50/60">
-                      <td className="p-3 font-mono font-bold">{td.bookingNumber || td.id}</td>
+                      <td className="p-3 font-mono font-bold">
+                        <button
+                          onClick={() => handleCopyReference(td.bookingNumber || td.id)}
+                          className="hover:text-blue-600 inline-flex items-center gap-1.5 text-xs group"
+                          title="Click to copy Test Drive Booking Reference"
+                        >
+                          <span>{td.bookingNumber || td.id}</span>
+                          <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-blue-50 group-hover:text-blue-700 text-gray-500">
+                            {copiedRef === (td.bookingNumber || td.id) ? '✓ Copied' : '📋'}
+                          </span>
+                        </button>
+                      </td>
                       <td className="p-3 font-semibold text-gray-900">{td.customerName} (+91 {td.customerPhone})</td>
                       <td className="p-3 font-bold text-gray-800">{td.vehicleName}</td>
                       <td className="p-3">{td.preferredDate} ({td.timeSlot})</td>
@@ -1311,7 +1407,18 @@ export const AdminDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-100">
                   {quotations.map(q => (
                     <tr key={q.id} className="hover:bg-gray-50/60">
-                      <td className="p-3 font-mono font-bold text-purple-700">{q.quotationNumber}</td>
+                      <td className="p-3 font-mono font-bold text-purple-700">
+                        <button
+                          onClick={() => handleCopyReference(q.quotationNumber)}
+                          className="hover:text-purple-900 inline-flex items-center gap-1.5 text-xs group"
+                          title="Click to copy Quotation Docket Reference"
+                        >
+                          <span>{q.quotationNumber}</span>
+                          <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-purple-50 group-hover:text-purple-700 text-gray-500">
+                            {copiedRef === q.quotationNumber ? '✓ Copied' : '📋'}
+                          </span>
+                        </button>
+                      </td>
                       <td className="p-3">
                         <div className="space-y-0.5">
                           <strong className="text-xs font-bold text-gray-900 block">{q.customerName}</strong>
@@ -1353,7 +1460,18 @@ export const AdminDashboardPage: React.FC = () => {
                 <tbody className="divide-y divide-gray-100">
                   {services.map(s => (
                     <tr key={s.id} className="hover:bg-gray-50/60">
-                      <td className="p-3 font-mono font-bold">{s.bookingNumber || s.id}</td>
+                      <td className="p-3 font-mono font-bold">
+                        <button
+                          onClick={() => handleCopyReference(s.bookingNumber || s.id)}
+                          className="hover:text-emerald-700 inline-flex items-center gap-1.5 text-xs group"
+                          title="Click to copy Service Booking Reference"
+                        >
+                          <span>{s.bookingNumber || s.id}</span>
+                          <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-amber-50 group-hover:text-amber-800 text-gray-500">
+                            {copiedRef === (s.bookingNumber || s.id) ? '✓ Copied' : '📋'}
+                          </span>
+                        </button>
+                      </td>
                       <td className="p-3">
                         <strong className="text-xs font-bold text-gray-900 block">{s.customerName}</strong>
                         <span className="text-[11px] text-gray-500 font-mono">+91 {s.customerPhone}</span>

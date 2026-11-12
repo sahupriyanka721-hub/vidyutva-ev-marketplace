@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { X, Smartphone, Mail, Lock, ShieldCheck, ArrowRight, User as UserIcon, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { CustomerUser } from '../../types';
@@ -379,7 +379,19 @@ export const AuthModal: React.FC = () => {
           </form>
         )}
 
-        <div className="mt-6 pt-4 border-t border-gray-100 text-center text-[11px] text-gray-400">
+        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <span>Are you an Administrator?</span>
+          <Link
+            to="/admin"
+            onClick={closeAuthModal}
+            className="text-emerald-700 font-bold hover:underline inline-flex items-center gap-1"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
+            <span>Admin Portal Login →</span>
+          </Link>
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-gray-100 text-center text-[11px] text-gray-400">
           <ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-[#16A34A]" />
           By proceeding, you agree to E-VAHAN&apos;s Terms of Service & Privacy Policy.
         </div>

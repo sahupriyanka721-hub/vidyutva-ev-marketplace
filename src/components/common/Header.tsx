@@ -150,6 +150,16 @@ export const Header: React.FC = () => {
               )}
             </button>
 
+            {/* Dedicated Admin Portal Button */}
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-gradient-to-r from-[#06152B] to-[#0B2545] hover:opacity-95 text-white text-xs font-bold transition-all shadow-sm shrink-0 border border-emerald-500/30"
+              title="Central Admin Control Panel"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#B7F34A]" />
+              <span className="hidden sm:inline">Admin</span>
+            </Link>
+
             {/* Account / Login */}
             <div ref={accountRef} className="relative">
               {isAuthenticated && user ? (
@@ -228,6 +238,13 @@ export const Header: React.FC = () => {
                     <Wrench className="w-4 h-4 text-emerald-600" /> Doorstep Services
                   </Link>
                   <div className="border-t border-gray-100 my-1"></div>
+                  <Link
+                    to="/admin"
+                    onClick={() => setAccountDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-gray-800 hover:bg-emerald-50 hover:text-[#16A34A]"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" /> Central Admin Portal
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
@@ -309,6 +326,14 @@ export const Header: React.FC = () => {
             >
               <UserIcon className="w-4 h-4 text-emerald-600" />
               <span>{isAuthenticated ? `Customer Panel (${user?.fullName?.split(' ')[0] || 'My Account'})` : 'Customer Login / Panel'}</span>
+            </Link>
+            <Link
+              to="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="col-span-2 p-3 bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] text-white rounded-xl font-bold text-center flex items-center justify-center gap-2 shadow-sm border border-emerald-500/30"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#B7F34A]" />
+              <span>Central Admin Portal</span>
             </Link>
             <Link
               to="/quotation"

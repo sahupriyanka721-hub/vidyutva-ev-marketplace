@@ -39,6 +39,20 @@ import { LegalPage } from './pages/LegalPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 
 /**
+ * ScrollToTop component: Ensures page view jumps to the very top (0, 0)
+ * whenever route changes (crucial when navigating to /admin from footer).
+ */
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [pathname]);
+
+  return null;
+};
+
+/**
  * AppContent separates the Customer Storefront Panel from the Standalone Admin Portal.
  * Customer panel elements (Navbar, AnnouncementBar, Footer, MobileNav, Modals) NEVER appear in Admin.
  */
@@ -50,6 +64,7 @@ const AppContent: React.FC = () => {
   if (isAdmin) {
     return (
       <div className="min-h-screen bg-[#F0F4F8] text-[#17211B] antialiased">
+        <ScrollToTop />
         <Routes>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
@@ -61,6 +76,7 @@ const AppContent: React.FC = () => {
   // Full Customer Panel
   return (
     <div className="min-h-screen flex flex-col bg-[#F0F4F8] text-[#17211B] antialiased">
+      <ScrollToTop />
       {/* Customer Announcement Bar */}
       <AnnouncementBar />
 
