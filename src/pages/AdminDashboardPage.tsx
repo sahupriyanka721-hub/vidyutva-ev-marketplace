@@ -29,7 +29,10 @@ import {
   Phone,
   MapPin,
   PackageCheck,
-  UserCheck
+  UserCheck,
+  Menu,
+  X,
+  ChevronRight
 } from 'lucide-react';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
@@ -62,6 +65,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'customers' | 'announcements' | 'orders' | 'test-drives' | 'quotations' | 'services' | 'parts' | 'tickets' | 'inventory'
   >('overview');
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Live data from storageService (Zero dummy users - strictly only real platform data)
   const [registeredCustomers, setRegisteredCustomers] = useState<CustomerUser[]>([]);
@@ -84,6 +88,45 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Ticket reply state
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
+
+  // Grouped Navigation structure for Admin Sidebar Menu
+  const adminNavigationGroups = [
+    {
+      group: 'MAIN DASHBOARD',
+      items: [
+        { id: 'overview', label: 'Overview Hub', icon: LayoutDashboard, badge: null, badgeColor: '' },
+      ]
+    },
+    {
+      group: 'CUSTOMER CRM',
+      items: [
+        { id: 'customers', label: 'Registered Customers', icon: Users, badge: registeredCustomers.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
+      ]
+    },
+    {
+      group: 'SALES & COMMERCE',
+      items: [
+        { id: 'orders', label: 'Vehicle Orders', icon: ShoppingBag, badge: vehicleOrders.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
+        { id: 'parts', label: 'Spare Parts Orders', icon: Truck, badge: partsOrders.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
+        { id: 'quotations', label: 'Quotation Dockets', icon: FileText, badge: quotations.length, badgeColor: 'bg-purple-100 text-purple-800' },
+      ]
+    },
+    {
+      group: 'FIELD OPERATIONS',
+      items: [
+        { id: 'services', label: 'Doorstep Vans / Service', icon: Wrench, badge: services.length, badgeColor: 'bg-amber-100 text-amber-800' },
+        { id: 'test-drives', label: 'Test Drive Bookings', icon: Clock, badge: testDrives.length, badgeColor: 'bg-blue-100 text-blue-800' },
+      ]
+    },
+    {
+      group: 'CATALOG & SUPPORT',
+      items: [
+        { id: 'inventory', label: 'Inventory Catalog', icon: PackageCheck, badge: VEHICLES_DATA.length + SPARE_PARTS_DATA.length, badgeColor: 'bg-gray-100 text-gray-700' },
+        { id: 'tickets', label: 'Customer Support Desk', icon: LifeBuoy, badge: tickets.length, badgeColor: 'bg-rose-100 text-rose-800' },
+        { id: 'announcements', label: 'Announcement Bar', icon: Bell, badge: announcements.length, badgeColor: 'bg-indigo-100 text-indigo-800' },
+      ]
+    },
+  ];
 
   const loadAllData = () => {
     setRegisteredCustomers(storage.getRegisteredUsers());
@@ -385,6 +428,16 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Mobile Menu Drawer Toggle Button */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-[#B7F34A] text-xs font-bold transition-all border border-emerald-500/40 flex items-center gap-2 shadow-sm"
+              title="Open Admin Navigation Menu"
+            >
+              <Menu className="w-4 h-4" />
+              <span>Sidebar Menu</span>
+            </button>
+
             <Link
               to="/"
               className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-2"
@@ -410,218 +463,349 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Top 7 KPI Metric Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 sm:gap-4">
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'customers' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-            }`}
-            onClick={() => setActiveTab('customers')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Registered Customers
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{registeredCustomers.length}</strong>
-              <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">Live</span>
-            </div>
-          </div>
+        {/* Mobile Slide-Over Drawer & Backdrop */}
+        {isMobileSidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+            {/* Drawer */}
+            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col justify-between overflow-y-auto">
+              <div className="p-5 space-y-4">
+                <div className="flex items-center justify-between pb-3.5 border-b border-gray-100">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#06152B] to-[#16A34A] flex items-center justify-center text-white shadow-md">
+                      <ShieldCheck className="w-5 h-5 text-[#B7F34A]" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black text-[#06152B]">Admin Navigation</h3>
+                      <span className="text-[10px] font-bold text-emerald-600">E-VAHAN Central Ops</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
 
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'orders' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-            }`}
-            onClick={() => setActiveTab('orders')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Vehicle Orders
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{vehicleOrders.length}</strong>
-              <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">Live</span>
-            </div>
-          </div>
+                {/* Mobile Navigation Groups */}
+                {adminNavigationGroups.map((group) => (
+                  <div key={group.group} className="space-y-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 block">
+                      {group.group}
+                    </span>
+                    <div className="space-y-1">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              setActiveTab(item.id as any);
+                              setIsMobileSidebarOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                              isActive
+                                ? 'bg-gradient-to-r from-[#06152B] to-[#0B2545] text-white shadow-md'
+                                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon className={`w-4 h-4 ${isActive ? 'text-[#B7F34A]' : 'text-gray-400'}`} />
+                              <span>{item.label}</span>
+                            </div>
+                            {item.badge !== null && item.badge > 0 && (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isActive ? 'bg-[#B7F34A] text-[#06152B]' : item.badgeColor
+                              }`}>
+                                {item.badge}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'test-drives' ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-blue-300'
-            }`}
-            onClick={() => setActiveTab('test-drives')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Test Drives
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{testDrives.length}</strong>
-              <span className="text-xs text-blue-600 font-bold bg-blue-50 px-2 py-0.5 rounded-md">Active</span>
+              {/* Mobile Drawer Bottom Actions */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50/90 space-y-2">
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileSidebarOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
+                  <span>View Customer Storefront</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    setIsMobileSidebarOpen(false);
+                    handleAdminLogout();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-all"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                  <span>Lock & Admin Logout</span>
+                </button>
+              </div>
             </div>
           </div>
+        )}
 
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'quotations' ? 'bg-purple-50 border-purple-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-purple-300'
-            }`}
-            onClick={() => setActiveTab('quotations')}
+        {/* Mobile Horizontal Quick-Category Switcher Bar (lg:hidden) */}
+        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="shrink-0 px-3.5 py-2 rounded-xl bg-[#06152B] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
           >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Fleet Quotes
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{quotations.length}</strong>
-              <span className="text-xs text-purple-600 font-bold bg-purple-50 px-2 py-0.5 rounded-md">Issued</span>
-            </div>
-          </div>
-
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'services' ? 'bg-amber-50 border-amber-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-amber-300'
-            }`}
-            onClick={() => setActiveTab('services')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Doorstep Vans
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{services.length}</strong>
-              <span className="text-xs text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded-md">Vans</span>
-            </div>
-          </div>
-
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'parts' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-            }`}
-            onClick={() => setActiveTab('parts')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Parts Orders
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{partsOrders.length}</strong>
-              <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">OEM</span>
-            </div>
-          </div>
-
-          <div
-            className={`p-4 rounded-2xl border transition-all cursor-pointer ${
-              activeTab === 'tickets' ? 'bg-rose-50 border-rose-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-rose-300'
-            }`}
-            onClick={() => setActiveTab('tickets')}
-          >
-            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-              Support Desk
-            </span>
-            <div className="flex items-baseline justify-between">
-              <strong className="text-xl sm:text-2xl font-black text-[#06152B]">{tickets.length}</strong>
-              <span className="text-xs text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded-md">Desk</span>
-            </div>
-          </div>
+            <Menu className="w-3.5 h-3.5 text-[#B7F34A]" />
+            <span>All Menus</span>
+          </button>
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'customers', label: `Customers (${registeredCustomers.length})` },
+            { id: 'orders', label: `Orders (${vehicleOrders.length})` },
+            { id: 'parts', label: `Parts (${partsOrders.length})` },
+            { id: 'services', label: `Vans (${services.length})` },
+            { id: 'test-drives', label: `Drives (${testDrives.length})` },
+            { id: 'quotations', label: `Quotes (${quotations.length})` },
+            { id: 'inventory', label: 'Inventory' },
+            { id: 'tickets', label: `Support (${tickets.length})` },
+            { id: 'announcements', label: 'Announcements' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                activeTab === tab.id
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-white text-gray-700 border border-gray-200'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white p-2 rounded-2xl border border-gray-200 shadow-subtle flex flex-wrap gap-1">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'overview'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('customers')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-              activeTab === 'customers'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Registered Customers ({registeredCustomers.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'orders'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Vehicle Orders ({vehicleOrders.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('parts')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'parts'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Parts Orders ({partsOrders.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('test-drives')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'test-drives'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Test Drives ({testDrives.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('quotations')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'quotations'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Quotation Dockets ({quotations.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('services')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'services'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Doorstep Vans ({services.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('tickets')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'tickets'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Support Desk ({tickets.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('announcements')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'announcements'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Announcement Bar Manager
-          </button>
-          <button
-            onClick={() => setActiveTab('inventory')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-              activeTab === 'inventory'
-                ? 'bg-[#06152B] text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-            }`}
-          >
-            Inventory Catalog
-          </button>
-        </div>
+        {/* 2-Column Responsive Dashboard Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+          
+          {/* DESKTOP SIDEBAR MENU (lg:col-span-3 xl:col-span-3) */}
+          <aside className="hidden lg:block lg:col-span-3 xl:col-span-3 space-y-4 sticky top-6">
+            
+            {/* Admin Profile Box */}
+            <div className="bg-gradient-to-br from-[#06152B] to-[#0B2545] rounded-3xl p-5 text-white shadow-xl border border-emerald-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                  <ShieldCheck className="w-6 h-6 text-[#B7F34A]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">Central Admin</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className="w-2 h-2 rounded-full bg-[#B7F34A] animate-pulse"></span>
+                    <span className="text-[11px] font-semibold text-emerald-300">Authorized Session</span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-slate-300 flex items-center justify-between">
+                <span className="text-[10px] text-gray-400 font-sans uppercase font-bold">Admin Mobile:</span>
+                <span className="text-[#B7F34A] font-bold">+91 {adminPhone || '9244272627'}</span>
+              </div>
+            </div>
+
+            {/* Sidebar Navigation Card */}
+            <div className="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-subtle space-y-5">
+              {adminNavigationGroups.map((group) => (
+                <div key={group.group} className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 block">
+                    {group.group}
+                  </span>
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveTab(item.id as any)}
+                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all group ${
+                            isActive
+                              ? 'bg-gradient-to-r from-[#06152B] to-[#0B2545] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                              isActive ? 'text-[#B7F34A]' : 'text-gray-400'
+                            }`} />
+                            <span>{item.label}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {item.badge !== null && item.badge > 0 && (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                isActive ? 'bg-[#B7F34A] text-[#06152B]' : item.badgeColor
+                              }`}>
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${
+                              isActive ? 'text-[#B7F34A] translate-x-0.5' : 'text-gray-300 opacity-0 group-hover:opacity-100'
+                            }`} />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {/* Sidebar Quick Footer Actions */}
+              <div className="pt-3 border-t border-gray-100 space-y-2">
+                <Link
+                  to="/"
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
+                >
+                  <div className="flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4 text-gray-400" />
+                    <span>Customer Storefront</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Live</span>
+                </Link>
+
+                <button
+                  onClick={handleAdminLogout}
+                  className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all"
+                >
+                  <LogOut className="w-4 h-4 text-rose-500" />
+                  <span>Lock & Admin Logout</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick System Badge */}
+            <div className="p-3.5 bg-gray-100/80 rounded-2xl border border-gray-200 text-center text-[11px] text-gray-500">
+              <span className="font-bold text-gray-700">E-VAHAN Central OS</span>
+              <span className="block text-[10px] text-gray-400 mt-0.5">256-Bit SSL Encrypted Admin Console</span>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT AREA (lg:col-span-9 xl:col-span-9) */}
+          <main className="lg:col-span-9 xl:col-span-9 space-y-6 min-w-0">
+            
+            {/* Top 7 KPI Metric Cards (Responsive Grid inside Main Area) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-2.5 sm:gap-3">
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'customers' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
+                }`}
+                onClick={() => setActiveTab('customers')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Customers
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{registeredCustomers.length}</strong>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Live</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'orders' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
+                }`}
+                onClick={() => setActiveTab('orders')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Vehicle Orders
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{vehicleOrders.length}</strong>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Live</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'test-drives' ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-blue-300'
+                }`}
+                onClick={() => setActiveTab('test-drives')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Test Drives
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{testDrives.length}</strong>
+                  <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">Active</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'quotations' ? 'bg-purple-50 border-purple-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-purple-300'
+                }`}
+                onClick={() => setActiveTab('quotations')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Fleet Quotes
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{quotations.length}</strong>
+                  <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded">Issued</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'services' ? 'bg-amber-50 border-amber-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-amber-300'
+                }`}
+                onClick={() => setActiveTab('services')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Doorstep Vans
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{services.length}</strong>
+                  <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded">Vans</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'parts' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
+                }`}
+                onClick={() => setActiveTab('parts')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Parts Orders
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{partsOrders.length}</strong>
+                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">OEM</span>
+                </div>
+              </div>
+
+              <div
+                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
+                  activeTab === 'tickets' ? 'bg-rose-50 border-rose-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-rose-300'
+                }`}
+                onClick={() => setActiveTab('tickets')}
+              >
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Support Desk
+                </span>
+                <div className="flex items-baseline justify-between">
+                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{tickets.length}</strong>
+                  <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">Desk</span>
+                </div>
+              </div>
+            </div>
 
         {/* Tab 1: Overview */}
         {activeTab === 'overview' && (
@@ -1377,6 +1561,9 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           </div>
         )}
+
+          </main>
+        </div>
 
       </div>
     </div>
