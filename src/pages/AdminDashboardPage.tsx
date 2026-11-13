@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LayoutDashboard,
+  LayoutGrid,
   ShoppingBag,
   Clock,
   FileText,
@@ -32,7 +33,14 @@ import {
   UserCheck,
   Menu,
   X,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Layers,
+  Box,
+  Store,
+  DollarSign,
+  Check,
+  FileCheck
 } from 'lucide-react';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
@@ -47,6 +55,346 @@ import {
   SupportTicketItem
 } from '../types';
 
+export type AdminTab =
+  | 'overview'
+  | 'customers'
+  | 'announcements'
+  | 'orders'
+  | 'test-drives'
+  | 'quotations'
+  | 'services'
+  | 'parts'
+  | 'tickets'
+  | 'inventory'
+  // Service Management Sub-items
+  | 'service-history'
+  | 'service-categories'
+  | 'service-approvals'
+  // Service Provider Management Sub-items
+  | 'sp-history'
+  | 'sp-onboarding'
+  | 'sp-list'
+  | 'sp-payout'
+  // Spare VendorManagement Sub-items
+  | 'vendor-history'
+  | 'vendor-onboarding'
+  | 'vendor-list'
+  | 'vendor-payout'
+  // Marketplace Management Sub-items
+  | 'shop-onboarding'
+  | 'shop-list'
+  | 'shop-payout';
+
+export interface ServiceProvider {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+  vanNumber: string;
+  specialization: string;
+  rating: number;
+  completedJobs: number;
+  totalEarnings: number;
+  pendingPayout: number;
+  status: 'ACTIVE' | 'ON_JOB' | 'OFFLINE';
+  joinedDate: string;
+}
+
+export interface SpareVendor {
+  id: string;
+  companyName: string;
+  contactPerson: string;
+  phone: string;
+  email: string;
+  location: string;
+  categories: string;
+  activeSkus: number;
+  fulfilledOrders: number;
+  pendingPayout: number;
+  totalDisbursed: number;
+  status: 'VERIFIED' | 'PENDING';
+  rating: number;
+}
+
+export interface Shopkeeper {
+  id: string;
+  shopName: string;
+  ownerName: string;
+  phone: string;
+  city: string;
+  address: string;
+  gstNumber: string;
+  inventoryCount: number;
+  totalSales: number;
+  commissionRate: string;
+  pendingPayout: number;
+  totalDisbursed: number;
+  status: 'ACTIVE' | 'PENDING';
+}
+
+export interface ServiceRateCard {
+  id: string;
+  title: string;
+  category: string;
+  price: number;
+  duration: string;
+  features: string[];
+}
+
+const INITIAL_SERVICE_PROVIDERS: ServiceProvider[] = [
+  {
+    id: 'sp-01',
+    name: 'Santosh Kumar',
+    phone: '9811234567',
+    city: 'Delhi NCR',
+    vanNumber: 'DL-1EV-8899',
+    specialization: 'Battery Diagnostics & Controller Repair',
+    rating: 4.95,
+    completedJobs: 142,
+    totalEarnings: 85200,
+    pendingPayout: 6400,
+    status: 'ACTIVE',
+    joinedDate: '12 Jan 2025'
+  },
+  {
+    id: 'sp-02',
+    name: 'Rajesh Sharma',
+    phone: '9823456789',
+    city: 'Delhi NCR',
+    vanNumber: 'DL-2EV-4512',
+    specialization: 'Doorstep Periodic Maintenance & Brake Servicing',
+    rating: 4.88,
+    completedJobs: 98,
+    totalEarnings: 58800,
+    pendingPayout: 4200,
+    status: 'ON_JOB',
+    joinedDate: '18 Feb 2025'
+  },
+  {
+    id: 'sp-03',
+    name: 'Vikram Singh',
+    phone: '9741288990',
+    city: 'Bengaluru',
+    vanNumber: 'KA-05-EV-4412',
+    specialization: 'Motor & Electrical Diagnostic Calibration',
+    rating: 4.92,
+    completedJobs: 164,
+    totalEarnings: 98400,
+    pendingPayout: 7800,
+    status: 'ACTIVE',
+    joinedDate: '05 Nov 2024'
+  },
+  {
+    id: 'sp-04',
+    name: 'Amit Patel',
+    phone: '9820011223',
+    city: 'Mumbai',
+    vanNumber: 'MH-02-EV-9901',
+    specialization: 'Brake & Suspension Overhaul Specialist',
+    rating: 4.85,
+    completedJobs: 87,
+    totalEarnings: 52200,
+    pendingPayout: 5100,
+    status: 'OFFLINE',
+    joinedDate: '02 Mar 2025'
+  }
+];
+
+const INITIAL_SPARE_VENDORS: SpareVendor[] = [
+  {
+    id: 'ven-01',
+    companyName: 'Vidyutva OEM Spares Ltd',
+    contactPerson: 'Harish Mehta',
+    phone: '9810044556',
+    email: 'info@vidyutva-spares.com',
+    location: 'Gurugram Sector 18, Haryana',
+    categories: 'LFP Battery Modules & Smart Controllers',
+    activeSkus: 28,
+    fulfilledOrders: 340,
+    pendingPayout: 48500,
+    totalDisbursed: 412000,
+    status: 'VERIFIED',
+    rating: 4.9
+  },
+  {
+    id: 'ven-02',
+    companyName: 'Bosch Mobility EV Spares',
+    contactPerson: 'Suresh Rao',
+    phone: '9845012345',
+    email: 'orders@bosch-ev.in',
+    location: 'Peenya Industrial Area, Bengaluru',
+    categories: 'Ceramic Brakes, Motors & Electronic Sensors',
+    activeSkus: 18,
+    fulfilledOrders: 210,
+    pendingPayout: 29400,
+    totalDisbursed: 285000,
+    status: 'VERIFIED',
+    rating: 4.95
+  },
+  {
+    id: 'ven-03',
+    companyName: 'CEAT EV Speciality Tyres',
+    contactPerson: 'Anil Deshmukh',
+    phone: '9822077889',
+    email: 'distribution@ceat-ev.com',
+    location: 'Chakan Auto Cluster, Pune',
+    categories: 'Low Rolling Resistance Tubeless EV Tyres',
+    activeSkus: 12,
+    fulfilledOrders: 290,
+    pendingPayout: 36200,
+    totalDisbursed: 320000,
+    status: 'VERIFIED',
+    rating: 4.85
+  },
+  {
+    id: 'ven-04',
+    companyName: 'Exide Energy Solutions',
+    contactPerson: 'Naveen Gupta',
+    phone: '9830099887',
+    email: 'oem@exide-energy.in',
+    location: 'Sector 5 Salt Lake, Kolkata & NCR Hub',
+    categories: 'Fast Chargers, Smart Cables & BMS Wiring Kits',
+    activeSkus: 16,
+    fulfilledOrders: 145,
+    pendingPayout: 18000,
+    totalDisbursed: 195000,
+    status: 'VERIFIED',
+    rating: 4.8
+  }
+];
+
+const INITIAL_SHOPKEEPERS: Shopkeeper[] = [
+  {
+    id: 'shp-01',
+    shopName: 'GreenWheel EV Hub Delhi',
+    ownerName: 'Ramanuj Joshi',
+    phone: '9811055443',
+    city: 'Delhi NCR',
+    address: 'Plot 42, Connaught Circus & Sector 12 Dwarka',
+    gstNumber: '07AAACG1234F1Z5',
+    inventoryCount: 8,
+    totalSales: 42,
+    commissionRate: '3.5%',
+    pendingPayout: 145000,
+    totalDisbursed: 1280000,
+    status: 'ACTIVE'
+  },
+  {
+    id: 'shp-02',
+    shopName: 'Vidyut Galleria Bengaluru',
+    ownerName: 'Kiran Hegde',
+    phone: '9845122334',
+    city: 'Bengaluru',
+    address: '100 Feet Road, Indiranagar',
+    gstNumber: '29AABCV5678G1Z2',
+    inventoryCount: 6,
+    totalSales: 28,
+    commissionRate: '4.0%',
+    pendingPayout: 92000,
+    totalDisbursed: 940000,
+    status: 'ACTIVE'
+  },
+  {
+    id: 'shp-03',
+    shopName: 'EcoDrive Mobility Showroom Mumbai',
+    ownerName: 'Pooja Singhania',
+    phone: '9820133445',
+    city: 'Mumbai',
+    address: 'Link Road, Andheri West',
+    gstNumber: '27AABCS9012H1Z8',
+    inventoryCount: 12,
+    totalSales: 65,
+    commissionRate: '3.5%',
+    pendingPayout: 210000,
+    totalDisbursed: 2150000,
+    status: 'ACTIVE'
+  },
+  {
+    id: 'shp-04',
+    shopName: 'Apex EV Superstore Noida',
+    ownerName: 'Manish Verma',
+    phone: '9818077665',
+    city: 'Noida (NCR)',
+    address: 'Sector 62 Commercial Hub',
+    gstNumber: '09AABCM3456J1Z1',
+    inventoryCount: 5,
+    totalSales: 19,
+    commissionRate: '3.5%',
+    pendingPayout: 68000,
+    totalDisbursed: 620000,
+    status: 'ACTIVE'
+  }
+];
+
+const INITIAL_SERVICE_RATES: ServiceRateCard[] = [
+  {
+    id: 'rt-01',
+    title: 'General Periodic Maintenance',
+    category: 'Doorstep Periodic Service',
+    price: 499,
+    duration: '45 - 60 mins',
+    features: [
+      '36-point comprehensive EV diagnostics',
+      'Brake pad cleaning & free play calibration',
+      'Drive belt / chain tension adjustment & lube',
+      'Tyre pressure check & tread depth report',
+      'Firmware check & error memory scan'
+    ]
+  },
+  {
+    id: 'rt-02',
+    title: 'Battery Health & Cell Diagnostic',
+    category: 'Battery & Electrical',
+    price: 699,
+    duration: '60 mins',
+    features: [
+      'Full battery capacity degradation index',
+      'Individual cell voltage balancing assessment',
+      'BMS communication & temperature sensor check',
+      'Internal resistance & discharge load test',
+      'Official digital Battery Health Certificate'
+    ]
+  },
+  {
+    id: 'rt-03',
+    title: 'High-Voltage Controller & Motor Check',
+    category: 'Powertrain Diagnostics',
+    price: 999,
+    duration: '90 mins',
+    features: [
+      'Harmonic distortion & motor torque calibration',
+      'MOSFET resistance & phase wire thermal check',
+      'Throttle hall sensor testing',
+      'Regenerative braking efficiency tuning'
+    ]
+  },
+  {
+    id: 'rt-04',
+    title: 'Front & Rear Disc Brake Overhaul',
+    category: 'Safety & Braking',
+    price: 799,
+    duration: '60 mins',
+    features: [
+      'DOT-4 synthetic brake fluid flush',
+      'Caliper pin de-greasing & seal inspection',
+      'Rotor run-out & thickness truing',
+      'Emergency regenerative interlock check'
+    ]
+  },
+  {
+    id: 'rt-05',
+    title: 'Emergency Mobile Van Roadside Assist',
+    category: 'Emergency Dispatch',
+    price: 1199,
+    duration: 'Immediate Priority (25-45 mins dispatch)',
+    features: [
+      'On-spot fast charging rescue (up to 15km range)',
+      'Tubeless tyre puncture vulcanization',
+      '12V auxiliary system boost',
+      'Flatbed tow coordination assistance'
+    ]
+  }
+];
 export const AdminDashboardPage: React.FC = () => {
   // Admin authentication state: requires registered mobile & verification OTP
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
@@ -62,9 +410,265 @@ export const AdminDashboardPage: React.FC = () => {
   const [isOtpAutoFilled, setIsOtpAutoFilled] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<
-    'overview' | 'customers' | 'announcements' | 'orders' | 'test-drives' | 'quotations' | 'services' | 'parts' | 'tickets' | 'inventory'
-  >('overview');
+  const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+
+  // Accordion Expand State: allows toggling parent categories as seen in user reference screenshots
+  const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
+    'service-management': false,
+    'service-provider': true, // Expanded by default matching reference photo 3
+    'spare-vendor': false,
+    'marketplace': false,
+    'user-management': false
+  });
+
+  // Multi-Vendor Portal State with localStorage persistence
+  const [serviceProviders, setServiceProviders] = useState<ServiceProvider[]>(() => {
+    const saved = localStorage.getItem('evahan_service_providers');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICE_PROVIDERS;
+  });
+
+  const [spareVendors, setSpareVendors] = useState<SpareVendor[]>(() => {
+    const saved = localStorage.getItem('evahan_spare_vendors');
+    return saved ? JSON.parse(saved) : INITIAL_SPARE_VENDORS;
+  });
+
+  const [shopkeepers, setShopkeepers] = useState<Shopkeeper[]>(() => {
+    const saved = localStorage.getItem('evahan_shopkeepers');
+    return saved ? JSON.parse(saved) : INITIAL_SHOPKEEPERS;
+  });
+
+  const [serviceRates, setServiceRates] = useState<ServiceRateCard[]>(() => {
+    const saved = localStorage.getItem('evahan_service_rates');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICE_RATES;
+  });
+
+  // Onboarding Form States
+  const [spForm, setSpForm] = useState({
+    name: '',
+    phone: '',
+    city: 'Delhi NCR',
+    vanNumber: '',
+    specialization: 'Battery Diagnostics & Controller Repair'
+  });
+
+  const [vendorForm, setVendorForm] = useState({
+    companyName: '',
+    contactPerson: '',
+    phone: '',
+    email: '',
+    location: '',
+    categories: 'LFP Battery Modules & Smart Controllers'
+  });
+
+  const [shopForm, setShopForm] = useState({
+    shopName: '',
+    ownerName: '',
+    phone: '',
+    city: 'Delhi NCR',
+    address: '',
+    gstNumber: '',
+    commissionRate: '3.5%'
+  });
+
+  const toggleMenu = (key: string) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const handleSelectTab = (tabId: AdminTab, parentKey?: string) => {
+    setActiveTab(tabId);
+    if (parentKey) {
+      setExpandedMenus(prev => ({ ...prev, [parentKey]: true }));
+    }
+    setIsMobileSidebarOpen(false);
+  };
+
+  // Service Provider Handlers
+  const handleRegisterServiceProvider = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!spForm.name.trim() || !spForm.phone.trim() || !spForm.vanNumber.trim()) {
+      alert('Kripya sabhi zaroori fields bharein!');
+      return;
+    }
+    const newSp: ServiceProvider = {
+      id: `sp-${Date.now().toString().slice(-4)}`,
+      name: spForm.name.trim(),
+      phone: spForm.phone.trim(),
+      city: spForm.city,
+      vanNumber: spForm.vanNumber.trim().toUpperCase(),
+      specialization: spForm.specialization,
+      rating: 5.0,
+      completedJobs: 0,
+      totalEarnings: 0,
+      pendingPayout: 0,
+      status: 'ACTIVE',
+      joinedDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    };
+    const updated = [newSp, ...serviceProviders];
+    setServiceProviders(updated);
+    localStorage.setItem('evahan_service_providers', JSON.stringify(updated));
+    setSpForm({
+      name: '',
+      phone: '',
+      city: 'Delhi NCR',
+      vanNumber: '',
+      specialization: 'Battery Diagnostics & Controller Repair'
+    });
+    setRefreshNotification(`✓ New Service Provider "${newSp.name}" successfully onboarded with Van ${newSp.vanNumber}!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+    setActiveTab('sp-list');
+  };
+
+  const handleToggleSpStatus = (spId: string) => {
+    const updated = serviceProviders.map(sp => {
+      if (sp.id === spId) {
+        const nextStatus: ServiceProvider['status'] =
+          sp.status === 'ACTIVE' ? 'ON_JOB' : sp.status === 'ON_JOB' ? 'OFFLINE' : 'ACTIVE';
+        return { ...sp, status: nextStatus };
+      }
+      return sp;
+    });
+    setServiceProviders(updated);
+    localStorage.setItem('evahan_service_providers', JSON.stringify(updated));
+  };
+
+  const handleDisburseSpPayout = (spId: string) => {
+    const updated = serviceProviders.map(sp => {
+      if (sp.id === spId) {
+        return {
+          ...sp,
+          totalEarnings: sp.totalEarnings + sp.pendingPayout,
+          pendingPayout: 0
+        };
+      }
+      return sp;
+    });
+    setServiceProviders(updated);
+    localStorage.setItem('evahan_service_providers', JSON.stringify(updated));
+    setRefreshNotification('✓ Payout successfully disbursed via Instant IMPS/UPI Transfer!');
+    setTimeout(() => setRefreshNotification(null), 3500);
+  };
+
+  // Spare Vendor Handlers
+  const handleRegisterSpareVendor = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vendorForm.companyName.trim() || !vendorForm.contactPerson.trim() || !vendorForm.phone.trim()) {
+      alert('Kripya vendor details bharein!');
+      return;
+    }
+    const newVendor: SpareVendor = {
+      id: `ven-${Date.now().toString().slice(-4)}`,
+      companyName: vendorForm.companyName.trim(),
+      contactPerson: vendorForm.contactPerson.trim(),
+      phone: vendorForm.phone.trim(),
+      email: vendorForm.email.trim() || 'vendor@e-vahan.in',
+      location: vendorForm.location.trim() || 'Industrial Area Hub',
+      categories: vendorForm.categories,
+      activeSkus: 8,
+      fulfilledOrders: 0,
+      pendingPayout: 0,
+      totalDisbursed: 0,
+      status: 'VERIFIED',
+      rating: 5.0
+    };
+    const updated = [newVendor, ...spareVendors];
+    setSpareVendors(updated);
+    localStorage.setItem('evahan_spare_vendors', JSON.stringify(updated));
+    setVendorForm({
+      companyName: '',
+      contactPerson: '',
+      phone: '',
+      email: '',
+      location: '',
+      categories: 'LFP Battery Modules & Smart Controllers'
+    });
+    setRefreshNotification(`✓ Spare Vendor "${newVendor.companyName}" successfully registered & verified!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+    setActiveTab('vendor-list');
+  };
+
+  const handleDisburseVendorPayout = (vendorId: string) => {
+    const updated = spareVendors.map(v => {
+      if (v.id === vendorId) {
+        return {
+          ...v,
+          totalDisbursed: v.totalDisbursed + v.pendingPayout,
+          pendingPayout: 0
+        };
+      }
+      return v;
+    });
+    setSpareVendors(updated);
+    localStorage.setItem('evahan_spare_vendors', JSON.stringify(updated));
+    setRefreshNotification('✓ Vendor settlement payment processed via RTGS / Corporate Banking!');
+    setTimeout(() => setRefreshNotification(null), 3500);
+  };
+
+  // Shopkeeper / Dealer Handlers
+  const handleRegisterShopkeeper = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shopForm.shopName.trim() || !shopForm.ownerName.trim() || !shopForm.phone.trim()) {
+      alert('Kripya showroom details bharein!');
+      return;
+    }
+    const newShop: Shopkeeper = {
+      id: `shp-${Date.now().toString().slice(-4)}`,
+      shopName: shopForm.shopName.trim(),
+      ownerName: shopForm.ownerName.trim(),
+      phone: shopForm.phone.trim(),
+      city: shopForm.city,
+      address: shopForm.address.trim() || 'Commercial Showroom Center',
+      gstNumber: shopForm.gstNumber.trim().toUpperCase() || '07AABC1234F1Z5',
+      inventoryCount: 6,
+      totalSales: 0,
+      commissionRate: shopForm.commissionRate,
+      pendingPayout: 0,
+      totalDisbursed: 0,
+      status: 'ACTIVE'
+    };
+    const updated = [newShop, ...shopkeepers];
+    setShopkeepers(updated);
+    localStorage.setItem('evahan_shopkeepers', JSON.stringify(updated));
+    setShopForm({
+      shopName: '',
+      ownerName: '',
+      phone: '',
+      city: 'Delhi NCR',
+      address: '',
+      gstNumber: '',
+      commissionRate: '3.5%'
+    });
+    setRefreshNotification(`✓ Showroom Partner "${newShop.shopName}" successfully onboarded!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+    setActiveTab('shop-list');
+  };
+
+  const handleDisburseShopkeeperPayout = (shopId: string) => {
+    const updated = shopkeepers.map(s => {
+      if (s.id === shopId) {
+        return {
+          ...s,
+          totalDisbursed: s.totalDisbursed + s.pendingPayout,
+          pendingPayout: 0
+        };
+      }
+      return s;
+    });
+    setShopkeepers(updated);
+    localStorage.setItem('evahan_shopkeepers', JSON.stringify(updated));
+    setRefreshNotification('✓ Dealership commission settlement disbursed to authorized bank account!');
+    setTimeout(() => setRefreshNotification(null), 3500);
+  };
+
+  const handleUpdateServiceRate = (rateId: string, newPrice: number) => {
+    const updated = serviceRates.map(r => r.id === rateId ? { ...r, price: newPrice } : r);
+    setServiceRates(updated);
+    localStorage.setItem('evahan_service_rates', JSON.stringify(updated));
+    setRefreshNotification('✓ Service package rate card updated live in central catalog!');
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshNotification, setRefreshNotification] = useState<string | null>(null);
@@ -93,43 +697,202 @@ export const AdminDashboardPage: React.FC = () => {
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
 
   // Grouped Navigation structure for Admin Sidebar Menu
-  const adminNavigationGroups = [
+  // Accordion Navigation Structure matching User's 4 Reference Photos:
+  // 1. Dashboard (Top with cyan left line)
+  // 2. Service Management (Layers icon, chevron right/down)
+  // 3. Service Provider Management (UserCheck icon, active bg container, chevron)
+  // 4. Spare VendorManagement (Box icon, active bg container, chevron)
+  // 5. Marketplace Management (Store icon, active bg container, chevron)
+  // 6. User Management (Users icon, chevron)
+  const adminAccordionGroups = [
     {
-      group: 'MAIN DASHBOARD',
+      id: 'service-management',
+      label: 'Service Management',
+      icon: Layers,
       items: [
-        { id: 'overview', label: 'Overview Hub', icon: LayoutDashboard, badge: null, badgeColor: '' },
+        { id: 'services' as AdminTab, label: 'Service Bookings & Vans', badge: services.length },
+        { id: 'service-history' as AdminTab, label: 'partner history', badge: null },
+        { id: 'service-categories' as AdminTab, label: 'Service Categories & Rates', badge: null },
+        { id: 'service-approvals' as AdminTab, label: 'Customer Digital Approvals', badge: null },
       ]
     },
     {
-      group: 'CUSTOMER CRM',
+      id: 'service-provider',
+      label: 'Service Provider Management',
+      icon: UserCheck,
       items: [
-        { id: 'customers', label: 'Registered Customers', icon: Users, badge: registeredCustomers.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
+        { id: 'sp-history' as AdminTab, label: 'partner history', badge: null },
+        { id: 'sp-onboarding' as AdminTab, label: 'Service Provider onboarding', badge: null },
+        { id: 'sp-list' as AdminTab, label: 'Service Provider List', badge: serviceProviders.length },
+        { id: 'sp-payout' as AdminTab, label: 'Service Provider Payout', badge: null },
       ]
     },
     {
-      group: 'SALES & COMMERCE',
+      id: 'spare-vendor',
+      label: 'Spare VendorManagement',
+      icon: Box,
       items: [
-        { id: 'orders', label: 'Vehicle Orders', icon: ShoppingBag, badge: vehicleOrders.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
-        { id: 'parts', label: 'Spare Parts Orders', icon: Truck, badge: partsOrders.length, badgeColor: 'bg-emerald-100 text-emerald-800' },
-        { id: 'quotations', label: 'Quotation Dockets', icon: FileText, badge: quotations.length, badgeColor: 'bg-purple-100 text-purple-800' },
+        { id: 'vendor-history' as AdminTab, label: 'Spare vendor history', badge: null },
+        { id: 'vendor-onboarding' as AdminTab, label: 'Spare vendor onboarding', badge: null },
+        { id: 'vendor-list' as AdminTab, label: 'Spare vendor List', badge: spareVendors.length },
+        { id: 'vendor-payout' as AdminTab, label: 'Spare vendor Payout', badge: null },
+        { id: 'parts' as AdminTab, label: 'Spare vendor products', badge: partsOrders.length },
       ]
     },
     {
-      group: 'FIELD OPERATIONS',
+      id: 'marketplace',
+      label: 'Marketplace Management',
+      icon: Store,
       items: [
-        { id: 'services', label: 'Doorstep Vans / Service', icon: Wrench, badge: services.length, badgeColor: 'bg-amber-100 text-amber-800' },
-        { id: 'test-drives', label: 'Test Drive Bookings', icon: Clock, badge: testDrives.length, badgeColor: 'bg-blue-100 text-blue-800' },
+        { id: 'shop-onboarding' as AdminTab, label: 'Shopkeeper Onboarding', badge: null },
+        { id: 'shop-list' as AdminTab, label: 'Shopkeeper List', badge: shopkeepers.length },
+        { id: 'inventory' as AdminTab, label: 'Shopkeeper Products', badge: VEHICLES_DATA.length },
+        { id: 'orders' as AdminTab, label: 'Shopkeeper', badge: vehicleOrders.length },
+        { id: 'shop-payout' as AdminTab, label: 'Shopkeeper Payout', badge: null },
       ]
     },
     {
-      group: 'CATALOG & SUPPORT',
+      id: 'user-management',
+      label: 'User Management',
+      icon: Users,
       items: [
-        { id: 'inventory', label: 'Inventory Catalog', icon: PackageCheck, badge: VEHICLES_DATA.length + SPARE_PARTS_DATA.length, badgeColor: 'bg-gray-100 text-gray-700' },
-        { id: 'tickets', label: 'Customer Support Desk', icon: LifeBuoy, badge: tickets.length, badgeColor: 'bg-rose-100 text-rose-800' },
-        { id: 'announcements', label: 'Announcement Bar', icon: Bell, badge: announcements.length, badgeColor: 'bg-indigo-100 text-indigo-800' },
+        { id: 'customers' as AdminTab, label: 'Registered Customers', badge: registeredCustomers.length },
+        { id: 'quotations' as AdminTab, label: 'Customer Quotations', badge: quotations.length },
+        { id: 'test-drives' as AdminTab, label: 'Test Drive Bookings', badge: testDrives.length },
+        { id: 'tickets' as AdminTab, label: 'Customer Support Desk', badge: tickets.length },
+        { id: 'announcements' as AdminTab, label: 'Announcement Bar Manager', badge: announcements.length },
       ]
     },
   ];
+
+  // Common Sidebar Navigation component rendered in both desktop aside and mobile drawer
+  const renderSidebarNav = () => (
+    <div className="space-y-2">
+      {/* Brand Header */}
+      <div className="px-3 pt-2 pb-3 border-b border-[#183556] mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-white">
+            <Zap className="w-4 h-4 text-[#00D2FF]" />
+          </div>
+          <div>
+            <h2 className="text-sm font-black text-white tracking-wide">E-VAHAN</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ADMIN DASHBOARD</p>
+          </div>
+        </div>
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="System Online"></span>
+      </div>
+
+      {/* Top Main Item: Dashboard (photo 1, 3, 4 style with vertical cyan left bar) */}
+      <button
+        onClick={() => handleSelectTab('overview')}
+        className={`relative w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all ${
+          activeTab === 'overview'
+            ? 'bg-[#183556] text-white shadow-sm border border-blue-400/20'
+            : 'text-slate-300 hover:text-white hover:bg-[#132A46]'
+        }`}
+      >
+        {activeTab === 'overview' && (
+          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#00D2FF] rounded-r shadow-[0_0_8px_#00D2FF]"></span>
+        )}
+        <LayoutGrid className={`w-5 h-5 shrink-0 ${activeTab === 'overview' ? 'text-[#00D2FF]' : 'text-slate-400'}`} />
+        <span>Dashboard</span>
+      </button>
+
+      {/* Accordion Categories */}
+      {adminAccordionGroups.map((group) => {
+        const isExpanded = !!expandedMenus[group.id];
+        const GroupIcon = group.icon;
+        const isAnyChildActive = group.items.some(item => item.id === activeTab);
+
+        return (
+          <div key={group.id} className="space-y-1">
+            {/* Parent Accordion Row (photo 2, 3, 4 style: rounded dark container with chevron) */}
+            <button
+              onClick={() => toggleMenu(group.id)}
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-sm font-bold ${
+                isExpanded
+                  ? 'bg-[#183556] text-white shadow-sm border border-blue-400/20'
+                  : isAnyChildActive
+                  ? 'text-white bg-[#132A46]/70 border border-blue-500/20'
+                  : 'text-slate-300 hover:text-white hover:bg-[#132A46]'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <GroupIcon className={`w-5 h-5 shrink-0 ${isExpanded || isAnyChildActive ? 'text-[#00D2FF]' : 'text-slate-400'}`} />
+                <span>{group.label}</span>
+              </div>
+              {isExpanded ? (
+                <ChevronDown className="w-4 h-4 text-slate-300 shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+              )}
+            </button>
+
+            {/* Submenu Items List (indented, matching reference photos 2, 3, 4) */}
+            {isExpanded && (
+              <div className="pl-11 pr-2 pt-1 pb-2 space-y-1">
+                {group.items.map((subItem) => {
+                  const isSubActive = activeTab === subItem.id;
+                  return (
+                    <button
+                      key={subItem.id}
+                      onClick={() => handleSelectTab(subItem.id, group.id)}
+                      className={`w-full text-left py-1.5 px-2 rounded-lg text-[13px] transition-all flex items-center justify-between ${
+                        isSubActive
+                          ? 'text-[#00D2FF] font-bold bg-[#183556]/60'
+                          : 'text-slate-300 hover:text-white hover:bg-[#132A46]/40 font-medium'
+                      }`}
+                    >
+                      <span className="truncate">{subItem.label}</span>
+                      {subItem.badge !== null && subItem.badge !== undefined && subItem.badge > 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A]">
+                          {subItem.badge}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Sidebar Footer Actions */}
+      <div className="pt-3 border-t border-[#183556] mt-4 space-y-2">
+        <button
+          onClick={handleManualRefresh}
+          disabled={isRefreshing}
+          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-300 bg-[#132A46] hover:bg-[#183556] border border-emerald-500/30 transition-all shadow-sm"
+        >
+          <div className="flex items-center gap-2">
+            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Live Data'}</span>
+          </div>
+          <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded">Sync</span>
+        </button>
+
+        <Link
+          to="/"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-[#132A46] transition-all"
+        >
+          <div className="flex items-center gap-2">
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            <span>Customer Storefront</span>
+          </div>
+          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">Live</span>
+        </Link>
+
+        <button
+          onClick={handleAdminLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-all"
+        >
+          <LogOut className="w-3.5 h-3.5 text-rose-400" />
+          <span>Lock & Admin Logout</span>
+        </button>
+      </div>
+    </div>
+  );
 
   const loadAllData = () => {
     setRegisteredCustomers(storage.getRegisteredUsers());
@@ -503,109 +1266,24 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Mobile Slide-Over Drawer & Backdrop */}
+        {/* Mobile Slide-Over Drawer with Dark Navy Sidebar */}
         {isMobileSidebarOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
-            {/* Backdrop */}
             <div
               className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
               onClick={() => setIsMobileSidebarOpen(false)}
             />
-            {/* Drawer */}
-            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl z-50 flex flex-col justify-between overflow-y-auto">
-              <div className="p-5 space-y-4">
-                <div className="flex items-center justify-between pb-3.5 border-b border-gray-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#06152B] to-[#16A34A] flex items-center justify-center text-white shadow-md">
-                      <ShieldCheck className="w-5 h-5 text-[#B7F34A]" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-black text-[#06152B]">Admin Navigation</h3>
-                      <span className="text-[10px] font-bold text-emerald-600">E-VAHAN Central Ops</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsMobileSidebarOpen(false)}
-                    className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Mobile Navigation Groups */}
-                {adminNavigationGroups.map((group) => (
-                  <div key={group.group} className="space-y-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 block">
-                      {group.group}
-                    </span>
-                    <div className="space-y-1">
-                      {group.items.map((item) => {
-                        const Icon = item.icon;
-                        const isActive = activeTab === item.id;
-                        return (
-                          <button
-                            key={item.id}
-                            onClick={() => {
-                              setActiveTab(item.id as any);
-                              setIsMobileSidebarOpen(false);
-                            }}
-                            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                              isActive
-                                ? 'bg-gradient-to-r from-[#06152B] to-[#0B2545] text-white shadow-md'
-                                : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5">
-                              <Icon className={`w-4 h-4 ${isActive ? 'text-[#B7F34A]' : 'text-gray-400'}`} />
-                              <span>{item.label}</span>
-                            </div>
-                            {item.badge !== null && item.badge > 0 && (
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                isActive ? 'bg-[#B7F34A] text-[#06152B]' : item.badgeColor
-                              }`}>
-                                {item.badge}
-                              </span>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Mobile Drawer Bottom Actions */}
-              <div className="p-4 border-t border-gray-100 bg-gray-50/90 space-y-2">
+            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B1E36] text-white shadow-2xl z-50 flex flex-col justify-between overflow-y-auto p-4 border-r border-[#183556]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#183556] mb-3">
+                <span className="text-xs font-bold text-slate-300">ADMIN NAVIGATION</span>
                 <button
-                  onClick={() => {
-                    setIsMobileSidebarOpen(false);
-                    handleManualRefresh();
-                  }}
-                  disabled={isRefreshing}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-800 hover:bg-emerald-100 shadow-sm transition-all"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  <span>{isRefreshing ? 'Refreshing Data...' : 'Refresh Live Database'}</span>
-                </button>
-                <Link
-                  to="/"
                   onClick={() => setIsMobileSidebarOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-all"
+                  className="p-1.5 rounded-lg bg-[#183556] hover:bg-[#1E436D] text-slate-300"
                 >
-                  <ExternalLink className="w-3.5 h-3.5 text-gray-500" />
-                  <span>View Customer Storefront</span>
-                </Link>
-                <button
-                  onClick={() => {
-                    setIsMobileSidebarOpen(false);
-                    handleAdminLogout();
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-all"
-                >
-                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
-                  <span>Lock & Admin Logout</span>
+                  <X className="w-4 h-4" />
                 </button>
               </div>
+              {renderSidebarNav()}
             </div>
           </div>
         )}
@@ -620,20 +1298,18 @@ export const AdminDashboardPage: React.FC = () => {
             <span>All Menus</span>
           </button>
           {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'customers', label: `Customers (${registeredCustomers.length})` },
-            { id: 'orders', label: `Orders (${vehicleOrders.length})` },
-            { id: 'parts', label: `Parts (${partsOrders.length})` },
-            { id: 'services', label: `Vans (${services.length})` },
-            { id: 'test-drives', label: `Drives (${testDrives.length})` },
-            { id: 'quotations', label: `Quotes (${quotations.length})` },
-            { id: 'inventory', label: 'Inventory' },
-            { id: 'tickets', label: `Support (${tickets.length})` },
-            { id: 'announcements', label: 'Announcements' }
+            { id: 'overview' as AdminTab, label: 'Dashboard' },
+            { id: 'services' as AdminTab, label: `Service Vans (${services.length})` },
+            { id: 'sp-list' as AdminTab, label: `Providers (${serviceProviders.length})` },
+            { id: 'vendor-list' as AdminTab, label: `Vendors (${spareVendors.length})` },
+            { id: 'shop-list' as AdminTab, label: `Showrooms (${shopkeepers.length})` },
+            { id: 'customers' as AdminTab, label: `Customers (${registeredCustomers.length})` },
+            { id: 'orders' as AdminTab, label: `Orders (${vehicleOrders.length})` },
+            { id: 'parts' as AdminTab, label: `Parts (${partsOrders.length})` },
           ].map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeTab === tab.id
                   ? 'bg-emerald-600 text-white shadow-sm'
@@ -648,114 +1324,18 @@ export const AdminDashboardPage: React.FC = () => {
         {/* 2-Column Responsive Dashboard Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           
-          {/* DESKTOP SIDEBAR MENU (lg:col-span-3 xl:col-span-3) */}
+          {/* DESKTOP SIDEBAR MENU (Deep Dark Navy Blue Accordion from User's Reference Photos) */}
           <aside className="hidden lg:block lg:col-span-3 xl:col-span-3 space-y-4 sticky top-6">
             
-            {/* Admin Profile Box */}
-            <div className="bg-gradient-to-br from-[#06152B] to-[#0B2545] rounded-3xl p-5 text-white shadow-xl border border-emerald-500/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                  <ShieldCheck className="w-6 h-6 text-[#B7F34A]" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-white">Central Admin</h3>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-[#B7F34A] animate-pulse"></span>
-                    <span className="text-[11px] font-semibold text-emerald-300">Authorized Session</span>
-                  </div>
-                </div>
-              </div>
-              <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-slate-300 flex items-center justify-between">
-                <span className="text-[10px] text-gray-400 font-sans uppercase font-bold">Admin Mobile:</span>
-                <span className="text-[#B7F34A] font-bold">+91 {adminPhone || '9244272627'}</span>
-              </div>
-            </div>
-
-            {/* Sidebar Navigation Card */}
-            <div className="bg-white rounded-3xl p-4 border border-gray-200/80 shadow-subtle space-y-5">
-              {adminNavigationGroups.map((group) => (
-                <div key={group.group} className="space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-3 block">
-                    {group.group}
-                  </span>
-                  <div className="space-y-1">
-                    {group.items.map((item) => {
-                      const Icon = item.icon;
-                      const isActive = activeTab === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setActiveTab(item.id as any)}
-                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all group ${
-                            isActive
-                              ? 'bg-gradient-to-r from-[#06152B] to-[#0B2545] text-white shadow-md'
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2.5">
-                            <Icon className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                              isActive ? 'text-[#B7F34A]' : 'text-gray-400'
-                            }`} />
-                            <span>{item.label}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {item.badge !== null && item.badge > 0 && (
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                isActive ? 'bg-[#B7F34A] text-[#06152B]' : item.badgeColor
-                              }`}>
-                                {item.badge}
-                              </span>
-                            )}
-                            <ChevronRight className={`w-3.5 h-3.5 transition-transform ${
-                              isActive ? 'text-[#B7F34A] translate-x-0.5' : 'text-gray-300 opacity-0 group-hover:opacity-100'
-                            }`} />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              {/* Sidebar Quick Footer Actions */}
-              <div className="pt-3 border-t border-gray-100 space-y-2">
-                <button
-                  onClick={handleManualRefresh}
-                  disabled={isRefreshing}
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-2xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <RefreshCw className={`w-4 h-4 text-emerald-600 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    <span>{isRefreshing ? 'Refreshing...' : 'Refresh Live Database'}</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-200/60 px-1.5 py-0.5 rounded">Sync</span>
-                </button>
-
-                <Link
-                  to="/"
-                  className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
-                >
-                  <div className="flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4 text-gray-400" />
-                    <span>Customer Storefront</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Live</span>
-                </Link>
-
-                <button
-                  onClick={handleAdminLogout}
-                  className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all"
-                >
-                  <LogOut className="w-4 h-4 text-rose-500" />
-                  <span>Lock & Admin Logout</span>
-                </button>
-              </div>
+            {/* Sidebar Dark Card Container matching Photos 1, 2, 3, 4 */}
+            <div className="bg-[#0B1E36] rounded-3xl p-4 border border-[#183556] shadow-2xl text-white">
+              {renderSidebarNav()}
             </div>
 
             {/* Quick System Badge */}
             <div className="p-3.5 bg-gray-100/80 rounded-2xl border border-gray-200 text-center text-[11px] text-gray-500">
               <span className="font-bold text-gray-700">E-VAHAN Central OS</span>
-              <span className="block text-[10px] text-gray-400 mt-0.5">256-Bit SSL Encrypted Admin Console</span>
+              <span className="block text-[10px] text-gray-400 mt-0.5">256-Bit SSL Encrypted Multi-Vendor Console</span>
             </div>
           </aside>
 
@@ -1680,7 +2260,993 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         )}
 
-          </main>
+          {/* TAB: SERVICE MANAGEMENT - partner history */}
+            {activeTab === 'service-history' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <Layers className="w-5 h-5 text-[#16A34A]" />
+                      <span>Service Partner Booking & Dispatch History</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Completed jobs, customer ratings, mobile technician allocations and job bills.</p>
+                  </div>
+                  <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1 rounded-xl border border-emerald-200">
+                    Total Completed Jobs: {services.length + 42}
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Job Reference</th>
+                        <th className="p-3">Customer</th>
+                        <th className="p-3">Assigned Van / Mechanic</th>
+                        <th className="p-3">Service Category</th>
+                        <th className="p-3">Date & Slot</th>
+                        <th className="p-3">Customer Rating</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {services.map(s => (
+                        <tr key={s.id} className="hover:bg-gray-50/60">
+                          <td className="p-3 font-mono font-bold text-gray-900">{s.bookingNumber || s.id}</td>
+                          <td className="p-3">
+                            <strong className="block text-gray-900">{s.customerName}</strong>
+                            <span className="text-gray-500 font-mono">+91 {s.customerPhone}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                              DL-1EV-8899 (Santosh Kumar)
+                            </span>
+                          </td>
+                          <td className="p-3 font-bold text-gray-800">{s.serviceCategoryName}</td>
+                          <td className="p-3">{s.appointmentDate} ({s.appointmentSlot})</td>
+                          <td className="p-3">
+                            <span className="text-amber-600 font-bold">⭐ 4.9 / 5.0</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                              COMPLETED
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SERVICE MANAGEMENT - Service Categories & Rates */}
+            {activeTab === 'service-categories' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <Wrench className="w-5 h-5 text-[#16A34A]" />
+                      <span>Service Categories & Official Rate Cards</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Certified doorstep maintenance packages, diagnostic tariffs, and SLA durations.</p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl">
+                    Standardized Pan-India Pricing
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {serviceRates.map(rate => (
+                    <div key={rate.id} className="p-5 rounded-2xl bg-gray-50 border border-gray-200 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                            {rate.category}
+                          </span>
+                          <h3 className="text-sm font-black text-gray-900 mt-1">{rate.title}</h3>
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                            <Clock className="w-3 h-3 text-gray-400" /> {rate.duration}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-lg font-black text-gray-900 block">₹{rate.price.toLocaleString('en-IN')}</span>
+                          <span className="text-[10px] text-gray-400">incl. GST</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-gray-200/60 space-y-1">
+                        {rate.features.map((feat, idx) => (
+                          <div key={idx} className="text-[11px] text-gray-600 flex items-center gap-1.5">
+                            <Check className="w-3 h-3 text-[#16A34A] shrink-0" />
+                            <span>{feat}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="pt-2 flex items-center justify-between">
+                        <span className="text-[10px] text-gray-400">Live on Customer Booking Flow</span>
+                        <button
+                          onClick={() => {
+                            const newPrice = prompt(`Enter new price for ${rate.title}:`, rate.price.toString());
+                            if (newPrice && !isNaN(Number(newPrice))) {
+                              handleUpdateServiceRate(rate.id, Number(newPrice));
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-white border border-gray-300 text-xs font-bold text-gray-700 hover:bg-gray-100 transition-all"
+                        >
+                          Edit Rate
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SERVICE MANAGEMENT - Customer Digital Approvals */}
+            {activeTab === 'service-approvals' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                <div className="border-b border-gray-100 pb-3">
+                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <FileCheck className="w-5 h-5 text-[#16A34A]" />
+                    <span>Customer Digital Approvals & Work Order Queue</span>
+                  </h2>
+                  <p className="text-xs text-gray-500">
+                    Real-time customer authorization for additional replacement parts, battery pack balancing, and controller servicing.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {services.filter(s => s.additionalApprovalQuote).length === 0 ? (
+                    <div className="p-8 text-center rounded-2xl bg-gray-50 border border-dashed border-gray-200 space-y-2">
+                      <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
+                      <h4 className="text-sm font-bold text-gray-800">All Work Orders Approved</h4>
+                      <p className="text-xs text-gray-500">Currently no service bookings have pending additional customer approvals.</p>
+                    </div>
+                  ) : (
+                    services.filter(s => s.additionalApprovalQuote).map(s => (
+                      <div key={s.id} className="p-5 rounded-2xl bg-gray-50 border border-gray-200 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <span className="font-mono font-bold text-xs text-[#06152B]">Booking #{s.bookingNumber || s.id}</span>
+                            <h4 className="text-sm font-black text-gray-900">{s.customerName} • +91 {s.customerPhone}</h4>
+                            <p className="text-xs text-gray-500">{s.serviceCategoryName} • {s.city}</p>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-xl text-xs font-bold ${
+                            s.additionalApprovalQuote?.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
+                            s.additionalApprovalQuote?.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' :
+                            'bg-amber-100 text-amber-800'
+                          }`}>
+                            {s.additionalApprovalQuote?.status}
+                          </span>
+                        </div>
+
+                        <div className="p-3 bg-white rounded-xl border border-gray-200 text-xs space-y-1">
+                          <strong className="block text-gray-800 font-bold">Technician Diagnosis:</strong>
+                          <p className="text-gray-600">{s.additionalApprovalQuote?.title} - {s.additionalApprovalQuote?.notes}</p>
+                          <span className="text-xs font-black text-[#16A34A] block mt-1">
+                            Additional Amount: ₹{s.additionalApprovalQuote?.totalAmount.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateServiceApproval(s.id, true)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm"
+                          >
+                            Mark Customer Approved
+                          </button>
+                          <button
+                            onClick={() => handleUpdateServiceApproval(s.id, false)}
+                            className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition-all"
+                          >
+                            Mark Customer Declined
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SERVICE PROVIDER MANAGEMENT - partner history */}
+            {activeTab === 'sp-history' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="border-b border-gray-100 pb-3">
+                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-[#16A34A]" />
+                    <span>Service Provider Performance & Job Logs</span>
+                  </h2>
+                  <p className="text-xs text-gray-500">Historical logs of technician jobs, ratings, on-time arrivals, and field resolutions.</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Technician</th>
+                        <th className="p-3">Van Number</th>
+                        <th className="p-3">Jobs Done</th>
+                        <th className="p-3">Rating</th>
+                        <th className="p-3">Joined Date</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {serviceProviders.map(sp => (
+                        <tr key={sp.id} className="hover:bg-gray-50/60">
+                          <td className="p-3 font-bold text-gray-900">{sp.name}</td>
+                          <td className="p-3 font-mono font-bold text-gray-800">{sp.vanNumber}</td>
+                          <td className="p-3 font-bold text-gray-900">{sp.completedJobs} jobs</td>
+                          <td className="p-3 font-bold text-amber-600">⭐ {sp.rating}</td>
+                          <td className="p-3 text-gray-500">{sp.joinedDate}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                              {sp.status.replace('_', ' ')}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider onboarding */}
+            {activeTab === 'sp-onboarding' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="border-b border-gray-100 pb-4">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-[#16A34A]" />
+                    <span>Service Provider Onboarding & Van Authorization</span>
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Register a new certified EV technician, allocate a mobile service van, and authorize doorstep work orders.
+                  </p>
+                </div>
+
+                <form onSubmit={handleRegisterServiceProvider} className="space-y-4 max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Technician Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Santosh Kumar"
+                        value={spForm.name}
+                        onChange={e => setSpForm({ ...spForm, name: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Mobile Number (+91) *</label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="10-digit mobile number"
+                        value={spForm.phone}
+                        onChange={e => setSpForm({ ...spForm, phone: e.target.value.replace(/\D/g, '') })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Assigned Mobile Van Number *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. DL-1EV-8899"
+                        value={spForm.vanNumber}
+                        onChange={e => setSpForm({ ...spForm, vanNumber: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono uppercase focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Operational City Hub *</label>
+                      <select
+                        value={spForm.city}
+                        onChange={e => setSpForm({ ...spForm, city: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      >
+                        <option value="Delhi NCR">Delhi NCR</option>
+                        <option value="Bengaluru">Bengaluru</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Pune">Pune</option>
+                        <option value="Bhopal">Bhopal</option>
+                        <option value="Hyderabad">Hyderabad</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Specialization & Certifications *</label>
+                    <select
+                      value={spForm.specialization}
+                      onChange={e => setSpForm({ ...spForm, specialization: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                    >
+                      <option value="Battery Diagnostics & Controller Repair">Battery Diagnostics & Controller Repair</option>
+                      <option value="Doorstep Periodic Maintenance & Brake Servicing">Doorstep Periodic Maintenance & Brake Servicing</option>
+                      <option value="Motor & Electrical Diagnostic Calibration">Motor & Electrical Diagnostic Calibration</option>
+                      <option value="Brake & Suspension Overhaul Specialist">Brake & Suspension Overhaul Specialist</option>
+                      <option value="Emergency Roadside EV Assistance">Emergency Roadside EV Assistance</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+                  >
+                    <span>Register Service Provider & Issue Van Pass</span>
+                    <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider List */}
+            {activeTab === 'sp-list' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <UserCheck className="w-5 h-5 text-[#16A34A]" />
+                      <span>Certified Service Providers & Mobile Fleet Directory ({serviceProviders.length})</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Live status, van allocations, completed work orders, and direct dispatch controls.</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('sp-onboarding')}
+                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Onboard New Partner</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Technician Details</th>
+                        <th className="p-3">Assigned Van</th>
+                        <th className="p-3">Operational Hub</th>
+                        <th className="p-3">Specialization</th>
+                        <th className="p-3">Jobs & Rating</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {serviceProviders.map(sp => (
+                        <tr key={sp.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{sp.name}</strong>
+                            <a href={`tel:+91${sp.phone}`} className="text-[11px] text-emerald-700 font-mono hover:underline flex items-center gap-1">
+                              <Phone className="w-3 h-3" /> +91 {sp.phone}
+                            </a>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
+                              {sp.vanNumber}
+                            </span>
+                          </td>
+                          <td className="p-3 font-medium text-gray-800">{sp.city}</td>
+                          <td className="p-3 text-gray-600 max-w-xs">{sp.specialization}</td>
+                          <td className="p-3">
+                            <strong className="block text-gray-900">{sp.completedJobs} jobs</strong>
+                            <span className="text-amber-600 font-bold text-[11px]">⭐ {sp.rating}</span>
+                          </td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => handleToggleSpStatus(sp.id)}
+                              className={`px-2 py-0.5 rounded-md font-bold text-[10px] transition-all cursor-pointer ${
+                                sp.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' :
+                                sp.status === 'ON_JOB' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                                'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                              title="Click to toggle partner status"
+                            >
+                              {sp.status.replace('_', ' ')}
+                            </button>
+                          </td>
+                          <td className="p-3">
+                            <a
+                              href={`tel:+91${sp.phone}`}
+                              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-emerald-50 text-gray-700 hover:text-emerald-800 font-bold text-[11px] inline-flex items-center gap-1"
+                            >
+                              <Phone className="w-3 h-3" /> Call
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider Payout */}
+            {activeTab === 'sp-payout' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                      <span>Service Provider Payout & Commission Disbursement</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Weekly job earnings, 85% technician revenue share, and live instant bank payouts.</p>
+                  </div>
+                  <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                    Platform Split: 85% Partner / 15% Platform
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Service Partner</th>
+                        <th className="p-3">Van Reg</th>
+                        <th className="p-3">Jobs Completed</th>
+                        <th className="p-3">Total Earned</th>
+                        <th className="p-3">Pending Payout</th>
+                        <th className="p-3">Disbursement Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {serviceProviders.map(sp => (
+                        <tr key={sp.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{sp.name}</strong>
+                            <span className="text-[11px] text-gray-500 font-mono">+91 {sp.phone}</span>
+                          </td>
+                          <td className="p-3 font-mono font-bold">{sp.vanNumber}</td>
+                          <td className="p-3 font-bold text-gray-900">{sp.completedJobs} jobs</td>
+                          <td className="p-3 font-bold text-gray-900">₹{sp.totalEarnings.toLocaleString('en-IN')}</td>
+                          <td className="p-3">
+                            <span className={`font-mono font-black ${sp.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                              ₹{sp.pendingPayout.toLocaleString('en-IN')}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            {sp.pendingPayout > 0 ? (
+                              <button
+                                onClick={() => handleDisburseSpPayout(sp.id)}
+                                className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs"
+                              >
+                                Disburse Payout (₹{sp.pendingPayout.toLocaleString('en-IN')})
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor history */}
+            {activeTab === 'vendor-history' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="border-b border-gray-100 pb-3">
+                  <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                    <Box className="w-5 h-5 text-[#16A34A]" />
+                    <span>Spare Vendor Fulfillment & Dispatch History</span>
+                  </h2>
+                  <p className="text-xs text-gray-500">OEM parts dispatch batches, warehouse consignments, and SLA compliance metrics.</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Batch Consignment</th>
+                        <th className="p-3">OEM Supplier</th>
+                        <th className="p-3">Warehouse Hub</th>
+                        <th className="p-3">Category</th>
+                        <th className="p-3">Dispatched Units</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {spareVendors.map((v, i) => (
+                        <tr key={v.id} className="hover:bg-gray-50/60">
+                          <td className="p-3 font-mono font-bold text-gray-900">CSG-2026-0{i + 1}88</td>
+                          <td className="p-3">
+                            <strong className="block text-gray-900">{v.companyName}</strong>
+                            <span className="text-gray-500 text-[11px]">{v.contactPerson}</span>
+                          </td>
+                          <td className="p-3 text-gray-700">{v.location}</td>
+                          <td className="p-3 font-medium text-gray-800">{v.categories}</td>
+                          <td className="p-3 font-bold text-gray-900">{v.fulfilledOrders} units</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                              DELIVERED & VERIFIED
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor onboarding */}
+            {activeTab === 'vendor-onboarding' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="border-b border-gray-100 pb-4">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Box className="w-5 h-5 text-[#16A34A]" />
+                    <span>Spare Parts Vendor & OEM Supplier Onboarding</span>
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Onboard certified OEM parts distributors, battery module suppliers, and tier-1 component partners.
+                  </p>
+                </div>
+
+                <form onSubmit={handleRegisterSpareVendor} className="space-y-4 max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Company / OEM Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. CEAT EV Speciality Tyres"
+                        value={vendorForm.companyName}
+                        onChange={e => setVendorForm({ ...vendorForm, companyName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Authorized Contact Person *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Suresh Rao"
+                        value={vendorForm.contactPerson}
+                        onChange={e => setVendorForm({ ...vendorForm, contactPerson: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Business Mobile (+91) *</label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="10-digit mobile number"
+                        value={vendorForm.phone}
+                        onChange={e => setVendorForm({ ...vendorForm, phone: e.target.value.replace(/\D/g, '') })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Business Email</label>
+                      <input
+                        type="email"
+                        placeholder="orders@oem-partner.com"
+                        value={vendorForm.email}
+                        onChange={e => setVendorForm({ ...vendorForm, email: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Warehouse / Supply Hub Location *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Peenya Industrial Area, Bengaluru"
+                      value={vendorForm.location}
+                      onChange={e => setVendorForm({ ...vendorForm, location: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">Parts Category Supplied *</label>
+                    <select
+                      value={vendorForm.categories}
+                      onChange={e => setVendorForm({ ...vendorForm, categories: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                    >
+                      <option value="LFP Battery Modules & Smart Controllers">LFP Battery Modules & Smart Controllers</option>
+                      <option value="Ceramic Brakes, Motors & Electronic Sensors">Ceramic Brakes, Motors & Electronic Sensors</option>
+                      <option value="Low Rolling Resistance Tubeless EV Tyres">Low Rolling Resistance Tubeless EV Tyres</option>
+                      <option value="Fast Chargers, Smart Cables & BMS Wiring Kits">Fast Chargers, Smart Cables & BMS Wiring Kits</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+                  >
+                    <span>Register & Verify OEM Vendor</span>
+                    <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor List */}
+            {activeTab === 'vendor-list' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <Box className="w-5 h-5 text-[#16A34A]" />
+                      <span>Approved Spare Part Vendors & Distributors ({spareVendors.length})</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Tier-1 OEM vendors, verified supply warehouses, SKU catalogs, and fulfillment SLA.</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('vendor-onboarding')}
+                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Onboard OEM Vendor</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Vendor Name</th>
+                        <th className="p-3">Contact Person</th>
+                        <th className="p-3">Warehouse Hub</th>
+                        <th className="p-3">Parts Category</th>
+                        <th className="p-3">Active SKUs</th>
+                        <th className="p-3">SLA Rating</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {spareVendors.map(v => (
+                        <tr key={v.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{v.companyName}</strong>
+                            <span className="text-[11px] text-gray-500 font-mono">{v.email}</span>
+                          </td>
+                          <td className="p-3">
+                            <strong className="block text-gray-900">{v.contactPerson}</strong>
+                            <a href={`tel:+91${v.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
+                              +91 {v.phone}
+                            </a>
+                          </td>
+                          <td className="p-3 text-gray-700">{v.location}</td>
+                          <td className="p-3 font-medium text-gray-800">{v.categories}</td>
+                          <td className="p-3 font-mono font-bold text-gray-900">{v.activeSkus} SKUs</td>
+                          <td className="p-3">
+                            <span className="text-amber-600 font-bold">⭐ {v.rating}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> VERIFIED
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor Payout */}
+            {activeTab === 'vendor-payout' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                      <span>Spare Vendor Settlements & Consignment Ledger</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">OEM procurement settlements, parts GMV disbursement, and NEFT/RTGS transaction records.</p>
+                  </div>
+                  <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                    Net Settlement Cycle: 7 Days
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">OEM Vendor</th>
+                        <th className="p-3">Dispatched Units</th>
+                        <th className="p-3">Total Settled</th>
+                        <th className="p-3">Pending Settlement</th>
+                        <th className="p-3">Settlement Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {spareVendors.map(v => (
+                        <tr key={v.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{v.companyName}</strong>
+                            <span className="text-[11px] text-gray-500 font-mono">{v.location}</span>
+                          </td>
+                          <td className="p-3 font-bold text-gray-900">{v.fulfilledOrders} parts</td>
+                          <td className="p-3 font-bold text-gray-900">₹{v.totalDisbursed.toLocaleString('en-IN')}</td>
+                          <td className="p-3">
+                            <span className={`font-mono font-black ${v.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                              ₹{v.pendingPayout.toLocaleString('en-IN')}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            {v.pendingPayout > 0 ? (
+                              <button
+                                onClick={() => handleDisburseVendorPayout(v.id)}
+                                className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs"
+                              >
+                                Process NEFT Settlement (₹{v.pendingPayout.toLocaleString('en-IN')})
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper Onboarding */}
+            {activeTab === 'shop-onboarding' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="border-b border-gray-100 pb-4">
+                  <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                    <Store className="w-5 h-5 text-[#16A34A]" />
+                    <span>Authorized EV Dealership & Showroom Partner Onboarding</span>
+                  </h2>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Onboard authorized multi-brand EV dealerships, commercial showrooms, and test drive partner locations.
+                  </p>
+                </div>
+
+                <form onSubmit={handleRegisterShopkeeper} className="space-y-4 max-w-2xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Showroom / Hub Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. GreenWheel EV Hub Delhi"
+                        value={shopForm.shopName}
+                        onChange={e => setShopForm({ ...shopForm, shopName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Dealer Principal Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ramanuj Joshi"
+                        value={shopForm.ownerName}
+                        onChange={e => setShopForm({ ...shopForm, ownerName: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Contact Mobile (+91) *</label>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="10-digit mobile number"
+                        value={shopForm.phone}
+                        onChange={e => setShopForm({ ...shopForm, phone: e.target.value.replace(/\D/g, '') })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">City Hub *</label>
+                      <select
+                        value={shopForm.city}
+                        onChange={e => setShopForm({ ...shopForm, city: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      >
+                        <option value="Delhi NCR">Delhi NCR</option>
+                        <option value="Bengaluru">Bengaluru</option>
+                        <option value="Mumbai">Mumbai</option>
+                        <option value="Pune">Pune</option>
+                        <option value="Noida (NCR)">Noida (NCR)</option>
+                        <option value="Bhopal">Bhopal</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Showroom Address *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Plot 42, Connaught Circus, Central Delhi"
+                        value={shopForm.address}
+                        onChange={e => setShopForm({ ...shopForm, address: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">GSTIN Number</label>
+                      <input
+                        type="text"
+                        placeholder="07AAACG1234F1Z5"
+                        value={shopForm.gstNumber}
+                        onChange={e => setShopForm({ ...shopForm, gstNumber: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono uppercase focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2"
+                  >
+                    <span>Onboard EV Dealership Partner</span>
+                    <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper List */}
+            {activeTab === 'shop-list' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <Store className="w-5 h-5 text-[#16A34A]" />
+                      <span>Authorized EV Dealerships & Showroom Partners ({shopkeepers.length})</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Showroom vehicle stock, unit sales volume, commission tiers, and dealer principal contacts.</p>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('shop-onboarding')}
+                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Onboard Showroom</span>
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Dealership Hub</th>
+                        <th className="p-3">Dealer Principal</th>
+                        <th className="p-3">City & Address</th>
+                        <th className="p-3">Floor Models</th>
+                        <th className="p-3">Total Sold</th>
+                        <th className="p-3">Commission Tier</th>
+                        <th className="p-3">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {shopkeepers.map(s => (
+                        <tr key={s.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{s.shopName}</strong>
+                            <span className="text-[10px] text-gray-400 font-mono">GST: {s.gstNumber}</span>
+                          </td>
+                          <td className="p-3">
+                            <strong className="block text-gray-900">{s.ownerName}</strong>
+                            <a href={`tel:+91${s.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
+                              +91 {s.phone}
+                            </a>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-bold text-gray-900 block">{s.city}</span>
+                            <span className="text-gray-500 text-[11px]">{s.address}</span>
+                          </td>
+                          <td className="p-3 font-mono font-bold text-gray-900">{s.inventoryCount} Models</td>
+                          <td className="p-3 font-bold text-emerald-700">{s.totalSales} Units</td>
+                          <td className="p-3 font-mono font-bold text-purple-700">{s.commissionRate}</td>
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> ACTIVE
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper Payout */}
+            {activeTab === 'shop-payout' && (
+              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                      <span>Dealership Commission Settlements Ledger</span>
+                    </h2>
+                    <p className="text-xs text-gray-500">Showroom sales commissions, booking referral incentives, and payout settlements.</p>
+                  </div>
+                  <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                    Average Margin: 3.5% - 4.0%
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Showroom Partner</th>
+                        <th className="p-3">Delivered Units</th>
+                        <th className="p-3">Total Disbursed</th>
+                        <th className="p-3">Pending Commission</th>
+                        <th className="p-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {shopkeepers.map(s => (
+                        <tr key={s.id} className="hover:bg-gray-50/60">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{s.shopName}</strong>
+                            <span className="text-[11px] text-gray-500 font-mono">{s.city}</span>
+                          </td>
+                          <td className="p-3 font-bold text-gray-900">{s.totalSales} vehicles</td>
+                          <td className="p-3 font-bold text-gray-900">₹{s.totalDisbursed.toLocaleString('en-IN')}</td>
+                          <td className="p-3">
+                            <span className={`font-mono font-black ${s.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                              ₹{s.pendingPayout.toLocaleString('en-IN')}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            {s.pendingPayout > 0 ? (
+                              <button
+                                onClick={() => handleDisburseShopkeeperPayout(s.id)}
+                                className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs"
+                              >
+                                Disburse Commission (₹{s.pendingPayout.toLocaleString('en-IN')})
+                              </button>
+                            ) : (
+                              <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            </main>
         </div>
 
       </div>
