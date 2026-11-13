@@ -429,9 +429,10 @@ export const AdminDashboardPage: React.FC = () => {
   // Accordion Expand State: allows toggling parent categories as seen in user reference screenshots
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
     'service-management': false,
-    'service-provider': true, // Expanded by default matching reference photo 3
+    'service-provider': true, // Expanded by default matching reference photo 4
     'spare-vendor': false,
     'marketplace': false,
+    'catalog-architecture': false,
     'user-management': false
   });
 
@@ -729,10 +730,10 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Service Management',
       icon: Layers,
       items: [
-        { id: 'services' as AdminTab, label: 'Service Bookings & Vans', badge: services.length },
         { id: 'service-history' as AdminTab, label: 'partner history', badge: null },
         { id: 'service-categories' as AdminTab, label: 'Service Categories & Rates', badge: null },
         { id: 'service-approvals' as AdminTab, label: 'Customer Digital Approvals', badge: null },
+        { id: 'services' as AdminTab, label: 'Service Bookings & Vans', badge: services.length },
       ]
     },
     {
@@ -763,14 +764,20 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Marketplace Management',
       icon: Store,
       items: [
-        { id: 'categories' as AdminTab, label: 'Categories Master', badge: categories.length },
-        { id: 'subcategories' as AdminTab, label: 'Sub-Categories', badge: subCategories.length },
-        { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
         { id: 'shop-onboarding' as AdminTab, label: 'Shopkeeper Onboarding', badge: null },
         { id: 'shop-list' as AdminTab, label: 'Shopkeeper List', badge: shopkeepers.length },
         { id: 'inventory' as AdminTab, label: 'Shopkeeper Products', badge: VEHICLES_DATA.length },
-        { id: 'orders' as AdminTab, label: 'Shopkeeper', badge: vehicleOrders.length },
         { id: 'shop-payout' as AdminTab, label: 'Shopkeeper Payout', badge: null },
+      ]
+    },
+    {
+      id: 'catalog-architecture',
+      label: 'Catalog & Brands Architecture',
+      icon: Sparkles,
+      items: [
+        { id: 'categories' as AdminTab, label: 'Categories Master', badge: categories.length },
+        { id: 'subcategories' as AdminTab, label: 'Sub-Categories', badge: subCategories.length },
+        { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
       ]
     },
     {
@@ -779,6 +786,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: Users,
       items: [
         { id: 'customers' as AdminTab, label: 'Registered Customers', badge: registeredCustomers.length },
+        { id: 'orders' as AdminTab, label: 'Vehicle Orders', badge: vehicleOrders.length },
         { id: 'quotations' as AdminTab, label: 'Customer Quotations', badge: quotations.length },
         { id: 'test-drives' as AdminTab, label: 'Test Drive Bookings', badge: testDrives.length },
         { id: 'tickets' as AdminTab, label: 'Customer Support Desk', badge: tickets.length },
@@ -787,40 +795,36 @@ export const AdminDashboardPage: React.FC = () => {
     },
   ];
 
+  // Helper to get current active breadcrumb
+  const getTabBreadcrumb = () => {
+    if (activeTab === 'overview') return { group: 'Main Console', label: 'Dashboard' };
+    for (const group of adminAccordionGroups) {
+      const match = group.items.find(item => item.id === activeTab);
+      if (match) return { group: group.label, label: match.label };
+    }
+    return { group: 'Admin Console', label: activeTab };
+  };
+
   // Common Sidebar Navigation component rendered in both desktop aside and mobile drawer
   const renderSidebarNav = () => (
-    <div className="space-y-2">
-      {/* Brand Header */}
-      <div className="px-3 pt-2 pb-3 border-b border-[#183556] mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-white">
-            <Zap className="w-4 h-4 text-[#00D2FF]" />
-          </div>
-          <div>
-            <h2 className="text-sm font-black text-white tracking-wide">E-VAHAN</h2>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ADMIN DASHBOARD</p>
-          </div>
-        </div>
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="System Online"></span>
-      </div>
-
-      {/* Top Main Item: Dashboard (photo 1, 3, 4 style with vertical cyan left bar) */}
+    <div className="space-y-1.5">
+      {/* Top Main Item: Dashboard (photo 2, 4 style with vertical cyan left bar) */}
       <button
         onClick={() => handleSelectTab('overview')}
-        className={`relative w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all ${
+        className={`relative w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all text-left ${
           activeTab === 'overview'
             ? 'bg-[#183556] text-white shadow-sm border border-blue-400/20'
             : 'text-slate-300 hover:text-white hover:bg-[#132A46]'
         }`}
       >
         {activeTab === 'overview' && (
-          <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-[#00D2FF] rounded-r shadow-[0_0_8px_#00D2FF]"></span>
+          <span className="absolute left-0 top-1.5 bottom-1.5 w-1.5 bg-[#00D2FF] rounded-r shadow-[0_0_10px_#00D2FF]"></span>
         )}
         <LayoutGrid className={`w-5 h-5 shrink-0 ${activeTab === 'overview' ? 'text-[#00D2FF]' : 'text-slate-400'}`} />
         <span>Dashboard</span>
       </button>
 
-      {/* Accordion Categories */}
+      {/* Accordion Categories (Exact match to User's Photos 2, 3, 4, 5) */}
       {adminAccordionGroups.map((group) => {
         const isExpanded = !!expandedMenus[group.id];
         const GroupIcon = group.icon;
@@ -828,10 +832,10 @@ export const AdminDashboardPage: React.FC = () => {
 
         return (
           <div key={group.id} className="space-y-1">
-            {/* Parent Accordion Row (photo 2, 3, 4 style: rounded dark container with chevron) */}
+            {/* Parent Accordion Row */}
             <button
               onClick={() => toggleMenu(group.id)}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-sm font-bold ${
+              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-sm font-bold text-left ${
                 isExpanded
                   ? 'bg-[#183556] text-white shadow-sm border border-blue-400/20'
                   : isAnyChildActive
@@ -839,9 +843,9 @@ export const AdminDashboardPage: React.FC = () => {
                   : 'text-slate-300 hover:text-white hover:bg-[#132A46]'
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 truncate">
                 <GroupIcon className={`w-5 h-5 shrink-0 ${isExpanded || isAnyChildActive ? 'text-[#00D2FF]' : 'text-slate-400'}`} />
-                <span>{group.label}</span>
+                <span className="truncate">{group.label}</span>
               </div>
               {isExpanded ? (
                 <ChevronDown className="w-4 h-4 text-slate-300 shrink-0" />
@@ -850,24 +854,27 @@ export const AdminDashboardPage: React.FC = () => {
               )}
             </button>
 
-            {/* Submenu Items List (indented, matching reference photos 2, 3, 4) */}
+            {/* Submenu Items List (Indented with elegant guide line matching photos 3, 4, 5) */}
             {isExpanded && (
-              <div className="pl-11 pr-2 pt-1 pb-2 space-y-1">
+              <div className="pl-8 pr-2 pt-1 pb-2 space-y-1 border-l border-slate-700/50 ml-5 my-1">
                 {group.items.map((subItem) => {
                   const isSubActive = activeTab === subItem.id;
                   return (
                     <button
                       key={subItem.id}
                       onClick={() => handleSelectTab(subItem.id, group.id)}
-                      className={`w-full text-left py-1.5 px-2 rounded-lg text-[13px] transition-all flex items-center justify-between ${
+                      className={`w-full text-left py-2 px-2.5 rounded-lg text-[13px] transition-all flex items-center justify-between ${
                         isSubActive
-                          ? 'text-[#00D2FF] font-bold bg-[#183556]/60'
-                          : 'text-slate-300 hover:text-white hover:bg-[#132A46]/40 font-medium'
+                          ? 'text-[#00D2FF] font-bold bg-[#183556]/80 shadow-xs'
+                          : 'text-slate-300 hover:text-white hover:bg-[#132A46]/50 font-medium'
                       }`}
                     >
-                      <span className="truncate">{subItem.label}</span>
+                      <div className="flex items-center gap-2 truncate">
+                        {isSubActive && <span className="w-1.5 h-1.5 rounded-full bg-[#00D2FF] shadow-[0_0_6px_#00D2FF]"></span>}
+                        <span className="truncate">{subItem.label}</span>
+                      </div>
                       {subItem.badge !== null && subItem.badge !== undefined && subItem.badge > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A]">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A]">
                           {subItem.badge}
                         </span>
                       )}
@@ -879,32 +886,6 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         );
       })}
-
-      {/* Sidebar Footer Actions */}
-      <div className="pt-3 border-t border-[#183556] mt-4 space-y-2">
-        <button
-          onClick={handleManualRefresh}
-          disabled={isRefreshing}
-          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-300 bg-[#132A46] hover:bg-[#183556] border border-emerald-500/30 transition-all shadow-sm"
-        >
-          <div className="flex items-center gap-2">
-            <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>{isRefreshing ? 'Refreshing...' : 'Refresh Live Data'}</span>
-          </div>
-          <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded">Sync</span>
-        </button>
-
-        <Link
-          to="/"
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-[#132A46] transition-all"
-        >
-          <div className="flex items-center gap-2">
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            <span>Customer Storefront</span>
-          </div>
-          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">Live</span>
-        </Link>
-      </div>
     </div>
   );
 
@@ -1392,81 +1373,84 @@ export const AdminDashboardPage: React.FC = () => {
     );
   }
 
+  const currentFormattedDate = new Date().toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  });
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
+  const breadcrumb = getTabBreadcrumb();
+
   return (
-    <div className="bg-[#F0F4F8] min-h-screen py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        
-        {/* Admin Master Header with Logout button */}
-        <div className="bg-gradient-to-r from-[#06152B] via-[#0B2545] to-[#081E3B] text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-500/30 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-[#B7F34A] text-xs font-bold border border-emerald-500/30">
-              <span className="w-2 h-2 rounded-full bg-[#B7F34A] animate-pulse"></span>
-              <span>E-VAHAN Central Multi-Vendor Admin Portal</span>
+    <div className="min-h-screen flex bg-[#F0F4F8] text-[#17211B] antialiased">
+      {/* DESKTOP STICKY SIDEBAR (Full height from top to bottom matching user's photos) */}
+      <aside className="hidden lg:flex flex-col w-72 xl:w-80 bg-[#0B1E36] text-white border-r border-[#183556] h-screen sticky top-0 shrink-0 z-30 shadow-2xl">
+        {/* Brand Header */}
+        <div className="px-5 py-4 border-b border-[#183556] flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#22C55E] flex items-center justify-center text-white shadow-md">
+              <Zap className="w-5 h-5 text-[#B7F34A]" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-              Administrative Control Center
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Live marketplace operations: registered customers, vehicle orders, quotation dockets, doorstep service van allocations, announcements, and support.
-            </p>
+            <div>
+              <h2 className="text-base font-black text-white tracking-wide">E-VAHAN</h2>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ADMIN DASHBOARD</p>
+            </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Mobile Menu Drawer Toggle Button */}
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-[#B7F34A] text-xs font-bold transition-all border border-emerald-500/40 flex items-center gap-2 shadow-sm"
-              title="Open Admin Navigation Menu"
-            >
-              <Menu className="w-4 h-4" />
-              <span>Sidebar Menu</span>
-            </button>
-
-            <Link
-              to="/"
-              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-2"
-            >
-              <span>Storefront</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </Link>
-            <button
-              onClick={handleManualRefresh}
-              disabled={isRefreshing}
-              className="px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-[#B7F34A] transition-all border border-emerald-500/40 text-xs font-bold flex items-center gap-2 shadow-sm"
-              title="Refresh Live Admin Data"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-white' : 'text-[#B7F34A]'}`} />
-              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
-            </button>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="text-[10px] font-bold text-emerald-300">Live</span>
           </div>
         </div>
 
-        {/* Refresh Live Confirmation Banner */}
-        {refreshNotification && (
-          <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-400 text-emerald-950 font-bold text-xs flex items-center justify-between shadow-sm animate-in fade-in duration-200">
-            <div className="flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
-              <span>{refreshNotification}</span>
-            </div>
-            <button
-              onClick={() => setRefreshNotification(null)}
-              className="text-xs text-emerald-800 hover:text-emerald-950 font-bold px-2 py-0.5"
-            >
-              ✕
-            </button>
-          </div>
-        )}
+        {/* Scrollable Navigation Menu */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 custom-scrollbar">
+          {renderSidebarNav()}
+        </div>
 
-        {/* Mobile Slide-Over Drawer with Dark Navy Sidebar */}
-        {isMobileSidebarOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-              onClick={() => setIsMobileSidebarOpen(false)}
-            />
-            <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B1E36] text-white shadow-2xl z-50 flex flex-col justify-between overflow-y-auto p-4 border-r border-[#183556]">
-              <div className="flex items-center justify-between pb-3 border-b border-[#183556] mb-3">
-                <span className="text-xs font-bold text-slate-300">ADMIN NAVIGATION</span>
+        {/* Sidebar Footer Controls */}
+        <div className="p-3.5 border-t border-[#183556] space-y-2 shrink-0 bg-[#08172B]">
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-emerald-300 bg-[#132A46] hover:bg-[#183556] border border-emerald-500/30 transition-all shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh Live Data'}</span>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded">Sync</span>
+          </button>
+
+          <Link
+            to="/"
+            target="_blank"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-[#132A46] transition-all"
+          >
+            <div className="flex items-center gap-2">
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+              <span>Customer Storefront</span>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">Live</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Mobile Slide-Over Drawer with Dark Navy Sidebar */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <div className="fixed inset-y-0 left-0 w-80 max-w-[85vw] bg-[#0B1E36] text-white shadow-2xl z-50 flex flex-col justify-between overflow-y-auto p-4 border-r border-[#183556]">
+            <div>
+              <div className="flex items-center justify-between pb-3 border-b border-[#183556] mb-4">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-[#B7F34A]" />
+                  <span className="text-sm font-black text-white">E-VAHAN ADMIN</span>
+                </div>
                 <button
                   onClick={() => setIsMobileSidebarOpen(false)}
                   className="p-1.5 rounded-lg bg-[#183556] hover:bg-[#1E436D] text-slate-300"
@@ -1476,24 +1460,89 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
               {renderSidebarNav()}
             </div>
+            <div className="pt-4 border-t border-[#183556] mt-4 space-y-2">
+              <Link
+                to="/"
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-[#132A46] text-white"
+              >
+                <span>Customer Storefront</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
+      )}
+
+      {/* RIGHT CONTENT COLUMN */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen">
+        {/* Top Sticky Admin Navbar */}
+        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-200/90 px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4 shadow-2xs">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+              title="Open Navigation"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            {/* Breadcrumb Path */}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="text-gray-400 font-medium hidden sm:inline">{breadcrumb.group}</span>
+              <span className="text-gray-300 hidden sm:inline">/</span>
+              <span className="font-bold text-[#06152B] bg-gray-100 px-2.5 py-1 rounded-lg">
+                {breadcrumb.label}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 sm:gap-4">
+            {/* Live Platform Status Pill */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="font-bold text-emerald-800">24+ Cities Live</span>
+            </div>
+
+            {/* Live Date Badge (matching photo 4) */}
+            <div className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
+              <Clock className="w-3.5 h-3.5 text-gray-400" />
+              <span>{currentFormattedDate}</span>
+            </div>
+
+            {/* Refresh Button */}
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs"
+              title="Sync Live Data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#16A34A] ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isRefreshing ? 'Syncing...' : 'Sync'}</span>
+            </button>
+
+            {/* Storefront Link */}
+            <Link
+              to="/"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+              title="Open Storefront in new tab"
+            >
+              <span className="hidden sm:inline">Storefront</span>
+              <ExternalLink className="w-3.5 h-3.5 text-[#B7F34A]" />
+            </Link>
+          </div>
+        </header>
 
         {/* Mobile Horizontal Quick-Category Switcher Bar (lg:hidden) */}
-        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <button
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="shrink-0 px-3.5 py-2 rounded-xl bg-[#06152B] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
-          >
-            <Menu className="w-3.5 h-3.5 text-[#B7F34A]" />
-            <span>All Menus</span>
-          </button>
+        <div className="lg:hidden flex items-center gap-2 overflow-x-auto p-3 bg-white border-b border-gray-200 scrollbar-none">
           {[
             { id: 'overview' as AdminTab, label: 'Dashboard' },
             { id: 'services' as AdminTab, label: `Service Vans (${services.length})` },
             { id: 'sp-list' as AdminTab, label: `Providers (${serviceProviders.length})` },
             { id: 'vendor-list' as AdminTab, label: `Vendors (${spareVendors.length})` },
             { id: 'shop-list' as AdminTab, label: `Showrooms (${shopkeepers.length})` },
+            { id: 'categories' as AdminTab, label: `Categories (${categories.length})` },
+            { id: 'brands' as AdminTab, label: `Brands (${brands.length})` },
             { id: 'customers' as AdminTab, label: `Customers (${registeredCustomers.length})` },
             { id: 'orders' as AdminTab, label: `Orders (${vehicleOrders.length})` },
             { id: 'parts' as AdminTab, label: `Parts (${partsOrders.length})` },
@@ -1501,10 +1550,10 @@ export const AdminDashboardPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`shrink-0 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === tab.id
                   ? 'bg-emerald-600 text-white shadow-sm'
-                  : 'bg-white text-gray-700 border border-gray-200'
+                  : 'bg-gray-100 text-gray-700'
               }`}
             >
               {tab.label}
@@ -1512,26 +1561,60 @@ export const AdminDashboardPage: React.FC = () => {
           ))}
         </div>
 
-        {/* 2-Column Responsive Dashboard Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-          
-          {/* DESKTOP SIDEBAR MENU (Deep Dark Navy Blue Accordion from User's Reference Photos) */}
-          <aside className="hidden lg:block lg:col-span-3 xl:col-span-3 space-y-4 sticky top-6">
-            
-            {/* Sidebar Dark Card Container matching Photos 1, 2, 3, 4 */}
-            <div className="bg-[#0B1E36] rounded-3xl p-4 border border-[#183556] shadow-2xl text-white">
-              {renderSidebarNav()}
+        {/* MAIN SCROLLABLE CONTENT WRAPPER */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto min-w-0">
+          {/* Refresh Notification Banner */}
+          {refreshNotification && (
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-400 text-emerald-950 font-bold text-xs flex items-center justify-between shadow-sm animate-in fade-in duration-200">
+              <div className="flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-[#16A34A] shrink-0" />
+                <span>{refreshNotification}</span>
+              </div>
+              <button
+                onClick={() => setRefreshNotification(null)}
+                className="text-xs text-emerald-800 hover:text-emerald-950 font-bold px-2 py-0.5"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+
+          {/* Attention & Live Greeting Alert Banner (Matching Photo 4!) */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200/90 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-emerald-700 font-bold">Live Admin Console</span>
+                <span>•</span>
+                <span>{currentFormattedDate}</span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-[#06152B] tracking-tight">
+                Good {timeGreeting}, Administrator 👋
+              </h1>
+              <p className="text-xs text-gray-500">
+                Multi-vendor EV marketplace management: live service vans, certified vendors, showroom dealers & master catalog.
+              </p>
             </div>
 
-            {/* Quick System Badge */}
-            <div className="p-3.5 bg-gray-100/80 rounded-2xl border border-gray-200 text-center text-[11px] text-gray-500">
-              <span className="font-bold text-gray-700">E-VAHAN Central OS</span>
-              <span className="block text-[10px] text-gray-400 mt-0.5">256-Bit SSL Encrypted Multi-Vendor Console</span>
-            </div>
-          </aside>
+            {/* Quick Attention Indicators (matching photo 4) */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="px-3.5 py-2 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-600" />
+                <div>
+                  <span className="text-[10px] uppercase text-amber-700 block font-bold">Attention:</span>
+                  <span>0 Pending Assignments</span>
+                </div>
+              </div>
 
-          {/* MAIN CONTENT AREA (lg:col-span-9 xl:col-span-9) */}
-          <main className="lg:col-span-9 xl:col-span-9 space-y-6 min-w-0">
+              <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
+                <Zap className="w-4 h-4 text-[#16A34A]" />
+                <div>
+                  <span className="text-[10px] uppercase text-emerald-700 block font-bold">Live Active:</span>
+                  <span>{services.length} Service Vans</span>
+                </div>
+              </div>
+            </div>
+          </div>
             
             {/* Top 7 KPI Metric Cards (Responsive Grid inside Main Area) */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-2.5 sm:gap-3">
@@ -4012,9 +4095,7 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
             )}
-            </main>
-        </div>
-
+        </main>
       </div>
     </div>
   );
