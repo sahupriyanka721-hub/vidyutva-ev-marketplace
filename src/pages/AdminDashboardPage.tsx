@@ -429,7 +429,6 @@ export const AdminDashboardPage: React.FC = () => {
   // Accordion Expand State: allows toggling parent categories as seen in user reference screenshots
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
     'service-management': false,
-    'service-provider': true, // Expanded by default matching reference photo 4
     'spare-vendor': false,
     'marketplace': false,
     'catalog-architecture': false,
@@ -734,17 +733,6 @@ export const AdminDashboardPage: React.FC = () => {
         { id: 'service-categories' as AdminTab, label: 'Service Categories & Rates', badge: null },
         { id: 'service-approvals' as AdminTab, label: 'Customer Digital Approvals', badge: null },
         { id: 'services' as AdminTab, label: 'Service Bookings & Vans', badge: services.length },
-      ]
-    },
-    {
-      id: 'service-provider',
-      label: 'Service Provider Management',
-      icon: UserCheck,
-      items: [
-        { id: 'sp-history' as AdminTab, label: 'partner history', badge: null },
-        { id: 'sp-onboarding' as AdminTab, label: 'Service Provider onboarding', badge: null },
-        { id: 'sp-list' as AdminTab, label: 'Service Provider List', badge: serviceProviders.length },
-        { id: 'sp-payout' as AdminTab, label: 'Service Provider Payout', badge: null },
       ]
     },
     {
@@ -1538,7 +1526,6 @@ export const AdminDashboardPage: React.FC = () => {
           {[
             { id: 'overview' as AdminTab, label: 'Dashboard' },
             { id: 'services' as AdminTab, label: `Service Vans (${services.length})` },
-            { id: 'sp-list' as AdminTab, label: `Providers (${serviceProviders.length})` },
             { id: 'vendor-list' as AdminTab, label: `Vendors (${spareVendors.length})` },
             { id: 'shop-list' as AdminTab, label: `Showrooms (${shopkeepers.length})` },
             { id: 'categories' as AdminTab, label: `Categories (${categories.length})` },
