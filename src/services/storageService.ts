@@ -10,7 +10,8 @@ import {
   ServiceBookingItem,
   SupportTicketItem,
   AppNotification,
-  CustomerAddress
+  CustomerAddress,
+  CustomerReviewItem
 } from '../types';
 import { INDIAN_PINCODES } from '../data/seedData';
 import { lookupCityOrPincode } from '../data/indianCitiesPincodes';
@@ -755,6 +756,28 @@ class StorageService {
   markAllNotificationsRead(): void {
     const notifs = this.getNotifications().map(n => ({ ...n, isRead: true }));
     this.set('notifications', notifs);
+  }
+
+  // --- Verified Customer Reviews (Zero dummy reviews - strictly real user reviews only) ---
+  getVerifiedReviews(): CustomerReviewItem[] {
+    return this.get<CustomerReviewItem[]>('customer_verified_reviews', []);
+  }
+
+  addVerifiedReview(review: Omit<CustomerReviewItem, 'id' | 'createdAt'>): CustomerReviewItem {
+    const reviews = this.getVerifiedReviews();
+    const newReview: CustomerReviewItem = {
+      ...review,
+      id: `rev-${Date.now()}`,
+      createdAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    };
+    reviews.unshift(newReview);
+    this.set('customer_verified_reviews', reviews);
+    return newReview;
+  }
+
+  deleteVerifiedReview(reviewId: string): void {
+    const reviews = this.getVerifiedReviews().filter(r => r.id !== reviewId);
+    this.set('customer_verified_reviews', reviews);
   }
 
   // --- Payment Gateway Simulation (Razorpay Sandbox Style) ---

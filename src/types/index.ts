@@ -367,3 +367,16 @@ export interface CustomerUser {
   isKycVerified: boolean;
   savedAddresses: CustomerAddress[];
 }
+
+export interface CustomerReviewItem {
+  id: string;
+  name: string;
+  phone?: string;
+  city: string;
+  rating: number;
+  title: string;
+  comment: string;
+  vehicleName?: string;
+  verified: boolean;
+  createdAt: string;
+}
