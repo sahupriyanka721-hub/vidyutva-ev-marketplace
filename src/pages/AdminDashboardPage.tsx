@@ -882,14 +882,6 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
           <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-1.5 py-0.5 rounded">Live</span>
         </Link>
-
-        <button
-          onClick={handleAdminLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 transition-all"
-        >
-          <LogOut className="w-3.5 h-3.5 text-rose-400" />
-          <span>Lock & Admin Logout</span>
-        </button>
       </div>
     </div>
   );
@@ -1238,14 +1230,6 @@ export const AdminDashboardPage: React.FC = () => {
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin text-white' : 'text-[#B7F34A]'}`} />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
-            </button>
-            <button
-              onClick={handleAdminLogout}
-              className="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/40 text-xs font-bold transition-all flex items-center gap-1.5"
-              title="Lock Admin Portal & Logout"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Admin Logout</span>
             </button>
           </div>
         </div>
