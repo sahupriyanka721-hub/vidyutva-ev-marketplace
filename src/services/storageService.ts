@@ -11,7 +11,10 @@ import {
   SupportTicketItem,
   AppNotification,
   CustomerAddress,
-  CustomerReviewItem
+  CustomerReviewItem,
+  CategoryItem,
+  SubCategoryItem,
+  BrandItem
 } from '../types';
 import { INDIAN_PINCODES } from '../data/seedData';
 import { lookupCityOrPincode } from '../data/indianCitiesPincodes';
@@ -778,6 +781,396 @@ class StorageService {
   deleteVerifiedReview(reviewId: string): void {
     const reviews = this.getVerifiedReviews().filter(r => r.id !== reviewId);
     this.set('customer_verified_reviews', reviews);
+  }
+
+  // --- Dynamic Categories, Sub-Categories & Brands ---
+  getCategories(): CategoryItem[] {
+    return this.get<CategoryItem[]>('evahan_catalog_categories', [
+      {
+        id: 'cat-scooters',
+        name: 'Electric Scooters',
+        slug: 'electric-scooters',
+        subtitle: 'Urban & High-Speed Commuter',
+        description: 'High-speed and family electric scooters with smart IoT digital clusters and portable battery packs.',
+        type: 'VEHICLE',
+        imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 1,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-passenger-autos',
+        name: 'Electric Passenger Autos',
+        slug: 'electric-passenger-autos',
+        subtitle: 'Commercial 4+1 Seaters',
+        description: 'High-earning commercial 3-wheelers for green urban passenger transport with zero fuel cost.',
+        type: 'VEHICLE',
+        imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 2,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-cargo-autos',
+        name: 'Electric Cargo Autos',
+        slug: 'electric-cargo-autos',
+        subtitle: 'Delivery & Last-Mile Logistics',
+        description: 'Heavy payload cargo e-loaders engineered for grocery, e-commerce, and industrial material movement.',
+        type: 'VEHICLE',
+        imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 3,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-loaders',
+        name: 'Electric Heavy Loaders',
+        slug: 'electric-loaders',
+        subtitle: 'Industrial & High Payload',
+        description: 'Heavy chassis hydraulic tipper and flatbed electric loaders capable of 750+ kg payloads.',
+        type: 'VEHICLE',
+        imageUrl: 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 4,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-batteries',
+        name: 'Lithium Battery Packs',
+        slug: 'lithium-batteries',
+        subtitle: 'LFP & NMC Smart Packs',
+        description: 'Automotive grade Lithium Iron Phosphate and Nickel Manganese Cobalt battery packs with smart CAN BMS.',
+        type: 'SPARE_PART',
+        imageUrl: 'https://images.unsplash.com/photo-1619725002198-6a689b72f41d?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 5,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-chargers',
+        name: 'Smart Fast Chargers',
+        slug: 'smart-chargers',
+        subtitle: 'Home & Fast DC Stations',
+        description: 'BIS-certified intelligent multi-stage fast chargers with automatic cutoff and thermal protection.',
+        type: 'SPARE_PART',
+        imageUrl: 'https://images.unsplash.com/photo-1558441719-8b449c6ff673?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 6,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-spare-parts',
+        name: 'Genuine OEM Spare Parts',
+        slug: 'genuine-spare-parts',
+        subtitle: 'Motors, Controllers & Brakes',
+        description: '100% factory-verified spare parts, brushless DC motors, sintered brake pads, and heavy wiring harnesses.',
+        type: 'SPARE_PART',
+        imageUrl: 'https://images.unsplash.com/photo-1600793575654-910699b5e4d4?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 7,
+        createdAt: '2026-01-15'
+      },
+      {
+        id: 'cat-accessories',
+        name: 'EV Gear & Accessories',
+        slug: 'ev-accessories',
+        subtitle: 'Helmets, Covers & Smart Tech',
+        description: 'ISI certified aerodynamic helmets, waterproof vehicle body covers, mobile mounts, and floor mats.',
+        type: 'ACCESSORY',
+        imageUrl: 'https://images.unsplash.com/photo-1558980664-3a031cf67ea8?auto=format&fit=crop&w=600&q=80',
+        isFeatured: true,
+        status: 'ACTIVE',
+        displayOrder: 8,
+        createdAt: '2026-01-15'
+      }
+    ]);
+  }
+
+  addCategory(category: Omit<CategoryItem, 'id' | 'createdAt'>): CategoryItem {
+    const list = this.getCategories();
+    const newCat: CategoryItem = {
+      ...category,
+      id: `cat-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    list.push(newCat);
+    this.set('evahan_catalog_categories', list);
+    return newCat;
+  }
+
+  updateCategory(id: string, updates: Partial<CategoryItem>): void {
+    const list = this.getCategories();
+    const idx = list.findIndex(c => c.id === id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...updates };
+      this.set('evahan_catalog_categories', list);
+    }
+  }
+
+  deleteCategory(id: string): void {
+    const list = this.getCategories().filter(c => c.id !== id);
+    this.set('evahan_catalog_categories', list);
+  }
+
+  getSubCategories(): SubCategoryItem[] {
+    return this.get<SubCategoryItem[]>('evahan_catalog_subcategories', [
+      {
+        id: 'sub-01',
+        categoryId: 'cat-scooters',
+        categoryName: 'Electric Scooters',
+        name: 'High-Speed Performance Scooters',
+        slug: 'high-speed-scooters',
+        description: '80+ km/h top speed, dual disc brakes, fast charging support',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-02',
+        categoryId: 'cat-scooters',
+        categoryName: 'Electric Scooters',
+        name: 'Family City Commuters',
+        slug: 'city-commuter-scooters',
+        description: 'Comfortable seating, large boot space, 100+ km real-world range',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-03',
+        categoryId: 'cat-scooters',
+        categoryName: 'Electric Scooters',
+        name: 'Low-Speed Non-RTO Scooters',
+        slug: 'non-rto-scooters',
+        description: '25 km/h capped, no registration or driving license required',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-04',
+        categoryId: 'cat-passenger-autos',
+        categoryName: 'Electric Passenger Autos',
+        name: 'Commercial L5M Passenger Autos',
+        slug: 'commercial-passenger-autos',
+        description: '4+1 seating capacity, AIS-028 compliance, heavy-duty suspension',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-05',
+        categoryId: 'cat-cargo-autos',
+        categoryName: 'Electric Cargo Autos',
+        name: 'Closed Delivery Van Boxes',
+        slug: 'delivery-box-cargo',
+        description: 'Weather-sealed high-volume container for courier & FMCG distribution',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-06',
+        categoryId: 'cat-batteries',
+        categoryName: 'Lithium Battery Packs',
+        name: '72V Lithium Iron Phosphate (LFP)',
+        slug: '72v-lfp-battery',
+        description: '3000+ cycle life, thermal runaway resistant chemistry',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-07',
+        categoryId: 'cat-chargers',
+        categoryName: 'Smart Fast Chargers',
+        name: '12A Fast Heavy-Duty Chargers',
+        slug: '12a-fast-chargers',
+        description: 'LED display, voltage surge protection, rapid 0-80% charging',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      },
+      {
+        id: 'sub-08',
+        categoryId: 'cat-spare-parts',
+        categoryName: 'Genuine OEM Spare Parts',
+        name: 'EV Low-Rolling Resistance Tyres',
+        slug: 'ev-tyres',
+        description: 'Tubeless, high-traction compound for enhanced battery mileage',
+        status: 'ACTIVE',
+        createdAt: '2026-01-20'
+      }
+    ]);
+  }
+
+  addSubCategory(subCategory: Omit<SubCategoryItem, 'id' | 'createdAt'>): SubCategoryItem {
+    const list = this.getSubCategories();
+    const newSub: SubCategoryItem = {
+      ...subCategory,
+      id: `sub-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    list.push(newSub);
+    this.set('evahan_catalog_subcategories', list);
+    return newSub;
+  }
+
+  updateSubCategory(id: string, updates: Partial<SubCategoryItem>): void {
+    const list = this.getSubCategories();
+    const idx = list.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...updates };
+      this.set('evahan_catalog_subcategories', list);
+    }
+  }
+
+  deleteSubCategory(id: string): void {
+    const list = this.getSubCategories().filter(s => s.id !== id);
+    this.set('evahan_catalog_subcategories', list);
+  }
+
+  getBrands(): BrandItem[] {
+    return this.get<BrandItem[]>('evahan_catalog_brands', [
+      {
+        id: 'br-ather',
+        name: 'Ather Energy',
+        slug: 'ather-energy',
+        logoUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=200&q=80',
+        origin: 'Bengaluru, India',
+        website: 'https://www.atherenergy.com',
+        categories: ['Electric Scooters', 'Smart Fast Chargers'],
+        isVerified: true,
+        warrantyPeriod: '3 Years / 30,000 km',
+        modelCount: 4,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-ola',
+        name: 'Ola Electric',
+        slug: 'ola-electric',
+        logoUrl: 'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=200&q=80',
+        origin: 'Hosur, India',
+        website: 'https://www.olaelectric.com',
+        categories: ['Electric Scooters'],
+        isVerified: true,
+        warrantyPeriod: '8 Years Battery Warranty',
+        modelCount: 5,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-tvs',
+        name: 'TVS Motor Company',
+        slug: 'tvs-motor',
+        logoUrl: 'https://images.unsplash.com/photo-1558981420-87aa9210d906?auto=format&fit=crop&w=200&q=80',
+        origin: 'Hosur, India',
+        website: 'https://www.tvsmotor.com',
+        categories: ['Electric Scooters'],
+        isVerified: true,
+        warrantyPeriod: '3 Years Comprehensive',
+        modelCount: 3,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-bajaj',
+        name: 'Bajaj Chetak',
+        slug: 'bajaj-chetak',
+        logoUrl: 'https://images.unsplash.com/photo-1558980664-3a031cf67ea8?auto=format&fit=crop&w=200&q=80',
+        origin: 'Pune, India',
+        website: 'https://www.chetak.com',
+        categories: ['Electric Scooters'],
+        isVerified: true,
+        warrantyPeriod: '3 Years / 50,000 km',
+        modelCount: 3,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-mahindra',
+        name: 'Mahindra Electric',
+        slug: 'mahindra-electric',
+        logoUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=200&q=80',
+        origin: 'Mumbai, India',
+        website: 'https://www.mahindraelectric.com',
+        categories: ['Electric Passenger Autos', 'Electric Cargo Autos'],
+        isVerified: true,
+        warrantyPeriod: '3 Years / 80,000 km',
+        modelCount: 4,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-ceat',
+        name: 'CEAT Speciality EV',
+        slug: 'ceat-ev',
+        logoUrl: 'https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=200&q=80',
+        origin: 'Mumbai, India',
+        website: 'https://www.ceat.com',
+        categories: ['Genuine OEM Spare Parts'],
+        isVerified: true,
+        warrantyPeriod: '5 Years Manufacturer Warranty',
+        modelCount: 6,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-bosch',
+        name: 'Bosch Mobility Solutions',
+        slug: 'bosch-mobility',
+        logoUrl: 'https://images.unsplash.com/photo-1600793575654-910699b5e4d4?auto=format&fit=crop&w=200&q=80',
+        origin: 'Germany & Bengaluru',
+        website: 'https://www.bosch-mobility.com',
+        categories: ['Genuine OEM Spare Parts', 'Smart Fast Chargers'],
+        isVerified: true,
+        warrantyPeriod: '2 Years Direct Replacement',
+        modelCount: 8,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      },
+      {
+        id: 'br-exide',
+        name: 'Exide Energy Solutions',
+        slug: 'exide-energy',
+        logoUrl: 'https://images.unsplash.com/photo-1619725002198-6a689b72f41d?auto=format&fit=crop&w=200&q=80',
+        origin: 'Kolkata, India',
+        website: 'https://www.exideindustries.com',
+        categories: ['Lithium Battery Packs', 'Smart Fast Chargers'],
+        isVerified: true,
+        warrantyPeriod: '3 Years Replacement Guarantee',
+        modelCount: 6,
+        status: 'ACTIVE',
+        createdAt: '2026-01-10'
+      }
+    ]);
+  }
+
+  addBrand(brand: Omit<BrandItem, 'id' | 'createdAt'>): BrandItem {
+    const list = this.getBrands();
+    const newBrand: BrandItem = {
+      ...brand,
+      id: `br-${Date.now().toString(36)}`,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    list.push(newBrand);
+    this.set('evahan_catalog_brands', list);
+    return newBrand;
+  }
+
+  updateBrand(id: string, updates: Partial<BrandItem>): void {
+    const list = this.getBrands();
+    const idx = list.findIndex(b => b.id === id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...updates };
+      this.set('evahan_catalog_brands', list);
+    }
+  }
+
+  deleteBrand(id: string): void {
+    const list = this.getBrands().filter(b => b.id !== id);
+    this.set('evahan_catalog_brands', list);
   }
 
   // --- Payment Gateway Simulation (Razorpay Sandbox Style) ---

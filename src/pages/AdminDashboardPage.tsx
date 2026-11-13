@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   LayoutDashboard,
+  Award,
+  Globe,
+  Bookmark,
+  Trash2,
+  Edit3,
+  Image as ImageIcon,
+  Sparkles,
   LayoutGrid,
   ShoppingBag,
   Clock,
@@ -47,6 +54,9 @@ import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
 import { BrandLogo } from '../components/common/BrandLogo';
 import {
   CustomerUser,
+  CategoryItem,
+  SubCategoryItem,
+  BrandItem,
   VehicleOrderItem,
   TestDriveBookingItem,
   QuotationRequestItem,
@@ -83,7 +93,11 @@ export type AdminTab =
   // Marketplace Management Sub-items
   | 'shop-onboarding'
   | 'shop-list'
-  | 'shop-payout';
+  | 'shop-payout'
+  // Category & Brand Management
+  | 'categories'
+  | 'subcategories'
+  | 'brands';
 
 export interface ServiceProvider {
   id: string;
@@ -684,6 +698,11 @@ export const AdminDashboardPage: React.FC = () => {
   const [partsOrders, setPartsOrders] = useState<SparePartsOrder[]>([]);
   const [tickets, setTickets] = useState<SupportTicketItem[]>([]);
 
+  // Dynamic Categories, Sub-Categories & Brands Management
+  const [categories, setCategories] = useState<CategoryItem[]>(() => storage.getCategories());
+  const [subCategories, setSubCategories] = useState<SubCategoryItem[]>(() => storage.getSubCategories());
+  const [brands, setBrands] = useState<BrandItem[]>(() => storage.getBrands());
+
   // Announcement Bar message manager (Section 4.A requirement)
   const [announcements, setAnnouncements] = useState<string[]>([
     '⚡ Zero Road Tax across Delhi, UP, Karnataka & Maharashtra | Doorstep Test Drives in 24+ Cities',
@@ -744,6 +763,9 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Marketplace Management',
       icon: Store,
       items: [
+        { id: 'categories' as AdminTab, label: 'Categories Master', badge: categories.length },
+        { id: 'subcategories' as AdminTab, label: 'Sub-Categories', badge: subCategories.length },
+        { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
         { id: 'shop-onboarding' as AdminTab, label: 'Shopkeeper Onboarding', badge: null },
         { id: 'shop-list' as AdminTab, label: 'Shopkeeper List', badge: shopkeepers.length },
         { id: 'inventory' as AdminTab, label: 'Shopkeeper Products', badge: VEHICLES_DATA.length },
@@ -886,6 +908,188 @@ export const AdminDashboardPage: React.FC = () => {
     </div>
   );
 
+    // Category Form State
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    subtitle: '',
+    description: '',
+    type: 'VEHICLE' as CategoryItem['type'],
+    imageUrl: '',
+    isFeatured: true
+  });
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
+  // SubCategory Form State
+  const [subCategoryForm, setSubCategoryForm] = useState({
+    categoryId: '',
+    name: '',
+    description: ''
+  });
+  const [isSubCategoryModalOpen, setIsSubCategoryModalOpen] = useState(false);
+  const [subCategoryFilterParent, setSubCategoryFilterParent] = useState('ALL');
+
+  // Brand Form State
+  const [brandForm, setBrandForm] = useState({
+    name: '',
+    logoUrl: '',
+    origin: 'Bengaluru, India',
+    website: '',
+    categories: ['Electric Scooters'],
+    warrantyPeriod: '3 Years / 30,000 km'
+  });
+  const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
+
+  // Category Actions
+  const handleCreateCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!categoryForm.name.trim() || !categoryForm.subtitle.trim()) {
+      alert('Kripya Category Name aur Subtitle bharein!');
+      return;
+    }
+    const slug = categoryForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newCat = storage.addCategory({
+      name: categoryForm.name.trim(),
+      slug,
+      subtitle: categoryForm.subtitle.trim(),
+      description: categoryForm.description.trim() || `${categoryForm.name} catalog and models`,
+      type: categoryForm.type,
+      imageUrl: categoryForm.imageUrl.trim() || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
+      isFeatured: categoryForm.isFeatured,
+      status: 'ACTIVE',
+      displayOrder: categories.length + 1
+    });
+    setCategories(storage.getCategories());
+    setIsCategoryModalOpen(false);
+    setCategoryForm({
+      name: '',
+      subtitle: '',
+      description: '',
+      type: 'VEHICLE',
+      imageUrl: '',
+      isFeatured: true
+    });
+    setRefreshNotification(`✓ Category "${newCat.name}" created and published live to frontend!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+  };
+
+  const handleToggleCategoryStatus = (id: string) => {
+    const cat = categories.find(c => c.id === id);
+    if (!cat) return;
+    const newStatus = cat.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    storage.updateCategory(id, { status: newStatus });
+    setCategories(storage.getCategories());
+    setRefreshNotification(`✓ Category "${cat.name}" status updated to ${newStatus}!`);
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
+
+  const handleDeleteCategory = (id: string) => {
+    const cat = categories.find(c => c.id === id);
+    if (confirm(`Kya aap category "${cat?.name}" ko delete karna chahte hain?`)) {
+      storage.deleteCategory(id);
+      setCategories(storage.getCategories());
+      setRefreshNotification(`✓ Category deleted successfully!`);
+      setTimeout(() => setRefreshNotification(null), 3000);
+    }
+  };
+
+  // Sub-Category Actions
+  const handleCreateSubCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!subCategoryForm.name.trim() || !subCategoryForm.categoryId) {
+      alert('Kripya Parent Category aur Sub-Category Name chunein!');
+      return;
+    }
+    const parent = categories.find(c => c.id === subCategoryForm.categoryId);
+    const slug = subCategoryForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newSub = storage.addSubCategory({
+      categoryId: subCategoryForm.categoryId,
+      categoryName: parent?.name || 'Category',
+      name: subCategoryForm.name.trim(),
+      slug,
+      description: subCategoryForm.description.trim() || `${subCategoryForm.name} sub-type`,
+      status: 'ACTIVE'
+    });
+    setSubCategories(storage.getSubCategories());
+    setIsSubCategoryModalOpen(false);
+    setSubCategoryForm({
+      categoryId: '',
+      name: '',
+      description: ''
+    });
+    setRefreshNotification(`✓ Sub-Category "${newSub.name}" created and linked to ${parent?.name}!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+  };
+
+  const handleToggleSubCategoryStatus = (id: string) => {
+    const sub = subCategories.find(s => s.id === id);
+    if (!sub) return;
+    const newStatus = sub.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    storage.updateSubCategory(id, { status: newStatus });
+    setSubCategories(storage.getSubCategories());
+  };
+
+  const handleDeleteSubCategory = (id: string) => {
+    const sub = subCategories.find(s => s.id === id);
+    if (confirm(`Delete sub-category "${sub?.name}"?`)) {
+      storage.deleteSubCategory(id);
+      setSubCategories(storage.getSubCategories());
+    }
+  };
+
+  // Brand Actions
+  const handleCreateBrand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!brandForm.name.trim()) {
+      alert('Kripya Brand Name enter karein!');
+      return;
+    }
+    const slug = brandForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newBrand = storage.addBrand({
+      name: brandForm.name.trim(),
+      slug,
+      logoUrl: brandForm.logoUrl.trim() || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=200&q=80',
+      origin: brandForm.origin.trim() || 'India',
+      website: brandForm.website.trim(),
+      categories: brandForm.categories.length > 0 ? brandForm.categories : ['Electric Vehicles'],
+      isVerified: true,
+      warrantyPeriod: brandForm.warrantyPeriod.trim() || '3 Years Comprehensive',
+      modelCount: 1,
+      status: 'ACTIVE'
+    });
+    setBrands(storage.getBrands());
+    setIsBrandModalOpen(false);
+    setBrandForm({
+      name: '',
+      logoUrl: '',
+      origin: 'Bengaluru, India',
+      website: '',
+      categories: ['Electric Scooters'],
+      warrantyPeriod: '3 Years / 30,000 km'
+    });
+    setRefreshNotification(`✓ OEM Brand "${newBrand.name}" registered and published live to frontend!`);
+    setTimeout(() => setRefreshNotification(null), 4000);
+  };
+
+  const handleToggleBrandStatus = (id: string) => {
+    const b = brands.find(brand => brand.id === id);
+    if (!b) return;
+    const newStatus = b.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    storage.updateBrand(id, { status: newStatus });
+    setBrands(storage.getBrands());
+    setRefreshNotification(`✓ Brand "${b.name}" status updated to ${newStatus}!`);
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
+
+  const handleDeleteBrand = (id: string) => {
+    const b = brands.find(brand => brand.id === id);
+    if (confirm(`Delete OEM Brand "${b?.name}"?`)) {
+      storage.deleteBrand(id);
+      setBrands(storage.getBrands());
+      setRefreshNotification(`✓ Brand removed!`);
+      setTimeout(() => setRefreshNotification(null), 3000);
+    }
+  };
+
   const loadAllData = () => {
     setRegisteredCustomers(storage.getRegisteredUsers());
     setVehicleOrders(storage.getVehicleOrders());
@@ -894,6 +1098,9 @@ export const AdminDashboardPage: React.FC = () => {
     setServices(storage.getServiceBookings());
     setPartsOrders(storage.getSparePartsOrders());
     setTickets(storage.getSupportTickets());
+    setCategories(storage.getCategories());
+    setSubCategories(storage.getSubCategories());
+    setBrands(storage.getBrands());
   };
 
   const handleManualRefresh = () => {
@@ -3227,6 +3434,581 @@ export const AdminDashboardPage: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+            {/* TAB: CATEGORY MANAGEMENT (Master Categories) */}
+            {activeTab === 'categories' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#16A34A] text-xs font-bold border border-emerald-200 mb-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Live Frontend Catalog Architecture</span>
+                    </div>
+                    <h2 className="text-xl font-black text-[#06152B]">
+                      E-VAHAN Master Category Architecture ({categories.length})
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Create, reorder, and publish main catalog categories shown live on Homepage "Shop by Category" and Header menus.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsCategoryModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Create New Category</span>
+                  </button>
+                </div>
+
+                {/* Categories Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Category Name & Banner</th>
+                        <th className="p-3">Subtitle / Tagline</th>
+                        <th className="p-3">Type</th>
+                        <th className="p-3">Sub-Categories</th>
+                        <th className="p-3">Live Status</th>
+                        <th className="p-3">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {categories.map((cat) => {
+                        const subsCount = subCategories.filter(s => s.categoryId === cat.id).length;
+                        return (
+                          <tr key={cat.id} className="hover:bg-gray-50/70">
+                            <td className="p-3">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={cat.imageUrl}
+                                  alt={cat.name}
+                                  className="w-12 h-10 object-cover rounded-xl bg-gray-100 border border-gray-200"
+                                />
+                                <div>
+                                  <strong className="text-xs font-bold text-gray-900 block">{cat.name}</strong>
+                                  <span className="text-[10px] text-gray-400 font-mono">slug: /{cat.slug}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-3 text-gray-600 font-medium">{cat.subtitle}</td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                                cat.type === 'VEHICLE' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                cat.type === 'SPARE_PART' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                'bg-purple-50 text-purple-700 border border-purple-200'
+                              }`}>
+                                {cat.type}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <span className="font-bold text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg">
+                                {subsCount} Sub-types
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => handleToggleCategoryStatus(cat.id)}
+                                className={`px-2.5 py-1 rounded-md font-bold text-[10px] cursor-pointer transition-all ${
+                                  cat.status === 'ACTIVE'
+                                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                              >
+                                {cat.status === 'ACTIVE' ? '✓ LIVE ON FRONTEND' : 'HIDDEN'}
+                              </button>
+                            </td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => handleDeleteCategory(cat.id)}
+                                className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                                title="Delete Category"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: SUB-CATEGORY MANAGEMENT */}
+            {activeTab === 'subcategories' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div>
+                    <h2 className="text-xl font-black text-[#06152B]">
+                      Sub-Category Hierarchy & Filters ({subCategories.length})
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Organize granular model types (e.g. High-Speed, Delivery Boxes, 72V LFP Batteries) under parent categories.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (categories.length > 0 && !subCategoryForm.categoryId) {
+                        setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
+                      }
+                      setIsSubCategoryModalOpen(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Create Sub-Category</span>
+                  </button>
+                </div>
+
+                {/* Filter by Parent Category */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <span className="text-xs font-bold text-gray-500 shrink-0">Parent Category:</span>
+                  <button
+                    onClick={() => setSubCategoryFilterParent('ALL')}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                      subCategoryFilterParent === 'ALL'
+                        ? 'bg-[#06152B] text-white shadow-sm'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    All Sub-Categories ({subCategories.length})
+                  </button>
+                  {categories.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSubCategoryFilterParent(c.id)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
+                        subCategoryFilterParent === c.id
+                          ? 'bg-[#16A34A] text-white shadow-sm'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sub-Categories Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                      <tr>
+                        <th className="p-3">Sub-Category Name</th>
+                        <th className="p-3">Parent Category</th>
+                        <th className="p-3">Slug</th>
+                        <th className="p-3">Description</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {subCategories
+                        .filter(s => subCategoryFilterParent === 'ALL' || s.categoryId === subCategoryFilterParent)
+                        .map((sub) => (
+                          <tr key={sub.id} className="hover:bg-gray-50/70">
+                            <td className="p-3 font-bold text-gray-900">{sub.name}</td>
+                            <td className="p-3">
+                              <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold text-[11px] border border-emerald-200">
+                                {sub.categoryName}
+                              </span>
+                            </td>
+                            <td className="p-3 font-mono text-gray-500 text-[11px]">/{sub.slug}</td>
+                            <td className="p-3 text-gray-600 max-w-xs">{sub.description}</td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => handleToggleSubCategoryStatus(sub.id)}
+                                className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                                  sub.status === 'ACTIVE'
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-gray-100 text-gray-500'
+                                }`}
+                              >
+                                {sub.status}
+                              </button>
+                            </td>
+                            <td className="p-3">
+                              <button
+                                onClick={() => handleDeleteSubCategory(sub.id)}
+                                className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: BRAND & OEM DIRECTORY */}
+            {activeTab === 'brands' && (
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#16A34A] text-xs font-bold border border-emerald-200 mb-1">
+                      <Award className="w-3.5 h-3.5" />
+                      <span>Certified Manufacturer Directory</span>
+                    </div>
+                    <h2 className="text-xl font-black text-[#06152B]">
+                      Authorized OEM Brands & Technology Partners ({brands.length})
+                    </h2>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Manage official EV manufacturer profiles, warranty guarantees, and homepage brand showcase cards.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsBrandModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>Register New OEM Brand</span>
+                  </button>
+                </div>
+
+                {/* Brands Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {brands.map((b) => (
+                    <div
+                      key={b.id}
+                      className="p-5 rounded-2xl bg-gray-50 border border-gray-200/90 flex flex-col justify-between space-y-3 hover:shadow-sm transition-all"
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="w-12 h-12 rounded-xl bg-white p-1 border border-gray-200 overflow-hidden flex items-center justify-center">
+                            <img src={b.logoUrl} alt={b.name} className="w-full h-full object-cover rounded-lg" />
+                          </div>
+                          <button
+                            onClick={() => handleToggleBrandStatus(b.id)}
+                            className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                              b.status === 'ACTIVE'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-gray-200 text-gray-600'
+                            }`}
+                          >
+                            {b.status === 'ACTIVE' ? '✓ ACTIVE' : 'INACTIVE'}
+                          </button>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-black text-gray-900">{b.name}</h4>
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                            <Globe className="w-3 h-3 text-gray-400" /> {b.origin}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1">
+                          {b.categories.map((c, i) => (
+                            <span key={i} className="text-[10px] font-bold text-gray-700 bg-white border border-gray-200 px-2 py-0.5 rounded">
+                              {c}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-white border border-gray-100 text-xs">
+                          <span className="text-[10px] font-bold text-gray-400 block uppercase">Warranty SLA:</span>
+                          <span className="font-bold text-[#16A34A]">{b.warrantyPeriod}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between">
+                        {b.website ? (
+                          <a
+                            href={b.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-bold text-gray-500 hover:text-emerald-700 flex items-center gap-1"
+                          >
+                            <span>Website</span>
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        ) : <span />}
+
+                        <button
+                          onClick={() => handleDeleteBrand(b.id)}
+                          className="p-1 rounded-md text-rose-500 hover:bg-rose-50 transition-colors"
+                          title="Delete Brand"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* MODALS */}
+            {/* 1. Create Category Modal */}
+            {isCategoryModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative max-h-[90vh] overflow-y-auto">
+                  <button
+                    onClick={() => setIsCategoryModalOpen(false)}
+                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="mb-6">
+                    <h3 className="text-xl font-black text-gray-900">Create New E-VAHAN Category</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      This category will be immediately published to the live Homepage and Header catalog.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleCreateCategory} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Category Title *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Electric Motorcycles"
+                        value={categoryForm.name}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Subtitle / Tagline *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Sports & Highway Cruisers"
+                        value={categoryForm.subtitle}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, subtitle: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Catalog Section Type *</label>
+                        <select
+                          value={categoryForm.type}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, type: e.target.value as any })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        >
+                          <option value="VEHICLE">Electric Vehicles</option>
+                          <option value="SPARE_PART">Genuine Spare Parts</option>
+                          <option value="SERVICE">Doorstep Services</option>
+                          <option value="ACCESSORY">EV Accessories</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Cover Image URL</label>
+                        <input
+                          type="url"
+                          placeholder="https://images.unsplash.com/..."
+                          value={categoryForm.imageUrl}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, imageUrl: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Detailed Description</label>
+                      <textarea
+                        rows={2}
+                        placeholder="Describe the vehicle or parts segment for search engines and customers..."
+                        value={categoryForm.description}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium resize-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="checkbox"
+                        id="featuredCat"
+                        checked={categoryForm.isFeatured}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, isFeatured: e.target.checked })}
+                        className="w-4 h-4 text-emerald-600 rounded"
+                      />
+                      <label htmlFor="featuredCat" className="text-xs font-bold text-gray-700 cursor-pointer">
+                        Feature this Category on Homepage "Shop by Category" Grid
+                      </label>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Create Category & Publish Live</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Create Sub-Category Modal */}
+            {isSubCategoryModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative">
+                  <button
+                    onClick={() => setIsSubCategoryModalOpen(false)}
+                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="mb-6">
+                    <h3 className="text-xl font-black text-gray-900">Add New Sub-Category</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Link a specific model type or component sub-division to an existing parent category.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleCreateSubCategory} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Select Parent Category *</label>
+                      <select
+                        required
+                        value={subCategoryForm.categoryId}
+                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, categoryId: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900"
+                      >
+                        <option value="">-- Choose Category --</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} ({c.type})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Sub-Category Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Swappable Battery Commuters"
+                        value={subCategoryForm.name}
+                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Description *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Dual battery compartments, AIS-156 safety certified"
+                        value={subCategoryForm.description}
+                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, description: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Add Sub-Category & Link</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Create Brand Modal */}
+            {isBrandModalOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative max-h-[90vh] overflow-y-auto">
+                  <button
+                    onClick={() => setIsBrandModalOpen(false)}
+                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                  <div className="mb-6">
+                    <h3 className="text-xl font-black text-gray-900">Register OEM Brand Partner</h3>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Register an electric vehicle manufacturer, component OEM, or battery partner for the live brand showcase.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleCreateBrand} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Brand Name *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Hero Electric"
+                          value={brandForm.name}
+                          onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Origin City / Hub *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Gurugram, India"
+                          value={brandForm.origin}
+                          onChange={(e) => setBrandForm({ ...brandForm, origin: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Brand Logo Image URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://images.unsplash.com/... or brand logo URL"
+                        value={brandForm.logoUrl}
+                        onChange={(e) => setBrandForm({ ...brandForm, logoUrl: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Official Website</label>
+                      <input
+                        type="url"
+                        placeholder="https://www.brand-website.com"
+                        value={brandForm.website}
+                        onChange={(e) => setBrandForm({ ...brandForm, website: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Warranty SLA Guarantee *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. 3 Years / 40,000 km Warranty"
+                        value={brandForm.warrantyPeriod}
+                        onChange={(e) => setBrandForm({ ...brandForm, warrantyPeriod: e.target.value })}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                    >
+                      <Award className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Register Brand & Publish Live</span>
+                    </button>
+                  </form>
                 </div>
               </div>
             )}

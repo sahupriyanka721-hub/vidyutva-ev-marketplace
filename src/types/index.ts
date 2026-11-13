@@ -380,3 +380,43 @@ export interface CustomerReviewItem {
   verified: boolean;
   createdAt: string;
 }
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  subtitle: string;
+  description: string;
+  type: 'VEHICLE' | 'SPARE_PART' | 'SERVICE' | 'ACCESSORY';
+  imageUrl: string;
+  isFeatured: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
+  displayOrder: number;
+  createdAt: string;
+}
+
+export interface SubCategoryItem {
+  id: string;
+  categoryId: string;
+  categoryName: string;
+  name: string;
+  slug: string;
+  description: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+}
+
+export interface BrandItem {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string;
+  origin: string;
+  website?: string;
+  categories: string[];
+  isVerified: boolean;
+  warrantyPeriod: string;
+  modelCount: number;
+  status: 'ACTIVE' | 'INACTIVE';
+  createdAt: string;
+}

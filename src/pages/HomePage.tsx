@@ -5,6 +5,7 @@ import { CategoryGrid } from '../components/home/CategoryGrid';
 import { FeaturedVehiclesSection } from '../components/home/FeaturedVehiclesSection';
 import { VehicleFinderWidget } from '../components/home/VehicleFinderWidget';
 import { WhyChooseUs } from '../components/home/WhyChooseUs';
+import { BrandShowcaseSection } from '../components/home/BrandShowcaseSection';
 import { SparePartsPreview } from '../components/home/SparePartsPreview';
 import { DoorstepServiceBanner } from '../components/home/DoorstepServiceBanner';
 import { HowItWorksSection } from '../components/home/HowItWorksSection';
@@ -34,6 +35,9 @@ export const HomePage: React.FC = () => {
 
       {/* H. Why Choose Us */}
       <WhyChooseUs />
+
+      {/* H.2 Verified OEM Brands Showcase */}
+      <BrandShowcaseSection />
 
       {/* I. Doorstep Service Section */}
       <DoorstepServiceBanner />

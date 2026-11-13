@@ -13,13 +13,18 @@ import {
   FileText,
   Clock,
   Sparkles,
-  LogOut
+  LogOut,
+  Layers,
+  Award,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLocation } from '../../context/LocationContext';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { BrandLogo } from './BrandLogo';
+import { storage } from '../../services/storageService';
+import { CategoryItem, BrandItem } from '../../types';
 
 /**
  * Section 3: GLOBAL HEADER AND NAVIGATION
@@ -47,11 +52,24 @@ export const Header: React.FC = () => {
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const accountRef = useRef<HTMLDivElement>(null);
 
-  // Close account dropdown on outside click
+  const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [brands, setBrands] = useState<BrandItem[]>([]);
+
+  useEffect(() => {
+    setCategories(storage.getCategories().filter(c => c.status === 'ACTIVE'));
+    setBrands(storage.getBrands().filter(b => b.status === 'ACTIVE'));
+  }, []);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (accountRef.current && !accountRef.current.contains(event.target as Node)) {
         setAccountDropdownOpen(false);
+      }
+      if (categoriesRef.current && !categoriesRef.current.contains(event.target as Node)) {
+        setCategoriesDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -91,6 +109,85 @@ export const Header: React.FC = () => {
 
           {/* Center Navigation Links */}
           <nav className="hidden lg:flex items-center space-x-5 text-sm font-semibold text-gray-700">
+            {/* Dynamic Categories & Brands Dropdown */}
+            <div ref={categoriesRef} className="relative">
+              <button
+                onClick={() => setCategoriesDropdownOpen(!categoriesDropdownOpen)}
+                className="flex items-center gap-1 hover:text-[#16A34A] transition-colors focus:outline-none cursor-pointer py-1"
+              >
+                <span>Categories</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${categoriesDropdownOpen ? 'rotate-180 text-[#16A34A]' : 'text-gray-400'}`} />
+              </button>
+
+              {categoriesDropdownOpen && (
+                <div className="absolute left-0 mt-3 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+                    <span className="text-xs font-black text-[#06152B] uppercase tracking-wider flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-[#16A34A]" />
+                      <span>E-VAHAN Catalog ({categories.length})</span>
+                    </span>
+                    <Link
+                      to="/vehicles"
+                      onClick={() => setCategoriesDropdownOpen(false)}
+                      className="text-[11px] font-bold text-[#16A34A] hover:underline"
+                    >
+                      All Vehicles →
+                    </Link>
+                  </div>
+
+                  {/* Categories List */}
+                  <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        to={cat.type === 'VEHICLE' ? `/vehicles` : `/spare-parts`}
+                        onClick={() => setCategoriesDropdownOpen(false)}
+                        className="flex items-center justify-between p-2 rounded-xl hover:bg-emerald-50 transition-colors group"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <img
+                            src={cat.imageUrl}
+                            alt={cat.name}
+                            className="w-8 h-8 rounded-lg object-cover bg-gray-100 border border-gray-200 shrink-0"
+                          />
+                          <div>
+                            <span className="text-xs font-bold text-gray-800 group-hover:text-[#16A34A] block">
+                              {cat.name}
+                            </span>
+                            <span className="text-[10px] text-gray-400 block truncate max-w-[180px]">{cat.subtitle}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 group-hover:bg-emerald-100 text-gray-600 group-hover:text-emerald-800 shrink-0">
+                          {cat.type}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Top Brands quick strip */}
+                  {brands.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <span className="text-[10px] font-bold uppercase text-gray-400 tracking-wider block mb-2 flex items-center gap-1">
+                        <Award className="w-3 h-3 text-[#16A34A]" /> Authorized OEM Brands
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {brands.slice(0, 6).map((b) => (
+                          <Link
+                            key={b.id}
+                            to="/vehicles"
+                            onClick={() => setCategoriesDropdownOpen(false)}
+                            className="px-2 py-1 rounded-lg bg-gray-50 hover:bg-emerald-50 text-[10px] font-bold text-gray-700 hover:text-emerald-800 border border-gray-200 transition-colors"
+                          >
+                            {b.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <Link to="/vehicles?category=ELECTRIC_SCOOTER" className="hover:text-[#16A34A] transition-colors">
               Electric Scooters
             </Link>
@@ -280,6 +377,25 @@ export const Header: React.FC = () => {
             >
               Change Location
             </button>
+          </div>
+
+          {/* Live Catalog Categories for Mobile */}
+          <div className="pt-1">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5 flex items-center gap-1">
+              <Layers className="w-3 h-3 text-[#16A34A]" /> Live Catalog Categories ({categories.length})
+            </span>
+            <div className="flex gap-1.5 overflow-x-auto pb-1.5">
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={cat.type === 'VEHICLE' ? `/vehicles` : `/spare-parts`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200 text-[11px] font-bold text-gray-700 whitespace-nowrap hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
           </div>
 
           {/* Links for Mobile */}
