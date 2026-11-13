@@ -87,6 +87,11 @@ export const CustomerDashboardPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
+    // Live two-way sync: customer dashboard updates instantly when Admin updates status or replies
+    const unsub = storage.onSync(() => {
+      loadData();
+    });
+    return () => unsub();
   }, []);
 
   useEffect(() => {

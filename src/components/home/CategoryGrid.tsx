@@ -19,9 +19,20 @@ export const CategoryGrid: React.FC = () => {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategoryItem[]>([]);
 
-  useEffect(() => {
+  const loadCategories = () => {
     setCategories(storage.getCategories().filter(c => c.status === 'ACTIVE'));
     setSubCategories(storage.getSubCategories().filter(s => s.status === 'ACTIVE'));
+  };
+
+  useEffect(() => {
+    loadCategories();
+    // Live two-way synchronization: auto-reload when Admin updates categories
+    const unsub = storage.onSync((key) => {
+      if (key === 'catalog_categories' || key === 'catalog_subcategories') {
+        loadCategories();
+      }
+    });
+    return () => unsub();
   }, []);
 
   const getCategoryIcon = (type: string, name: string) => {

@@ -225,6 +225,49 @@ const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [
 
 class StorageService {
   private memoryStore: { [key: string]: any } = {};
+  private syncListeners: Array<(key: string, value: any) => void> = [];
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      // Cross-tab sync listener
+      window.addEventListener('storage', (e: StorageEvent) => {
+        if (e.key && e.key.startsWith('evahan_')) {
+          const cleanKey = e.key.replace('evahan_', '');
+          try {
+            const parsed = e.newValue ? JSON.parse(e.newValue) : null;
+            this.syncListeners.forEach(listener => {
+              try { listener(cleanKey, parsed); } catch (err) { console.error(err); }
+            });
+          } catch {
+            this.syncListeners.forEach(listener => {
+              try { listener(cleanKey, null); } catch (err) { console.error(err); }
+            });
+          }
+        }
+      });
+    }
+  }
+
+  // Real-time synchronization subscription for frontend & admin
+  onSync(callback: (key: string, value: any) => void): () => void {
+    this.syncListeners.push(callback);
+    return () => {
+      this.syncListeners = this.syncListeners.filter(l => l !== callback);
+    };
+  }
+
+  private notifySync(key: string, value: any): void {
+    this.syncListeners.forEach(listener => {
+      try {
+        listener(key, value);
+      } catch (err) {
+        console.error('Sync listener error:', err);
+      }
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('evahan_sync', { detail: { key, value } }));
+    }
+  }
 
   private get<T>(key: string, fallback: T): T {
     try {
@@ -245,9 +288,24 @@ class StorageService {
       } else {
         this.memoryStore[key] = value;
       }
+      this.notifySync(key, value);
     } catch (err) {
       console.error('Storage error:', err);
     }
+  }
+
+  // --- Announcements (Synced live across storefront & admin) ---
+  getAnnouncements(): string[] {
+    return this.get<string[]>('announcements', [
+      '⚡ Zero Road Tax across Delhi, UP, Karnataka & Maharashtra | Doorstep Test Drives in 24+ Cities',
+      '🛵 Book a Complimentary Doorstep Test Drive Today with Certified Van Specialist',
+      '🔧 100% Genuine OEM EV Spare Parts with Verified Fitment Guarantee',
+      '🛠️ Certified EV Technician Service at Your Doorstep in 24+ Cities'
+    ]);
+  }
+
+  saveAnnouncements(list: string[]): void {
+    this.set('announcements', list);
   }
 
   // --- User & Auth ---

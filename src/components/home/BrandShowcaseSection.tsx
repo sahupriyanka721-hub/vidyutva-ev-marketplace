@@ -7,8 +7,18 @@ import { BrandItem } from '../../types';
 export const BrandShowcaseSection: React.FC = () => {
   const [brands, setBrands] = useState<BrandItem[]>([]);
 
-  useEffect(() => {
+  const loadBrands = () => {
     setBrands(storage.getBrands().filter(b => b.status === 'ACTIVE'));
+  };
+
+  useEffect(() => {
+    loadBrands();
+    const unsub = storage.onSync((key) => {
+      if (key === 'catalog_brands') {
+        loadBrands();
+      }
+    });
+    return () => unsub();
   }, []);
 
   if (brands.length === 0) return null;

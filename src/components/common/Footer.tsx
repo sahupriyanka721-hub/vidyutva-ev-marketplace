@@ -205,16 +205,6 @@ export const Footer: React.FC = () => {
                   Service Policy
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/admin"
-                  onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] font-bold text-xs border border-emerald-200 transition-colors shadow-2xs mt-1"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#16A34A]" />
-                  <span>Admin Portal</span>
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
@@ -247,14 +237,6 @@ export const Footer: React.FC = () => {
               <Link to="/legal/terms-and-conditions" className="hover:underline hover:text-gray-900">Terms</Link>
               <Link to="/legal/refund-policy" className="hover:underline hover:text-gray-900">Refunds</Link>
               <Link to="/contact" className="hover:underline hover:text-gray-900">Support</Link>
-              <Link
-                to="/admin"
-                onClick={() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' })}
-                className="hover:underline hover:text-[#16A34A] font-bold text-gray-700 inline-flex items-center gap-1"
-              >
-                <ShieldCheck className="w-3 h-3 text-[#16A34A]" />
-                <span>Admin Portal</span>
-              </Link>
             </div>
           </div>
         </div>

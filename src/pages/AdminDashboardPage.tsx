@@ -703,13 +703,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [subCategories, setSubCategories] = useState<SubCategoryItem[]>(() => storage.getSubCategories());
   const [brands, setBrands] = useState<BrandItem[]>(() => storage.getBrands());
 
-  // Announcement Bar message manager (Section 4.A requirement)
-  const [announcements, setAnnouncements] = useState<string[]>([
-    '⚡ Zero Road Tax across Delhi, UP, Karnataka & Maharashtra | Doorstep Test Drives in 24+ Cities',
-    '🛵 Book a Complimentary Doorstep Test Drive Today with Certified Van Specialist',
-    '🔧 100% Genuine OEM EV Spare Parts with Verified Fitment Guarantee',
-    '🛠️ Certified EV Technician Service at Your Doorstep in 24+ Cities'
-  ]);
+  // Announcement Bar message manager (Synced live across storefront & admin)
+  const [announcements, setAnnouncements] = useState<string[]>(() => storage.getAnnouncements());
   const [newAnnouncementText, setNewAnnouncementText] = useState('');
 
   // Ticket reply state
@@ -1094,6 +1089,11 @@ export const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     if (isAdminAuthenticated) {
       loadAllData();
+      // Live two-way synchronization: any real customer order, booking, or registration instantly updates admin!
+      const unsub = storage.onSync(() => {
+        loadAllData();
+      });
+      return () => unsub();
     }
   }, [isAdminAuthenticated]);
 
@@ -1180,13 +1180,21 @@ export const AdminDashboardPage: React.FC = () => {
   const handleAddAnnouncement = (e: React.FormEvent) => {
     e.preventDefault();
     if (newAnnouncementText.trim()) {
-      setAnnouncements(prev => [newAnnouncementText.trim(), ...prev]);
+      const updated = [newAnnouncementText.trim(), ...announcements];
+      setAnnouncements(updated);
+      storage.saveAnnouncements(updated);
       setNewAnnouncementText('');
+      setRefreshNotification('✓ Announcement broadcasted live to Customer Storefront!');
+      setTimeout(() => setRefreshNotification(null), 3000);
     }
   };
 
   const handleRemoveAnnouncement = (index: number) => {
-    setAnnouncements(prev => prev.filter((_, i) => i !== index));
+    const updated = announcements.filter((_, i) => i !== index);
+    setAnnouncements(updated);
+    storage.saveAnnouncements(updated);
+    setRefreshNotification('✓ Announcement removed from live storefront!');
+    setTimeout(() => setRefreshNotification(null), 3000);
   };
 
   // Filter registered customers based on search query
