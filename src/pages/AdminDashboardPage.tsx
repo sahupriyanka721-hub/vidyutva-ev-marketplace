@@ -1448,6 +1448,18 @@ export const AdminDashboardPage: React.FC = () => {
   const timeGreeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
   const breadcrumb = getTabBreadcrumb();
 
+  // Dynamic Attention & Pending Assignments Calculations
+  const pendingKycCount = registeredCustomers.filter(c => !c.isKycVerified).length;
+  const pendingServicesCount = services.filter(
+    s => s.status === 'REQUESTED' || s.status === 'AWAITING_CONFIRMATION' || s.additionalApprovalQuote?.status === 'PENDING'
+  ).length;
+  const pendingQuotationsCount = quotations.filter(
+    q => q.status === 'SUBMITTED' || q.status === 'UNDER_REVIEW'
+  ).length;
+  const pendingTicketsCount = tickets.filter(t => t.status === 'OPEN').length;
+  const totalPendingAssignments = pendingKycCount + pendingServicesCount + pendingQuotationsCount + pendingTicketsCount;
+  const activeServiceVansCount = serviceProviders.filter(sp => sp.status === 'ACTIVE' || sp.status === 'ON_JOB').length || serviceProviders.length;
+
   return (
     <div className="min-h-screen flex bg-[#F0F4F8] text-[#17211B] antialiased">
       {/* DESKTOP STICKY SIDEBAR (Full height from top to bottom matching user's photos) */}
@@ -1644,39 +1656,149 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* Attention & Live Greeting Alert Banner (Matching Photo 4!) */}
-          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200/90 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-emerald-700 font-bold">Live Admin Console</span>
-                <span>•</span>
-                <span>{currentFormattedDate}</span>
-              </div>
-              <h1 className="text-xl sm:text-2xl font-black text-[#06152B] tracking-tight">
-                Good {timeGreeting}, Administrator 👋
-              </h1>
-              <p className="text-xs text-gray-500">
-                Multi-vendor EV marketplace management: live service vans, certified vendors, showroom dealers & master catalog.
-              </p>
-            </div>
+          {/* Executive Live Greeting & Operational Attention Banner */}
+          <div className="relative overflow-hidden bg-gradient-to-r from-white via-[#F8FAFC] to-[#F1F5F9] rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm transition-all">
+            {/* Ambient Background Gradient Accent */}
+            <div className="pointer-events-none absolute -right-12 -top-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+            <div className="pointer-events-none absolute right-48 -bottom-10 w-44 h-44 bg-blue-500/5 rounded-full blur-2xl" />
 
-            {/* Quick Attention Indicators (matching photo 4) */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <div className="px-3.5 py-2 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-                <div>
-                  <span className="text-[10px] uppercase text-amber-700 block font-bold">Attention:</span>
-                  <span>0 Pending Assignments</span>
+            <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              {/* Left Column: Console Meta, Greeting & Platform Summary */}
+              <div className="space-y-2.5 max-w-2xl">
+                {/* Meta status bar */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold shadow-xs">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#16A34A]"></span>
+                    </span>
+                    <span className="font-bold tracking-tight">Live Admin Console</span>
+                  </div>
+
+                  <span className="text-slate-300 hidden sm:inline">•</span>
+
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 text-slate-700 font-medium border border-slate-200/70">
+                    <Clock className="w-3.5 h-3.5 text-slate-500" />
+                    <span>{currentFormattedDate}</span>
+                  </div>
+
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 font-semibold border border-blue-200/80">
+                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="text-[11px]">System Online & Verified</span>
+                  </div>
                 </div>
+
+                {/* Primary Greeting */}
+                <div className="flex flex-wrap items-center gap-3 pt-0.5">
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#06152B] tracking-tight">
+                    Good {timeGreeting}, Administrator 👋
+                  </h1>
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider bg-[#06152B] text-emerald-400 px-3 py-1 rounded-xl shadow-xs">
+                    Super Admin
+                  </span>
+                </div>
+
+                {/* Description */}
+                <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
+                  Multi-vendor EV marketplace management: live service vans, certified vendors, showroom dealers & master catalog.
+                </p>
               </div>
 
-              <div className="px-3.5 py-2 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
-                <Zap className="w-4 h-4 text-[#16A34A]" />
-                <div>
-                  <span className="text-[10px] uppercase text-emerald-700 block font-bold">Live Active:</span>
-                  <span>{services.length} Service Vans</span>
+              {/* Right Column: Status & Attention Cards */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+                {/* Dynamic Attention Card */}
+                <div
+                  onClick={() => {
+                    if (pendingKycCount > 0) setActiveTab('customer-kyc');
+                    else if (pendingServicesCount > 0) setActiveTab('services');
+                    else if (pendingQuotationsCount > 0) setActiveTab('quotations');
+                  }}
+                  className={`group relative p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer min-w-[210px] ${
+                    totalPendingAssignments > 0
+                      ? 'bg-amber-50/90 border-amber-300 hover:border-amber-400 hover:shadow-md'
+                      : 'bg-emerald-50/70 border-emerald-300/80 hover:border-emerald-400 hover:shadow-md'
+                  }`}
+                  title={totalPendingAssignments > 0 ? 'Click to inspect pending tasks' : 'All systems operating smoothly'}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl shrink-0 ${
+                        totalPendingAssignments > 0
+                          ? 'bg-amber-500 text-white shadow-xs'
+                          : 'bg-emerald-600 text-white shadow-xs'
+                      }`}
+                    >
+                      {totalPendingAssignments > 0 ? (
+                        <AlertCircle className="w-5 h-5 animate-pulse" />
+                      ) : (
+                        <CheckCircle2 className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <span
+                        className={`text-[10px] uppercase font-bold tracking-wider block ${
+                          totalPendingAssignments > 0 ? 'text-amber-800' : 'text-emerald-800'
+                        }`}
+                      >
+                        Attention:
+                      </span>
+                      <strong className="text-sm sm:text-base font-black text-slate-900 block truncate">
+                        {totalPendingAssignments} Pending Assignment{totalPendingAssignments === 1 ? '' : 's'}
+                      </strong>
+                      <span className="text-[11px] text-slate-500 font-medium block truncate mt-0.5">
+                        {totalPendingAssignments > 0
+                          ? `${pendingKycCount} KYC • ${pendingServicesCount} Bookings`
+                          : 'All tasks up to date'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Live Fleet & Network Active Card */}
+                <div
+                  onClick={() => setActiveTab('services')}
+                  className="group relative p-3.5 sm:p-4 rounded-2xl bg-white/95 border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer min-w-[200px]"
+                  title="Click to view live service vans & bookings"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-[#16A34A] text-white shrink-0 shadow-xs">
+                      <Zap className="w-5 h-5 text-amber-200" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
+                        Live Active:
+                      </span>
+                      <strong className="text-sm sm:text-base font-black text-slate-900 block truncate">
+                        {activeServiceVansCount} Service Vans
+                      </strong>
+                      <span className="text-[11px] text-emerald-700 font-semibold block truncate mt-0.5">
+                        {shopkeepers.length} Showrooms • {spareVendors.length} Vendors
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Refresh Sync Button */}
+                <button
+                  type="button"
+                  onClick={handleManualRefresh}
+                  disabled={isRefreshing}
+                  title="Synchronize live backend data"
+                  className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-row sm:flex-col items-center justify-center gap-1.5 shrink-0 ${
+                    isRefreshing
+                      ? 'bg-slate-100 border-slate-300 text-slate-400 cursor-not-allowed'
+                      : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 shadow-xs hover:shadow-sm'
+                  }`}
+                >
+                  <RefreshCw
+                    className={`w-5 h-5 text-slate-600 transition-transform ${
+                      isRefreshing ? 'animate-spin text-emerald-600' : 'group-hover:rotate-180'
+                    }`}
+                  />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:block hidden">
+                    Sync
+                  </span>
+                </button>
               </div>
             </div>
           </div>
