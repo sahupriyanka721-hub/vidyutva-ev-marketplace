@@ -761,8 +761,8 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Catalog & Brands Architecture',
       icon: Sparkles,
       items: [
-        { id: 'categories' as AdminTab, label: 'Categories Master', badge: categories.length },
-        { id: 'subcategories' as AdminTab, label: 'Sub-Categories', badge: subCategories.length },
+        { id: 'categories' as AdminTab, label: 'Primary', badge: categories.length },
+        { id: 'subcategories' as AdminTab, label: 'Category', badge: subCategories.length },
         { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
       ]
     },
@@ -1605,7 +1605,8 @@ export const AdminDashboardPage: React.FC = () => {
             { id: 'services' as AdminTab, label: `Service Vans (${services.length})` },
             { id: 'vendor-list' as AdminTab, label: `Vendors (${spareVendors.length})` },
             { id: 'shop-list' as AdminTab, label: `Showrooms (${shopkeepers.length})` },
-            { id: 'categories' as AdminTab, label: `Categories (${categories.length})` },
+            { id: 'categories' as AdminTab, label: `Primary (${categories.length})` },
+            { id: 'subcategories' as AdminTab, label: `Category (${subCategories.length})` },
             { id: 'brands' as AdminTab, label: `Brands (${brands.length})` },
             { id: 'customers' as AdminTab, label: `Customers (${registeredCustomers.length})` },
             { id: 'orders' as AdminTab, label: `Orders (${vehicleOrders.length})` },
@@ -3831,7 +3832,7 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
             )}
-            {/* TAB: CATEGORY MANAGEMENT (Master Categories) */}
+            {/* TAB: PRIMARY CATEGORIES */}
             {activeTab === 'categories' && (
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
@@ -3841,10 +3842,10 @@ export const AdminDashboardPage: React.FC = () => {
                       <span>Live Frontend Catalog Architecture</span>
                     </div>
                     <h2 className="text-xl font-black text-[#06152B]">
-                      E-VAHAN Master Category Architecture ({categories.length})
+                      Primary ({categories.length})
                     </h2>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Create, reorder, and publish main catalog categories shown live on Homepage "Shop by Category" and Header menus.
+                      Create, reorder, and publish main primary categories shown live on Homepage "Shop by Category" and Header menus.
                     </p>
                   </div>
                   <button
@@ -3852,19 +3853,19 @@ export const AdminDashboardPage: React.FC = () => {
                     className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
                   >
                     <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Create New Category</span>
+                    <span>Create Primary</span>
                   </button>
                 </div>
 
-                {/* Categories Table */}
+                {/* Primary Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
                     <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
                       <tr>
-                        <th className="p-3">Category Name & Banner</th>
+                        <th className="p-3">Primary Name & Banner</th>
                         <th className="p-3">Subtitle / Tagline</th>
                         <th className="p-3">Type</th>
-                        <th className="p-3">Sub-Categories</th>
+                        <th className="p-3">Categories</th>
                         <th className="p-3">Live Status</th>
                         <th className="p-3">Actions</th>
                       </tr>
@@ -3899,7 +3900,7 @@ export const AdminDashboardPage: React.FC = () => {
                             </td>
                             <td className="p-3">
                               <span className="font-bold text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg">
-                                {subsCount} Sub-types
+                                {subsCount} Categories
                               </span>
                             </td>
                             <td className="p-3">
@@ -3918,7 +3919,7 @@ export const AdminDashboardPage: React.FC = () => {
                               <button
                                 onClick={() => handleDeleteCategory(cat.id)}
                                 className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
-                                title="Delete Category"
+                                title="Delete Primary Category"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -3932,16 +3933,16 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: SUB-CATEGORY MANAGEMENT */}
+            {/* TAB: CATEGORY MANAGEMENT */}
             {activeTab === 'subcategories' && (
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                   <div>
                     <h2 className="text-xl font-black text-[#06152B]">
-                      Sub-Category Hierarchy & Filters ({subCategories.length})
+                      Category ({subCategories.length})
                     </h2>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Organize granular model types (e.g. High-Speed, Delivery Boxes, 72V LFP Batteries) under parent categories.
+                      Organize granular category types (e.g. High-Speed, Delivery Boxes, 72V LFP Batteries) under primary categories.
                     </p>
                   </div>
                   <button
@@ -3954,13 +3955,13 @@ export const AdminDashboardPage: React.FC = () => {
                     className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
                   >
                     <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Create Sub-Category</span>
+                    <span>Create Category</span>
                   </button>
                 </div>
 
-                {/* Filter by Parent Category */}
+                {/* Filter by Primary Category */}
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  <span className="text-xs font-bold text-gray-500 shrink-0">Parent Category:</span>
+                  <span className="text-xs font-bold text-gray-500 shrink-0">Primary Category:</span>
                   <button
                     onClick={() => setSubCategoryFilterParent('ALL')}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
@@ -3969,7 +3970,7 @@ export const AdminDashboardPage: React.FC = () => {
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    All Sub-Categories ({subCategories.length})
+                    All Categories ({subCategories.length})
                   </button>
                   {categories.map(c => (
                     <button
@@ -3986,13 +3987,13 @@ export const AdminDashboardPage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Sub-Categories Table */}
+                {/* Categories Table */}
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
                     <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
                       <tr>
-                        <th className="p-3">Sub-Category Name</th>
-                        <th className="p-3">Parent Category</th>
+                        <th className="p-3">Category Name</th>
+                        <th className="p-3">Primary Category</th>
                         <th className="p-3">Slug</th>
                         <th className="p-3">Description</th>
                         <th className="p-3">Status</th>
@@ -4150,15 +4151,15 @@ export const AdminDashboardPage: React.FC = () => {
                   </button>
 
                   <div className="mb-6">
-                    <h3 className="text-xl font-black text-gray-900">Create New E-VAHAN Category</h3>
+                    <h3 className="text-xl font-black text-gray-900">Create New Primary Category</h3>
                     <p className="text-xs text-gray-500 mt-1">
-                      This category will be immediately published to the live Homepage and Header catalog.
+                      This primary category will be immediately published to the live Homepage and Header catalog.
                     </p>
                   </div>
 
                   <form onSubmit={handleCreateCategory} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Category Title *</label>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Primary Title *</label>
                       <input
                         type="text"
                         required
@@ -4237,7 +4238,7 @@ export const AdminDashboardPage: React.FC = () => {
                       className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                     >
                       <Plus className="w-4 h-4 text-[#B7F34A]" />
-                      <span>Create Category & Publish Live</span>
+                      <span>Create Primary & Publish Live</span>
                     </button>
                   </form>
                 </div>
@@ -4256,22 +4257,22 @@ export const AdminDashboardPage: React.FC = () => {
                   </button>
 
                   <div className="mb-6">
-                    <h3 className="text-xl font-black text-gray-900">Add New Sub-Category</h3>
+                    <h3 className="text-xl font-black text-gray-900">Add New Category</h3>
                     <p className="text-xs text-gray-500 mt-1">
-                      Link a specific model type or component sub-division to an existing parent category.
+                      Link a specific model type or component sub-division to an existing primary category.
                     </p>
                   </div>
 
                   <form onSubmit={handleCreateSubCategory} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Select Parent Category *</label>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Select Primary Category *</label>
                       <select
                         required
                         value={subCategoryForm.categoryId}
                         onChange={(e) => setSubCategoryForm({ ...subCategoryForm, categoryId: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900"
                       >
-                        <option value="">-- Choose Category --</option>
+                        <option value="">-- Choose Primary Category --</option>
                         {categories.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.name} ({c.type})
@@ -4281,7 +4282,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Sub-Category Name *</label>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Category Name *</label>
                       <input
                         type="text"
                         required
@@ -4309,7 +4310,7 @@ export const AdminDashboardPage: React.FC = () => {
                       className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                     >
                       <Plus className="w-4 h-4 text-[#B7F34A]" />
-                      <span>Add Sub-Category & Link</span>
+                      <span>Create Category</span>
                     </button>
                   </form>
                 </div>
