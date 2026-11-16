@@ -18,210 +18,16 @@ import {
 } from '../types';
 import { INDIAN_PINCODES } from '../data/seedData';
 import { lookupCityOrPincode } from '../data/indianCitiesPincodes';
+import { api } from './apiService';
 
-// Guest starts logged out. Only saved when user actually logs in via SMS OTP.
-const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: 'notif-1',
-    category: 'ORDER',
-    title: 'Vehicle Booking Confirmed!',
-    message: 'Your booking for Electra Glide Pro has been assigned to Flagship Hub, Connaught Place.',
-    actionUrl: '/dashboard?tab=vehicle-orders',
-    isRead: false,
-    createdAt: '2026-10-26T10:30:00.000Z'
-  },
-  {
-    id: 'notif-2',
-    category: 'SERVICE',
-    title: 'Service Van Assigned',
-    message: 'Technician Santosh Kumar (Van #DL-1EV-8899) is scheduled for your doorstep inspection.',
-    actionUrl: '/dashboard?tab=service-bookings',
-    isRead: false,
-    createdAt: '2026-10-25T14:15:00.000Z'
-  },
-  {
-    id: 'notif-3',
-    category: 'QUOTATION',
-    title: 'Commercial Fleet Quotation Ready',
-    message: 'Your fleet quote #QT-2026-9812 for 5x Vidyut Yatri Auto E3 is now available for download.',
-    actionUrl: '/dashboard?tab=quotations',
-    isRead: true,
-    createdAt: '2026-10-24T09:00:00.000Z'
-  }
-];
-
-const INITIAL_SERVICE_BOOKINGS: ServiceBookingItem[] = [
-  {
-    id: 'srv-ev-1042',
-    bookingNumber: 'SRV-2026-9051',
-    userId: 'usr-ev-78291',
-    serviceCategoryKey: 'PERIODIC_MAINTENANCE',
-    serviceCategoryName: 'General Periodic Maintenance',
-    vehicleType: 'ELECTRIC_SCOOTER',
-    vehicleBrand: 'ElectraMobility',
-    vehicleModel: 'Electra Glide Pro',
-    vehicleRegNo: 'DL-01-EV-4422',
-    serviceMode: 'DOORSTEP',
-    urgency: 'STANDARD',
-    problemDescription: 'Routine 5,000 km check-up and front brake squeak inspection.',
-    appointmentDate: '2026-10-28',
-    appointmentSlot: '10:00 AM - 12:00 PM',
-    customerName: 'Vikas Malhotra',
-    customerPhone: '9876543210',
-    pincode: '110001',
-    city: 'New Delhi',
-    addressLine: 'B-42, Gulmohar Enclave, New Delhi - 110001',
-    status: 'AWAITING_CUSTOMER_APPROVAL',
-    technician: {
-      name: 'Santosh Kumar',
-      phone: '+91 98112 34567',
-      vanNumber: 'DL-1EV-8899',
-      rating: 4.95,
-    },
-    inspectionReport: {
-      batteryHealthPercent: 96,
-      brakePadHealth: 'Front pads worn to 2.1mm (Needs replacement)',
-      tyreCondition: 'Good, tread depth 3.8mm',
-      electricalStatus: 'BMS diagnostics normal, no fault codes logged',
-      recommendations: [
-        'Replace front brake pads with OEM sintered ceramic pads',
-        'Clean regenerative sensor contact points'
-      ]
-    },
-    additionalApprovalQuote: {
-      id: 'quote-add-1',
-      title: 'Front Brake Pad Replacement (OEM Sintered)',
-      partCost: 850,
-      laborCost: 150,
-      totalAmount: 1000,
-      status: 'PENDING',
-      notes: 'Includes installation and brake fluid top-up. Customer approval required before fitment.'
-    },
-    baseFee: 499,
-    inspectionFee: 299,
-    createdAt: '2026-10-26T11:00:00.000Z'
-  }
-];
-
-const INITIAL_VEHICLE_ORDERS: VehicleOrderItem[] = [
-  {
-    id: 'ord-veh-01',
-    orderNumber: 'ORD-EV-2026-89421',
-    userId: 'usr-ev-78291',
-    vehicleId: 'veh-eglide-pro',
-    vehicleName: 'Electra Glide Pro',
-    vehicleImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
-    variantName: 'Glide Pro - Forest Green',
-    colorName: 'Deep Forest Green',
-    colorHex: '#14532D',
-    exShowroom: 129999,
-    subsidyDiscount: 18000,
-    rtoFee: 4200,
-    insuranceFee: 5100,
-    deliveryFee: 0,
-    totalOnRoad: 121299,
-    paymentMode: 'TOKEN_BOOKING',
-    bookingAmountPaid: 2999,
-    balanceDue: 118300,
-    deliveryAddress: {
-      fullName: 'Neha Sharma',
-      phone: '9876543210',
-      line1: 'B-42, Gulmohar Enclave',
-      city: 'New Delhi',
-      state: 'Delhi',
-      pincode: '110001'
-    },
-    paymentTransactionRef: 'pay_rzp_mock_99214a',
-    paymentMethod: 'UPI (Google Pay)',
-    status: 'DEALER_ASSIGNED',
-    allocatedDealer: 'E-VAHAN Flagship Hub, Connaught Place',
-    createdAt: '2026-10-24T15:20:00.000Z'
-  }
-];
-
-const INITIAL_TEST_DRIVES: TestDriveBookingItem[] = [
-  {
-    id: 'td-01',
-    bookingNumber: 'TD-2026-7814',
-    userId: 'usr-ev-78291',
-    vehicleId: 'veh-eglide-pro',
-    vehicleName: 'Electra Glide Pro',
-    vehicleImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
-    customerName: 'Rohit Verma',
-    customerPhone: '9876543210',
-    customerEmail: 'rohit.verma@e-vahan.in',
-    city: 'New Delhi',
-    pincode: '110001',
-    testDriveMode: 'DOORSTEP',
-    preferredDate: '2026-10-29',
-    timeSlot: '02:00 PM - 03:30 PM',
-    status: 'CONFIRMED',
-    notes: 'Please bring helmet for test ride. Apartment visitor gate entry required.',
-    createdAt: '2026-10-25T16:00:00.000Z'
-  }
-];
-
-const INITIAL_QUOTATIONS: QuotationRequestItem[] = [
-  {
-    id: 'qt-01',
-    quotationNumber: 'QT-2026-9812',
-    userId: 'usr-ev-78291',
-    customerName: 'Rohit Verma',
-    customerPhone: '9876543210',
-    customerEmail: 'rohit.verma@e-vahan.in',
-    customerType: 'BUSINESS',
-    companyName: 'Singhania Eco Deliveries LLP',
-    gstin: '07AAACS1429B1Z2',
-    city: 'New Delhi',
-    pincode: '110001',
-    vehicleId: 'veh-yatri-e3',
-    vehicleName: 'Vidyut Yatri Auto E3',
-    vehicleCategory: 'ELECTRIC_PASSENGER_AUTO',
-    quantity: 5,
-    usageType: 'COMMERCIAL',
-    financeRequirement: true,
-    tradeInOldVehicle: false,
-    status: 'QUOTE_PREPARED',
-    validUntil: '2026-11-10T23:59:59.000Z',
-    estimatedUnitPrice: 285000,
-    estimatedBulkDiscount: 50000, // 10k off per unit on 5 units
-    estimatedSubsidyTotal: 175000, // 35k x 5
-    estimatedRtoTotal: 42500,
-    estimatedInsuranceTotal: 56000,
-    estimatedGrandTotal: 1348500, // (285000 * 5) - 50000 - 175000 + 42500 + 56000
-    notes: 'Commercial fleet bulk discount of ₹10,000 per auto applied. Fast delivery within 10 days.',
-    createdAt: '2026-10-24T09:00:00.000Z'
-  }
-];
-
-const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [
-  {
-    id: 'tkt-01',
-    ticketNumber: 'TKT-2026-1044',
-    userId: 'usr-ev-78291',
-    category: 'VEHICLE_ORDER',
-    subject: 'KYC Document verification timeline for Order #ORD-EV-2026-89421',
-    status: 'OPEN',
-    relatedReference: 'ORD-EV-2026-89421',
-    createdAt: '2026-10-26T14:30:00.000Z',
-    messages: [
-      {
-        id: 'msg-1',
-        sender: 'CUSTOMER',
-        senderName: 'Customer',
-        text: 'Hello, I have submitted my Aadhaar and address proof for the RTO registration. How long does the approval take?',
-        timestamp: '2026-10-26T14:30:00.000Z'
-      },
-      {
-        id: 'msg-2',
-        sender: 'SUPPORT_AGENT',
-        senderName: 'Priya Sharma (E-VAHAN Support)',
-        text: 'Hello! Our RTO liaison team at Connaught Place hub has received your documents. Verification typically takes 24 hours. We will notify you once registration docket is initiated at the transport department.',
-        timestamp: '2026-10-26T15:10:00.000Z'
-      }
-    ]
-  }
-];
+// Real Data Policy: Zero dummy/mock records!
+// Transactional collections start empty and are populated strictly by real user/admin actions.
+const INITIAL_NOTIFICATIONS: AppNotification[] = [];
+const INITIAL_SERVICE_BOOKINGS: ServiceBookingItem[] = [];
+const INITIAL_VEHICLE_ORDERS: VehicleOrderItem[] = [];
+const INITIAL_TEST_DRIVES: TestDriveBookingItem[] = [];
+const INITIAL_QUOTATIONS: QuotationRequestItem[] = [];
+const INITIAL_SUPPORT_TICKETS: SupportTicketItem[] = [];
 
 class StorageService {
   private memoryStore: { [key: string]: any } = {};
@@ -245,6 +51,11 @@ class StorageService {
           }
         }
       });
+
+      // Background initial sync with Central Backend REST API
+      setTimeout(() => {
+        this.syncWithBackend().catch(err => console.warn('Initial backend sync error:', err));
+      }, 500);
     }
   }
 
@@ -266,6 +77,54 @@ class StorageService {
     });
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('evahan_sync', { detail: { key, value } }));
+    }
+  }
+
+  // Synchronize with Central Backend REST API (/api/...)
+  async syncWithBackend(): Promise<void> {
+    try {
+      const [
+        remoteOrders,
+        remoteTestDrives,
+        remoteQuotes,
+        remoteServices,
+        remotePartsOrders,
+        remoteTickets,
+        remoteCategories,
+        remoteBrands,
+        remoteSubcategories,
+        remoteAnnouncements,
+        remoteUsers,
+        remoteReviews
+      ] = await Promise.all([
+        api.getOrders(),
+        api.getTestDrives(),
+        api.getQuotations(),
+        api.getServices(),
+        api.getPartsOrders(),
+        api.getTickets(),
+        api.getCategories(),
+        api.getBrands(),
+        api.getSubCategories(),
+        api.getAnnouncements(),
+        api.getUsers(),
+        api.getReviews()
+      ]);
+
+      if (remoteOrders) this.set('vehicle_orders', remoteOrders);
+      if (remoteTestDrives) this.set('test_drives', remoteTestDrives);
+      if (remoteQuotes) this.set('quotations', remoteQuotes);
+      if (remoteServices) this.set('service_bookings', remoteServices);
+      if (remotePartsOrders) this.set('spare_parts_orders', remotePartsOrders);
+      if (remoteTickets) this.set('support_tickets', remoteTickets);
+      if (remoteCategories && remoteCategories.length > 0) this.set('evahan_catalog_categories', remoteCategories);
+      if (remoteBrands && remoteBrands.length > 0) this.set('evahan_catalog_brands', remoteBrands);
+      if (remoteSubcategories && remoteSubcategories.length > 0) this.set('evahan_catalog_subcategories', remoteSubcategories);
+      if (remoteAnnouncements && remoteAnnouncements.length > 0) this.set('announcements', remoteAnnouncements);
+      if (remoteUsers) this.set('registered_users', remoteUsers);
+      if (remoteReviews) this.set('customer_verified_reviews', remoteReviews);
+    } catch (err) {
+      console.warn('Backend sync failed (seamless local fallback):', err);
     }
   }
 
@@ -306,6 +165,7 @@ class StorageService {
 
   saveAnnouncements(list: string[]): void {
     this.set('announcements', list);
+    api.saveAnnouncements(list).catch(err => console.warn('Backend sync error:', err));
   }
 
   // --- User & Auth ---
@@ -339,6 +199,7 @@ class StorageService {
       list.push(newUser);
     }
     this.set('registered_users', list);
+    api.saveUser(newUser).catch(err => console.warn('Backend sync error:', err));
   }
 
   findRegisteredUserByPhone(phone: string): CustomerUser | undefined {
@@ -484,9 +345,18 @@ class StorageService {
     };
   }
 
-  // --- Vehicle Orders ---
+  // --- Vehicle Orders (Real Data Only) ---
   getVehicleOrders(): VehicleOrderItem[] {
-    return this.get<VehicleOrderItem[]>('vehicle_orders', INITIAL_VEHICLE_ORDERS);
+    const list = this.get<VehicleOrderItem[]>('vehicle_orders', []);
+    const clean = list.filter(o => 
+      o.id !== 'ord-veh-01' && 
+      o.orderNumber !== 'ORD-EV-2026-89421' && 
+      o.deliveryAddress?.fullName !== 'Neha Sharma'
+    );
+    if (clean.length !== list.length) {
+      this.set('vehicle_orders', clean);
+    }
+    return clean;
   }
 
   createVehicleOrder(order: Omit<VehicleOrderItem, 'id' | 'orderNumber' | 'createdAt'>): VehicleOrderItem {
@@ -500,6 +370,9 @@ class StorageService {
     };
     orders.unshift(newOrder);
     this.set('vehicle_orders', orders);
+
+    // Sync to Backend REST API
+    api.createOrder(newOrder).catch(err => console.warn('Backend sync error:', err));
 
     // Create corresponding notification
     this.addNotification({
@@ -518,14 +391,24 @@ class StorageService {
     if (idx !== -1) {
       orders[idx].status = status;
       this.set('vehicle_orders', orders);
+      api.updateOrderStatus(orderId, status).catch(err => console.warn('Backend sync error:', err));
       return true;
     }
     return false;
   }
 
-  // --- Test Drives ---
+  // --- Test Drives (Real Data Only) ---
   getTestDrives(): TestDriveBookingItem[] {
-    return this.get<TestDriveBookingItem[]>('test_drives', INITIAL_TEST_DRIVES);
+    const list = this.get<TestDriveBookingItem[]>('test_drives', []);
+    const clean = list.filter(t => 
+      t.id !== 'td-01' && 
+      t.bookingNumber !== 'TD-2026-7814' && 
+      t.customerName !== 'Rohit Verma'
+    );
+    if (clean.length !== list.length) {
+      this.set('test_drives', clean);
+    }
+    return clean;
   }
 
   createTestDriveBooking(booking: Omit<TestDriveBookingItem, 'id' | 'bookingNumber' | 'createdAt' | 'status'>): TestDriveBookingItem {
@@ -540,6 +423,9 @@ class StorageService {
     };
     bookings.unshift(newBooking);
     this.set('test_drives', bookings);
+
+    // Sync to Backend REST API
+    api.createTestDrive(newBooking).catch(err => console.warn('Backend sync error:', err));
 
     this.addNotification({
       category: 'TEST_DRIVE',
@@ -557,6 +443,7 @@ class StorageService {
     if (idx >= 0) {
       bookings[idx].status = 'CANCELLED';
       this.set('test_drives', bookings);
+      api.updateTestDriveStatus(bookingId, 'CANCELLED').catch(err => console.warn('Backend sync error:', err));
     }
   }
 
@@ -568,6 +455,7 @@ class StorageService {
       bookings[idx].timeSlot = newSlot;
       bookings[idx].status = 'RESCHEDULE_REQUESTED';
       this.set('test_drives', bookings);
+      api.updateTestDriveStatus(bookingId, 'RESCHEDULE_REQUESTED').catch(err => console.warn('Backend sync error:', err));
     }
   }
 
@@ -577,14 +465,24 @@ class StorageService {
     if (idx !== -1) {
       bookings[idx].status = status;
       this.set('test_drives', bookings);
+      api.updateTestDriveStatus(bookingId, status).catch(err => console.warn('Backend sync error:', err));
       return true;
     }
     return false;
   }
 
-  // --- Quotations ---
+  // --- Quotations (Real Data Only) ---
   getQuotations(): QuotationRequestItem[] {
-    return this.get<QuotationRequestItem[]>('quotations', INITIAL_QUOTATIONS);
+    const list = this.get<QuotationRequestItem[]>('quotations', []);
+    const clean = list.filter(q => 
+      q.id !== 'qt-01' && 
+      q.quotationNumber !== 'QT-2026-9812' && 
+      q.companyName !== 'Singhania Eco Deliveries LLP'
+    );
+    if (clean.length !== list.length) {
+      this.set('quotations', clean);
+    }
+    return clean;
   }
 
   createQuotation(quote: Omit<QuotationRequestItem, 'id' | 'quotationNumber' | 'createdAt' | 'status' | 'validUntil'>): QuotationRequestItem {
@@ -604,6 +502,9 @@ class StorageService {
     quotes.unshift(newQuote);
     this.set('quotations', quotes);
 
+    // Sync to Backend REST API
+    api.createQuotation(newQuote).catch(err => console.warn('Backend sync error:', err));
+
     this.addNotification({
       category: 'QUOTATION',
       title: `Quotation Generated (#${newQuote.quotationNumber})`,
@@ -614,9 +515,18 @@ class StorageService {
     return newQuote;
   }
 
-  // --- Service Bookings ---
+  // --- Service Bookings (Real Data Only) ---
   getServiceBookings(): ServiceBookingItem[] {
-    return this.get<ServiceBookingItem[]>('service_bookings', INITIAL_SERVICE_BOOKINGS);
+    const list = this.get<ServiceBookingItem[]>('service_bookings', []);
+    const clean = list.filter(s => 
+      s.id !== 'srv-ev-1042' && 
+      s.bookingNumber !== 'SRV-2026-9051' && 
+      s.customerName !== 'Vikas Malhotra'
+    );
+    if (clean.length !== list.length) {
+      this.set('service_bookings', clean);
+    }
+    return clean;
   }
 
   createServiceBooking(service: Omit<ServiceBookingItem, 'id' | 'bookingNumber' | 'createdAt' | 'status'>): ServiceBookingItem {
@@ -638,6 +548,9 @@ class StorageService {
     bookings.unshift(newBooking);
     this.set('service_bookings', bookings);
 
+    // Sync to Backend REST API
+    api.createService(newBooking).catch(err => console.warn('Backend sync error:', err));
+
     this.addNotification({
       category: 'SERVICE',
       title: `Doorstep Service Scheduled (#${newBooking.bookingNumber})`,
@@ -658,51 +571,22 @@ class StorageService {
         bookings[idx].finalPaidAmount = (bookings[idx].baseFee || 499) + bookings[idx].additionalApprovalQuote!.totalAmount;
       }
       this.set('service_bookings', bookings);
+      api.updateServiceStatus(bookingId, bookings[idx]).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
-  // --- Spare Parts Orders ---
+  // --- Spare Parts Orders (Real Data Only) ---
   getSparePartsOrders(): SparePartsOrder[] {
-    return this.get<SparePartsOrder[]>('spare_parts_orders', [
-      {
-        id: 'ord-sp-01',
-        orderNumber: 'ORD-SP-2026-5120',
-        userId: 'usr-ev-78291',
-        items: [
-          {
-            partId: 'part-tyre-ev-tubeless',
-            name: 'CEAT Secura EV 90/90-12 Tubeless Low Rolling Resistance Tyre',
-            sku: 'TYR-90-90-12-EV',
-            imageUrl: 'https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=800&q=80',
-            unitPrice: 1490,
-            quantity: 2
-          }
-        ],
-        subtotal: 2980,
-        shippingFee: 0,
-        discountAmount: 298,
-        taxAmount: 482,
-        grandTotal: 3164,
-        deliveryAddress: {
-          fullName: 'Kunal Kapoor',
-          phone: '9876543210',
-          line1: 'B-42, Gulmohar Enclave',
-          city: 'New Delhi',
-          state: 'Delhi',
-          pincode: '110001'
-        },
-        deliverySpeed: 'EXPRESS',
-        paymentMethod: 'UPI (PhonePe)',
-        paymentTransactionRef: 'pay_rzp_mock_part_881',
-        status: 'OUT_FOR_DELIVERY',
-        courierTracking: {
-          carrierName: 'BlueDart EV Express',
-          trackingNumber: 'BLUEDART-EV-884210',
-          estimatedDeliveryDate: 'Expected Today by 5:00 PM'
-        },
-        createdAt: '2026-10-25T11:45:00.000Z'
-      }
-    ]);
+    const list = this.get<SparePartsOrder[]>('spare_parts_orders', []);
+    const clean = list.filter(p => 
+      p.id !== 'ord-sp-01' && 
+      p.orderNumber !== 'ORD-SP-2026-5120' && 
+      p.deliveryAddress?.fullName !== 'Kunal Kapoor'
+    );
+    if (clean.length !== list.length) {
+      this.set('spare_parts_orders', clean);
+    }
+    return clean;
   }
 
   createSparePartsOrder(order: Omit<SparePartsOrder, 'id' | 'orderNumber' | 'createdAt' | 'status'>): SparePartsOrder {
@@ -722,6 +606,9 @@ class StorageService {
     };
     orders.unshift(newOrder);
     this.set('spare_parts_orders', orders);
+
+    // Sync to Backend REST API
+    api.createPartsOrder(newOrder).catch(err => console.warn('Backend sync error:', err));
 
     this.addNotification({
       category: 'ORDER',
@@ -744,9 +631,17 @@ class StorageService {
     return false;
   }
 
-  // --- Support Tickets ---
+  // --- Support Tickets (Real Data Only) ---
   getSupportTickets(): SupportTicketItem[] {
-    return this.get<SupportTicketItem[]>('support_tickets', INITIAL_SUPPORT_TICKETS);
+    const list = this.get<SupportTicketItem[]>('support_tickets', []);
+    const clean = list.filter(t => 
+      t.id !== 'tkt-01' && 
+      t.ticketNumber !== 'TKT-2026-1044'
+    );
+    if (clean.length !== list.length) {
+      this.set('support_tickets', clean);
+    }
+    return clean;
   }
 
   createSupportTicket(ticket: Omit<SupportTicketItem, 'id' | 'ticketNumber' | 'createdAt' | 'status' | 'messages'>, initialMessage: string): SupportTicketItem {
@@ -770,6 +665,10 @@ class StorageService {
     };
     tickets.unshift(newTicket);
     this.set('support_tickets', tickets);
+
+    // Sync to Backend REST API
+    api.createTicket(newTicket).catch(err => console.warn('Backend sync error:', err));
+
     return newTicket;
   }
 
@@ -777,20 +676,31 @@ class StorageService {
     const tickets = this.getSupportTickets();
     const idx = tickets.findIndex(t => t.id === ticketId);
     if (idx >= 0) {
+      const senderName = this.getUser()?.fullName || 'Customer';
       tickets[idx].messages.push({
         id: `msg-${Date.now()}`,
         sender: 'CUSTOMER',
-        senderName: this.getUser()?.fullName || 'Customer',
+        senderName,
         text,
         timestamp: new Date().toISOString()
       });
       this.set('support_tickets', tickets);
+      api.replyTicket(ticketId, text, senderName).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
-  // --- Notifications ---
+  // --- Notifications (Real Data Only) ---
   getNotifications(): AppNotification[] {
-    return this.get<AppNotification[]>('notifications', INITIAL_NOTIFICATIONS);
+    const list = this.get<AppNotification[]>('notifications', []);
+    const clean = list.filter(n => 
+      n.id !== 'notif-1' && 
+      n.id !== 'notif-2' && 
+      n.id !== 'notif-3'
+    );
+    if (clean.length !== list.length) {
+      this.set('notifications', clean);
+    }
+    return clean;
   }
 
   addNotification(notif: Omit<AppNotification, 'id' | 'createdAt' | 'isRead'>): void {
@@ -833,6 +743,7 @@ class StorageService {
     };
     reviews.unshift(newReview);
     this.set('customer_verified_reviews', reviews);
+    api.submitReview(newReview).catch(err => console.warn('Backend sync error:', err));
     return newReview;
   }
 
@@ -960,6 +871,7 @@ class StorageService {
     };
     list.push(newCat);
     this.set('evahan_catalog_categories', list);
+    api.createCategory(newCat).catch(err => console.warn('Backend sync error:', err));
     return newCat;
   }
 
@@ -969,12 +881,14 @@ class StorageService {
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
       this.set('evahan_catalog_categories', list);
+      api.updateCategory(id, updates).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
   deleteCategory(id: string): void {
     const list = this.getCategories().filter(c => c.id !== id);
     this.set('evahan_catalog_categories', list);
+    api.deleteCategory(id).catch(err => console.warn('Backend sync error:', err));
   }
 
   getSubCategories(): SubCategoryItem[] {
@@ -1071,6 +985,7 @@ class StorageService {
     };
     list.push(newSub);
     this.set('evahan_catalog_subcategories', list);
+    api.createSubCategory(newSub).catch(err => console.warn('Backend sync error:', err));
     return newSub;
   }
 
@@ -1086,6 +1001,7 @@ class StorageService {
   deleteSubCategory(id: string): void {
     const list = this.getSubCategories().filter(s => s.id !== id);
     this.set('evahan_catalog_subcategories', list);
+    api.deleteSubCategory(id).catch(err => console.warn('Backend sync error:', err));
   }
 
   getBrands(): BrandItem[] {
@@ -1214,6 +1130,7 @@ class StorageService {
     };
     list.push(newBrand);
     this.set('evahan_catalog_brands', list);
+    api.createBrand(newBrand).catch(err => console.warn('Backend sync error:', err));
     return newBrand;
   }
 
@@ -1223,12 +1140,14 @@ class StorageService {
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
       this.set('evahan_catalog_brands', list);
+      api.updateBrand(id, updates).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
   deleteBrand(id: string): void {
     const list = this.getBrands().filter(b => b.id !== id);
     this.set('evahan_catalog_brands', list);
+    api.deleteBrand(id).catch(err => console.warn('Backend sync error:', err));
   }
 
   // --- Payment Gateway Simulation (Razorpay Sandbox Style) ---
