@@ -250,6 +250,22 @@ class StorageService {
     }
   }
 
+  removeAuthorizedAdminPhone(phone: string): boolean {
+    const cleanPhone = phone.replace(/\D/g, '').slice(-10);
+    const protectedPhones = ['9244272627', '8269288189', '9876543210'];
+    if (protectedPhones.includes(cleanPhone)) return false;
+    const list = this.getAdminAuthorizedPhones();
+    const updated = list.filter(p => p !== cleanPhone);
+    this.set('admin_authorized_phones', updated);
+    return true;
+  }
+
+  deleteRegisteredUser(userIdOrPhone: string): void {
+    const list = this.getRegisteredUsers();
+    const updated = list.filter(u => u.id !== userIdOrPhone && u.phone !== userIdOrPhone);
+    this.set('registered_users', updated);
+  }
+
   getUser(): CustomerUser | null {
     const user = this.get<CustomerUser | null>('user', null);
     // Purge any dummy or legacy users so only genuine registered customer is logged in

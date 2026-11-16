@@ -68,6 +68,8 @@ import {
 export type AdminTab =
   | 'overview'
   | 'customers'
+  | 'customer-kyc'
+  | 'admin-users'
   | 'announcements'
   | 'orders'
   | 'test-drives'
@@ -432,7 +434,9 @@ export const AdminDashboardPage: React.FC = () => {
     'spare-vendor': false,
     'marketplace': false,
     'catalog-architecture': false,
-    'user-management': false
+    'orders-management': false,
+    'user-management': false,
+    'support-communication': false
   });
 
   // Multi-Vendor Portal State with localStorage persistence
@@ -710,14 +714,13 @@ export const AdminDashboardPage: React.FC = () => {
   // Ticket reply state
   const [replyText, setReplyText] = useState<{ [key: string]: string }>({});
 
+  // User Management Dedicated States
+  const [authorizedAdminPhones, setAuthorizedAdminPhones] = useState<string[]>(() => storage.getAdminAuthorizedPhones());
+  const [newAdminPhoneInput, setNewAdminPhoneInput] = useState('');
+  const [kycFilter, setKycFilter] = useState<'ALL' | 'VERIFIED' | 'PENDING'>('ALL');
+  const [selectedCustomerModal, setSelectedCustomerModal] = useState<CustomerUser | null>(null);
+
   // Grouped Navigation structure for Admin Sidebar Menu
-  // Accordion Navigation Structure matching User's 4 Reference Photos:
-  // 1. Dashboard (Top with cyan left line)
-  // 2. Service Management (Layers icon, chevron right/down)
-  // 3. Service Provider Management (UserCheck icon, active bg container, chevron)
-  // 4. Spare VendorManagement (Box icon, active bg container, chevron)
-  // 5. Marketplace Management (Store icon, active bg container, chevron)
-  // 6. User Management (Users icon, chevron)
   const adminAccordionGroups = [
     {
       id: 'service-management',
@@ -764,14 +767,30 @@ export const AdminDashboardPage: React.FC = () => {
       ]
     },
     {
+      id: 'orders-management',
+      label: 'Orders & Bookings Management',
+      icon: ShoppingBag,
+      items: [
+        { id: 'orders' as AdminTab, label: 'Vehicle Orders & Tokens', badge: vehicleOrders.length },
+        { id: 'test-drives' as AdminTab, label: 'Test Drive Bookings', badge: testDrives.length },
+        { id: 'quotations' as AdminTab, label: 'Customer Fleet Quotations', badge: quotations.length },
+      ]
+    },
+    {
       id: 'user-management',
       label: 'User Management',
       icon: Users,
       items: [
         { id: 'customers' as AdminTab, label: 'Registered Customers', badge: registeredCustomers.length },
-        { id: 'orders' as AdminTab, label: 'Vehicle Orders', badge: vehicleOrders.length },
-        { id: 'quotations' as AdminTab, label: 'Customer Quotations', badge: quotations.length },
-        { id: 'test-drives' as AdminTab, label: 'Test Drive Bookings', badge: testDrives.length },
+        { id: 'customer-kyc' as AdminTab, label: 'Customer KYC Verification', badge: registeredCustomers.filter(c => !c.isKycVerified).length || null },
+        { id: 'admin-users' as AdminTab, label: 'Admin & Staff Access', badge: authorizedAdminPhones.length },
+      ]
+    },
+    {
+      id: 'support-communication',
+      label: 'Support & Communications',
+      icon: LifeBuoy,
+      items: [
         { id: 'tickets' as AdminTab, label: 'Customer Support Desk', badge: tickets.length },
         { id: 'announcements' as AdminTab, label: 'Announcement Bar Manager', badge: announcements.length },
       ]
@@ -1056,6 +1075,7 @@ export const AdminDashboardPage: React.FC = () => {
 
   const loadAllData = () => {
     setRegisteredCustomers(storage.getRegisteredUsers());
+    setAuthorizedAdminPhones(storage.getAdminAuthorizedPhones());
     setVehicleOrders(storage.getVehicleOrders());
     setTestDrives(storage.getTestDrives());
     setQuotations(storage.getQuotations());
@@ -1065,6 +1085,55 @@ export const AdminDashboardPage: React.FC = () => {
     setCategories(storage.getCategories());
     setSubCategories(storage.getSubCategories());
     setBrands(storage.getBrands());
+  };
+
+  // User Management Handlers
+  const handleToggleCustomerKyc = (customer: CustomerUser) => {
+    const updated: CustomerUser = { ...customer, isKycVerified: !customer.isKycVerified };
+    storage.saveRegisteredUser(updated);
+    setRegisteredCustomers(storage.getRegisteredUsers());
+    setRefreshNotification(`✓ Customer "${customer.fullName}" KYC status updated to ${updated.isKycVerified ? 'Verified' : 'Pending Review'}!`);
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
+
+  const handleDeleteCustomer = (customerId: string, customerName: string) => {
+    if (window.confirm(`Kya aap sach me customer "${customerName}" ka profile remove karna chahte hain?`)) {
+      storage.deleteRegisteredUser(customerId);
+      setRegisteredCustomers(storage.getRegisteredUsers());
+      setRefreshNotification(`✓ Customer profile "${customerName}" removed from system!`);
+      setTimeout(() => setRefreshNotification(null), 3000);
+    }
+  };
+
+  const handleAddAdminPhone = (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = newAdminPhoneInput.trim().replace(/\D/g, '').slice(-10);
+    if (!/^[6-9][0-9]{9}$/.test(clean)) {
+      alert('Kripya 10-digit valid Indian mobile number enter karein');
+      return;
+    }
+    storage.addAuthorizedAdminPhone(clean);
+    setAuthorizedAdminPhones(storage.getAdminAuthorizedPhones());
+    setNewAdminPhoneInput('');
+    setRefreshNotification(`✓ Admin access granted to mobile number +91 ${clean}!`);
+    setTimeout(() => setRefreshNotification(null), 3500);
+  };
+
+  const handleRemoveAdminPhone = (phone: string) => {
+    const clean = phone.replace(/\D/g, '').slice(-10);
+    const protectedPhones = ['9244272627', '8269288189', '9876543210'];
+    if (protectedPhones.includes(clean)) {
+      alert('⚠️ Primary Super Admin mobile number ko remove nahi kiya ja sakta.');
+      return;
+    }
+    if (window.confirm(`Kya aap +91 ${clean} ka admin access revoke karna chahte hain?`)) {
+      const ok = storage.removeAuthorizedAdminPhone(clean);
+      if (ok) {
+        setAuthorizedAdminPhones(storage.getAdminAuthorizedPhones());
+        setRefreshNotification(`✓ Admin access revoked for +91 ${clean}!`);
+        setTimeout(() => setRefreshNotification(null), 3500);
+      }
+    }
   };
 
   const handleManualRefresh = () => {
@@ -1844,7 +1913,7 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         )}
 
-        {/* Tab 2: Registered Customers (Live real user database) */}
+        {/* Tab 2: Registered Customers (Live real user database - Strictly User Related) */}
         {activeTab === 'customers' && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
@@ -1854,7 +1923,7 @@ export const AdminDashboardPage: React.FC = () => {
                   <span>Registered Customers Database ({registeredCustomers.length})</span>
                 </h2>
                 <p className="text-xs text-gray-500 mt-1">
-                  Live profiles of customers who have registered on the E-VAHAN marketplace. Real customer details flow directly here.
+                  Live user profiles of registered customers on E-VAHAN marketplace. Manage customer accounts, contact details, and verification status.
                 </p>
               </div>
 
@@ -1892,103 +1961,350 @@ export const AdminDashboardPage: React.FC = () => {
                       <th className="p-3">Phone & Email</th>
                       <th className="p-3">Registered Location</th>
                       <th className="p-3">KYC Status</th>
-                      <th className="p-3">Saved Delivery Addresses</th>
-                      <th className="p-3">Marketplace Activity</th>
+                      <th className="p-3">Saved Addresses</th>
+                      <th className="p-3">User Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredCustomers.map((cust) => {
-                      const custOrders = vehicleOrders.filter(o => o.deliveryAddress?.phone === cust.phone || o.userId === cust.id);
-                      const custParts = partsOrders.filter(p => p.deliveryAddress?.phone === cust.phone || p.userId === cust.id);
-                      const custTestDrives = testDrives.filter(td => td.customerPhone === cust.phone || td.userId === cust.id);
-
-                      return (
-                        <tr key={cust.id || cust.phone} className="hover:bg-gray-50/70">
-                          <td className="p-3">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#06152B] to-[#16A34A] text-white flex items-center justify-center font-black text-xs uppercase shadow-sm">
-                                {cust.fullName?.slice(0, 2) || 'CU'}
-                              </div>
-                              <div>
-                                <strong className="text-xs font-bold text-gray-900 block">{cust.fullName}</strong>
-                                <span className="text-[10px] text-gray-400 font-mono">ID: {cust.id}</span>
-                              </div>
+                    {filteredCustomers.map((cust) => (
+                      <tr key={cust.id || cust.phone} className="hover:bg-gray-50/70">
+                        <td className="p-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#06152B] to-[#16A34A] text-white flex items-center justify-center font-black text-xs uppercase shadow-sm">
+                              {cust.fullName?.slice(0, 2) || 'CU'}
                             </div>
-                          </td>
-                          <td className="p-3">
-                            <div className="space-y-0.5">
-                              <div className="font-mono font-bold text-gray-900 flex items-center gap-1.5">
-                                <Phone className="w-3 h-3 text-[#16A34A]" />
-                                <span>+91 {cust.phone}</span>
+                            <div>
+                              <strong className="text-xs font-bold text-gray-900 block">{cust.fullName}</strong>
+                              <span className="text-[10px] text-gray-400 font-mono">ID: {cust.id}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="space-y-0.5">
+                            <div className="font-mono font-bold text-gray-900 flex items-center gap-1.5">
+                              <Phone className="w-3 h-3 text-[#16A34A]" />
+                              <span>+91 {cust.phone}</span>
+                            </div>
+                            {cust.email && (
+                              <div className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                                <Mail className="w-3 h-3 text-gray-400" />
+                                <span>{cust.email}</span>
                               </div>
-                              {cust.email && (
-                                <div className="text-[11px] text-gray-500 flex items-center gap-1.5">
-                                  <Mail className="w-3 h-3 text-gray-400" />
-                                  <span>{cust.email}</span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center gap-1.5 text-gray-800 font-medium">
-                              <MapPin className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
-                              <span>{cust.city || 'Not specified'} {cust.pincode ? `(${cust.pincode})` : ''}</span>
-                            </div>
-                          </td>
-                          <td className="p-3">
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-1.5 text-gray-800 font-medium">
+                            <MapPin className="w-3.5 h-3.5 text-[#16A34A] shrink-0" />
+                            <span>{cust.city || 'Not specified'} {cust.pincode ? `(${cust.pincode})` : ''}</span>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
                             {cust.isKycVerified ? (
                               <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> KYC Verified
+                                <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> Verified
                               </span>
                             ) : (
                               <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px] inline-flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3 text-amber-600" /> Pending KYC
+                                <AlertCircle className="w-3 h-3 text-amber-600" /> Pending
                               </span>
                             )}
-                          </td>
-                          <td className="p-3">
-                            {cust.savedAddresses && cust.savedAddresses.length > 0 ? (
-                              <div className="space-y-1">
-                                <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
-                                  {cust.savedAddresses.length} Address{cust.savedAddresses.length > 1 ? 'es' : ''}
-                                </span>
-                                <p className="text-[11px] text-gray-500 max-w-xs truncate">
-                                  {cust.savedAddresses[0].line1}, {cust.savedAddresses[0].city}
-                                </p>
-                              </div>
-                            ) : (
-                              <span className="text-gray-400 text-[11px]">No addresses saved</span>
-                            )}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex flex-wrap gap-1 text-[10px]">
-                              {custOrders.length > 0 && (
-                                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 rounded font-bold">
-                                  {custOrders.length} Vehicle Order{custOrders.length > 1 ? 's' : ''}
-                                </span>
-                              )}
-                              {custParts.length > 0 && (
-                                <span className="bg-blue-50 text-blue-700 border border-blue-200 px-1.5 py-0.5 rounded font-bold">
-                                  {custParts.length} Parts Order{custParts.length > 1 ? 's' : ''}
-                                </span>
-                              )}
-                              {custTestDrives.length > 0 && (
-                                <span className="bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.5 rounded font-bold">
-                                  {custTestDrives.length} Test Drive{custTestDrives.length > 1 ? 's' : ''}
-                                </span>
-                              )}
-                              {custOrders.length === 0 && custParts.length === 0 && custTestDrives.length === 0 && (
-                                <span className="text-gray-400">Account Active</span>
-                              )}
+                            <button
+                              onClick={() => handleToggleCustomerKyc(cust)}
+                              className="text-[10px] font-bold text-emerald-700 hover:text-emerald-900 underline"
+                              title="Toggle KYC Status"
+                            >
+                              {cust.isKycVerified ? 'Mark Pending' : 'Approve'}
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-3">
+                          {cust.savedAddresses && cust.savedAddresses.length > 0 ? (
+                            <div className="space-y-1">
+                              <span className="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                                {cust.savedAddresses.length} Address{cust.savedAddresses.length > 1 ? 'es' : ''}
+                              </span>
+                              <p className="text-[11px] text-gray-500 max-w-xs truncate">
+                                {cust.savedAddresses[0].line1}, {cust.savedAddresses[0].city}
+                              </p>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          ) : (
+                            <span className="text-gray-400 text-[11px]">No addresses saved</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedCustomerModal(cust)}
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-50 text-[#16A34A] hover:bg-emerald-100 font-bold text-[11px] flex items-center gap-1 transition-colors"
+                              title="View full customer profile"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>View</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteCustomer(cust.id, cust.fullName)}
+                              className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 font-bold text-[11px] transition-colors"
+                              title="Remove customer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab: Customer KYC Verification Desk (Strictly User Related) */}
+        {activeTab === 'customer-kyc' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#16A34A]" />
+                  <span>Customer KYC & Document Verification Desk</span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Verify government IDs, driving licenses, and customer identity status for compliance and doorstep handovers.
+                </p>
+              </div>
+
+              {/* Filter tabs */}
+              <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl">
+                {(['ALL', 'PENDING', 'VERIFIED'] as const).map(filter => (
+                  <button
+                    key={filter}
+                    onClick={() => setKycFilter(filter)}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                      kycFilter === filter
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    {filter === 'ALL' ? 'All Customers' : filter === 'PENDING' ? 'Pending Review' : 'Verified'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* KYC Metrics Bar */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
+                  Total Registered Users
+                </span>
+                <strong className="text-xl font-black text-gray-900">{registeredCustomers.length}</strong>
+              </div>
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
+                  KYC Verified Customers
+                </span>
+                <strong className="text-xl font-black text-emerald-700">
+                  {registeredCustomers.filter(c => c.isKycVerified).length}
+                </strong>
+              </div>
+              <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 block mb-1">
+                  Pending Document Review
+                </span>
+                <strong className="text-xl font-black text-amber-700">
+                  {registeredCustomers.filter(c => !c.isKycVerified).length}
+                </strong>
+              </div>
+            </div>
+
+            {/* Customer KYC Table */}
+            {registeredCustomers.length === 0 ? (
+              <div className="text-center py-12 px-4 rounded-2xl bg-gray-50 border border-dashed border-gray-200 space-y-2">
+                <FileCheck className="w-10 h-10 text-gray-300 mx-auto" />
+                <h4 className="text-sm font-bold text-gray-800">No Customer KYC Requests</h4>
+                <p className="text-xs text-gray-500">When customers register on the marketplace, their KYC verification tasks will appear here.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                    <tr>
+                      <th className="p-3">Customer Profile</th>
+                      <th className="p-3">Phone & Location</th>
+                      <th className="p-3">Driving License / ID</th>
+                      <th className="p-3">KYC Status</th>
+                      <th className="p-3">Admin Decision</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {registeredCustomers
+                      .filter(c => {
+                        if (kycFilter === 'VERIFIED') return c.isKycVerified;
+                        if (kycFilter === 'PENDING') return !c.isKycVerified;
+                        return true;
+                      })
+                      .map((cust) => (
+                        <tr key={cust.id} className="hover:bg-gray-50/70">
+                          <td className="p-3">
+                            <strong className="text-xs font-bold text-gray-900 block">{cust.fullName}</strong>
+                            <span className="text-[10px] text-gray-400 font-mono">ID: {cust.id}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-mono font-bold text-gray-800 block">+91 {cust.phone}</span>
+                            <span className="text-[10px] text-gray-400">{cust.city || 'India'}</span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-mono text-gray-700">
+                              {cust.drivingLicenseNo || 'Aadhaar / OTP Verified'}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            {cust.isKycVerified ? (
+                              <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" /> Verified
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                <AlertCircle className="w-3.5 h-3.5 text-amber-600" /> Pending Review
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <button
+                              onClick={() => handleToggleCustomerKyc(cust)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                cust.isKycVerified
+                                  ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                  : 'bg-gradient-to-r from-[#16A34A] to-[#22C55E] text-white hover:opacity-90 shadow-sm'
+                              }`}
+                            >
+                              {cust.isKycVerified ? 'Revoke Approval' : '✓ Approve KYC'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab: Admin & Staff Access Management (Strictly User Related) */}
+        {activeTab === 'admin-users' && (
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Lock className="w-5 h-5 text-[#16A34A]" />
+                  <span>Admin & Staff Access Authorization</span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Manage authorized administrative mobile numbers permitted to log into this Central Operations Portal via secure OTP gateway.
+                </p>
+              </div>
+
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                <ShieldCheck className="w-4 h-4 text-[#16A34A]" />
+                <span>Authorized Active Numbers: {authorizedAdminPhones.length}</span>
+              </div>
+            </div>
+
+            {/* Authorize New Admin Number Form */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gray-50 border border-gray-200">
+              <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-[#16A34A]" />
+                <span>Authorize New Administrator Mobile Number</span>
+              </h3>
+              <form onSubmit={handleAddAdminPhone} className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-1">
+                  <span className="inline-flex items-center px-3.5 bg-white border border-r-0 border-gray-300 rounded-l-xl text-xs font-bold text-gray-600">
+                    +91
+                  </span>
+                  <input
+                    type="tel"
+                    maxLength={10}
+                    required
+                    placeholder="Enter 10-digit mobile number"
+                    value={newAdminPhoneInput}
+                    onChange={(e) => setNewAdminPhoneInput(e.target.value.replace(/\D/g, ''))}
+                    className="flex-1 px-3.5 py-2.5 rounded-r-xl border border-gray-300 text-xs font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#16A34A]"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-gradient-to-r from-[#06152B] to-[#16A34A] hover:opacity-95 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
+                >
+                  <UserCheck className="w-4 h-4 text-[#B7F34A]" />
+                  <span>Grant Admin Access</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Authorized Admin Numbers List */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs text-left">
+                <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                  <tr>
+                    <th className="p-3">Authorized Mobile Number</th>
+                    <th className="p-3">Administrative Role</th>
+                    <th className="p-3">Access Gateway</th>
+                    <th className="p-3">Revoke Privilege</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {authorizedAdminPhones.map((phone) => {
+                    const isPrimary = ['9244272627', '8269288189', '9876543210'].includes(phone);
+                    return (
+                      <tr key={phone} className="hover:bg-gray-50/70">
+                        <td className="p-3 font-mono font-bold text-gray-900 text-sm">
+                          +91 {phone}
+                        </td>
+                        <td className="p-3">
+                          {isPrimary ? (
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1 border border-emerald-300">
+                              <ShieldCheck className="w-3 h-3 text-[#16A34A]" /> Primary Super Admin
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[10px] inline-flex items-center gap-1 border border-blue-200">
+                              <UserCheck className="w-3 h-3 text-blue-600" /> Authorized Admin Staff
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#16A34A]" />
+                            <span>OTP Login Permitted</span>
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          {isPrimary ? (
+                            <span className="text-gray-400 text-[11px] italic">Protected Core Number</span>
+                          ) : (
+                            <button
+                              onClick={() => handleRemoveAdminPhone(phone)}
+                              className="px-2.5 py-1 rounded-lg text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors border border-rose-200"
+                            >
+                              Revoke Access
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
+              <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <strong className="font-bold block">Security Gateway Enforced:</strong>
+                <span>Only mobile numbers listed above can receive verification OTPs and access the Admin Portal (`/admin`). Any unauthorized number is blocked automatically.</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -4092,6 +4408,100 @@ export const AdminDashboardPage: React.FC = () => {
             )}
         </main>
       </div>
+
+      {/* Customer Profile Details Modal */}
+      {selectedCustomerModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-6 relative max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#06152B] to-[#16A34A] text-white flex items-center justify-center font-black text-base uppercase shadow-md">
+                  {selectedCustomerModal.fullName?.slice(0, 2) || 'CU'}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">{selectedCustomerModal.fullName}</h3>
+                  <p className="text-xs text-gray-400 font-mono">User ID: {selectedCustomerModal.id}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedCustomerModal(null)}
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 block uppercase">Mobile Number</span>
+                <strong className="text-gray-900 font-mono text-sm block mt-0.5">+91 {selectedCustomerModal.phone}</strong>
+              </div>
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 block uppercase">Email Address</span>
+                <strong className="text-gray-900 text-xs block mt-0.5 truncate">{selectedCustomerModal.email || 'Not Provided'}</strong>
+              </div>
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 block uppercase">City & PIN</span>
+                <strong className="text-gray-900 text-xs block mt-0.5">{selectedCustomerModal.city || 'India'} ({selectedCustomerModal.pincode || 'Pincode N/A'})</strong>
+              </div>
+              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 block uppercase">KYC Status</span>
+                <span className={`inline-block mt-0.5 font-bold text-[11px] px-2 py-0.5 rounded ${selectedCustomerModal.isKycVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                  {selectedCustomerModal.isKycVerified ? '✓ Verified KYC' : 'Pending KYC'}
+                </span>
+              </div>
+            </div>
+
+            {/* Saved Delivery Addresses */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
+                Saved Delivery Addresses ({selectedCustomerModal.savedAddresses?.length || 0})
+              </h4>
+              {selectedCustomerModal.savedAddresses && selectedCustomerModal.savedAddresses.length > 0 ? (
+                <div className="space-y-2">
+                  {selectedCustomerModal.savedAddresses.map((addr, idx) => (
+                    <div key={addr.id || idx} className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-700">
+                      <div className="flex items-center justify-between font-bold text-gray-900 mb-1">
+                        <span>{addr.fullName} ({addr.label})</span>
+                        <span className="font-mono text-[11px] text-emerald-700">+91 {addr.phone}</span>
+                      </div>
+                      <p>{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
+                      <p className="text-gray-500 text-[11px]">{addr.city}, {addr.state} - {addr.pincode}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-gray-400 italic">No saved delivery addresses found.</p>
+              )}
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  handleToggleCustomerKyc(selectedCustomerModal);
+                  setSelectedCustomerModal({
+                    ...selectedCustomerModal,
+                    isKycVerified: !selectedCustomerModal.isKycVerified
+                  });
+                }}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  selectedCustomerModal.isKycVerified
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                }`}
+              >
+                {selectedCustomerModal.isKycVerified ? 'Mark KYC Pending' : '✓ Approve KYC Status'}
+              </button>
+              <button
+                onClick={() => setSelectedCustomerModal(null)}
+                className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
