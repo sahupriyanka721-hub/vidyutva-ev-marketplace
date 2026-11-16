@@ -39,7 +39,7 @@ import { CategoryItem, BrandItem } from '../../types';
  * 8. Get a Quotation
  * 9. Wishlist
  * 10. Cart icon with item count
- * 11. Account / Login (with Admin Dashboard link)
+ * 11. Account / Customer Login
  */
 export const Header: React.FC = () => {
   const navigate = useNavigate();

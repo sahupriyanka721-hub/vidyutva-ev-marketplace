@@ -273,6 +273,9 @@ class StorageService {
       user.fullName === 'Arjun Singhania' || 
       user.id === 'usr-ev-78291' || 
       user.fullName === 'Customer' ||
+      user.fullName === 'Admin' ||
+      user.fullName === 'Administrator' ||
+      user.fullName?.toLowerCase() === 'admin' ||
       user.id === 'usr-ramesh-7821' ||
       user.id === 'usr-priya-9012' ||
       user.id === 'usr-amit-4321' ||
