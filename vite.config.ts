@@ -10,7 +10,19 @@ function backendApiPlugin(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         if (req.url && req.url.startsWith('/api')) {
-          // Immediately collect stream synchronously so chunks are NEVER lost in Connect
+          // For GET, HEAD, OPTIONS: dispatch immediately with zero stream delay
+          if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') {
+            (req as any).body = {};
+            try {
+              return handleApiRequest(req, res);
+            } catch (err) {
+              console.error('Backend API GET Error:', err);
+              res.statusCode = 500;
+              return res.end(JSON.stringify({ error: 'Internal API Server Error' }));
+            }
+          }
+
+          // For POST, PUT, PATCH: collect stream synchronously so chunks are NEVER lost
           let body = '';
           req.on('data', chunk => {
             body += chunk;
