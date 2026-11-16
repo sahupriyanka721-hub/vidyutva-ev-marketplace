@@ -68,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email: data.email.trim(),
       city: data.city.trim(),
       pincode: data.pincode.trim(),
-      isKycVerified: true,
+      isKycVerified: false,
       savedAddresses: [
         {
           id: `addr-${Date.now()}`,

@@ -1073,7 +1073,8 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  const loadAllData = () => {
+  const loadAllData = async () => {
+    await storage.syncWithBackend();
     setRegisteredCustomers(storage.getRegisteredUsers());
     setAuthorizedAdminPhones(storage.getAdminAuthorizedPhones());
     setVehicleOrders(storage.getVehicleOrders());
@@ -1136,17 +1137,16 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  const handleManualRefresh = () => {
+  const handleManualRefresh = async () => {
     setIsRefreshing(true);
     setRefreshNotification(null);
-    loadAllData();
+    await storage.syncWithBackend();
+    await loadAllData();
+    setIsRefreshing(false);
+    setRefreshNotification('✓ Live Admin Database successfully reloaded from Central Backend API!');
     setTimeout(() => {
-      setIsRefreshing(false);
-      setRefreshNotification('✓ Live Admin Database successfully reloaded from system storage!');
-      setTimeout(() => {
-        setRefreshNotification(null);
-      }, 3500);
-    }, 600);
+      setRefreshNotification(null);
+    }, 3500);
   };
 
   const handleCopyReference = (ref: string) => {
@@ -1158,11 +1158,18 @@ export const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     if (isAdminAuthenticated) {
       loadAllData();
+      // Auto-poll every 4 seconds so any real customer booking, order, or KYC is immediately fetched from backend
+      const pollTimer = setInterval(() => {
+        loadAllData();
+      }, 4000);
       // Live two-way synchronization: any real customer order, booking, or registration instantly updates admin!
       const unsub = storage.onSync(() => {
         loadAllData();
       });
-      return () => unsub();
+      return () => {
+        clearInterval(pollTimer);
+        unsub();
+      };
     }
   }, [isAdminAuthenticated]);
 

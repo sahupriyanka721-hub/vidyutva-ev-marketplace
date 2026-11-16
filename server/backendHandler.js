@@ -2,9 +2,12 @@ import { db } from './db.js';
 
 // Helper to parse JSON body from incoming Node.js IncomingMessage
 export const parseBody = (req) => {
+  if (req.body && typeof req.body === 'object') {
+    return Promise.resolve(req.body);
+  }
   return new Promise((resolve) => {
-    if (req.body && typeof req.body === 'object') {
-      return resolve(req.body);
+    if (req.readableEnded) {
+      return resolve({});
     }
     let data = '';
     req.on('data', chunk => {

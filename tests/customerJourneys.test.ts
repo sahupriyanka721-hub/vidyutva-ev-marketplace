@@ -153,4 +153,59 @@ describe('E-VAHAN EV Marketplace Customer Panel Journeys', () => {
     expect(payment.transactionRef).toMatch(/^pay_rzp_mock_/);
     expect(payment.signature).toMatch(/^sig_/);
   });
+
+  // 8. Real Data Bidirectional Synchronization Guarantee
+  it('should preserve locally submitted customer bookings and users during backend synchronization', async () => {
+    const testCustomer = {
+      id: `usr-test-sync-${Date.now()}`,
+      fullName: 'Vikram Joshi',
+      phone: '9876501234',
+      email: 'vikram.joshi@example.com',
+      city: 'Pune',
+      pincode: '411001',
+      isKycVerified: false,
+      savedAddresses: []
+    };
+
+    storage.saveRegisteredUser(testCustomer);
+    expect(storage.getRegisteredUsers().some(u => u.phone === '9876501234')).toBe(true);
+    expect(storage.getRegisteredUsers().find(u => u.phone === '9876501234')?.isKycVerified).toBe(false);
+
+    const testService = storage.createServiceBooking({
+      userId: testCustomer.id,
+      serviceCategoryKey: 'battery-diagnostics',
+      serviceCategoryName: 'Battery Diagnostics',
+      vehicleType: 'ELECTRIC_SCOOTER',
+      vehicleBrand: 'ElectraMobility',
+      vehicleModel: 'Electra Glide Pro',
+      serviceMode: 'DOORSTEP',
+      urgency: 'STANDARD',
+      problemDescription: 'Cell voltage check and BMS firmware update',
+      appointmentDate: '2026-11-25',
+      appointmentSlot: '02:00 PM - 04:00 PM',
+      customerName: testCustomer.fullName,
+      customerPhone: testCustomer.phone,
+      city: testCustomer.city,
+      pincode: testCustomer.pincode,
+      addressLine: 'FC Road, Pune',
+      baseFee: 799,
+      inspectionFee: 299,
+      totalApprovedAmount: 799,
+      isCustomerApproved: false
+    });
+
+    expect(testService.bookingNumber).toBeDefined();
+    expect(storage.getServiceBookings().some(s => s.id === testService.id)).toBe(true);
+
+    // Run backend sync and assert data is not wiped
+    await storage.syncWithBackend();
+
+    expect(storage.getRegisteredUsers().some(u => u.phone === '9876501234')).toBe(true);
+    expect(storage.getServiceBookings().some(s => s.id === testService.id)).toBe(true);
+
+    // Clean up test data
+    storage.deleteRegisteredUser(testCustomer.id);
+    const cleanServices = storage.getServiceBookings().filter(s => s.id !== testService.id);
+    (storage as any).set('service_bookings', cleanServices);
+  });
 });

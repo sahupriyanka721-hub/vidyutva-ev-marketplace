@@ -1,23 +1,44 @@
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import { handleApiRequest } from './server/backendHandler.js';
 
 // Vite Plugin to serve backend REST API routes during local development
 function backendApiPlugin(): Plugin {
   return {
     name: 'backend-api-plugin',
     configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
+      server.middlewares.use((req, res, next) => {
         if (req.url && req.url.startsWith('/api')) {
-          try {
-            const { handleApiRequest } = await import('./server/backendHandler.js');
-            return handleApiRequest(req, res);
-          } catch (err) {
-            console.error('Backend API Middleware Error:', err);
+          // Immediately collect stream synchronously so chunks are NEVER lost in Connect
+          let body = '';
+          req.on('data', chunk => {
+            body += chunk;
+          });
+          req.on('end', () => {
+            if (body) {
+              try {
+                (req as any).body = JSON.parse(body);
+              } catch {
+                (req as any).body = {};
+              }
+            } else {
+              (req as any).body = {};
+            }
+            try {
+              handleApiRequest(req, res);
+            } catch (err) {
+              console.error('Backend API Handler Error:', err);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: 'Internal API Server Error' }));
+            }
+          });
+          req.on('error', (err) => {
+            console.error('Req error:', err);
             res.statusCode = 500;
-            res.end(JSON.stringify({ error: 'Internal API Server Error' }));
-            return;
-          }
+            res.end(JSON.stringify({ error: 'Request stream error' }));
+          });
+          return;
         }
         next();
       });

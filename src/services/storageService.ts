@@ -52,11 +52,38 @@ class StorageService {
         }
       });
 
+      // In-app custom event listener
+      window.addEventListener('evahan_sync', (e: any) => {
+        const { key, value } = e.detail || {};
+        if (key) {
+          this.syncListeners.forEach(listener => {
+            try { listener(key, value); } catch (err) { console.error(err); }
+          });
+        }
+      });
+
       // Background initial sync with Central Backend REST API
       setTimeout(() => {
         this.syncWithBackend().catch(err => console.warn('Initial backend sync error:', err));
-      }, 500);
+      }, 300);
     }
+  }
+
+  private mergeById<T extends { id?: string }>(local: T[], remote: T[]): T[] {
+    const map = new Map<string, T>();
+    if (Array.isArray(remote)) {
+      remote.forEach(item => {
+        if (item && item.id) map.set(item.id, item);
+      });
+    }
+    if (Array.isArray(local)) {
+      local.forEach(item => {
+        if (item && item.id && !map.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+    }
+    return Array.from(map.values());
   }
 
   // Real-time synchronization subscription for frontend & admin
@@ -111,17 +138,68 @@ class StorageService {
         api.getReviews()
       ]);
 
-      if (remoteOrders) this.set('vehicle_orders', remoteOrders);
-      if (remoteTestDrives) this.set('test_drives', remoteTestDrives);
-      if (remoteQuotes) this.set('quotations', remoteQuotes);
-      if (remoteServices) this.set('service_bookings', remoteServices);
-      if (remotePartsOrders) this.set('spare_parts_orders', remotePartsOrders);
-      if (remoteTickets) this.set('support_tickets', remoteTickets);
+      if (remoteOrders) {
+        const localOrders = this.getVehicleOrders();
+        const merged = this.mergeById(localOrders, remoteOrders);
+        this.set('vehicle_orders', merged);
+        const remoteIds = new Set(remoteOrders.map(o => o.id));
+        localOrders.filter(o => !remoteIds.has(o.id)).forEach(o => api.createOrder(o).catch(() => {}));
+      }
+
+      if (remoteTestDrives) {
+        const localTd = this.getTestDrives();
+        const merged = this.mergeById(localTd, remoteTestDrives);
+        this.set('test_drives', merged);
+        const remoteIds = new Set(remoteTestDrives.map(t => t.id));
+        localTd.filter(t => !remoteIds.has(t.id)).forEach(t => api.createTestDrive(t).catch(() => {}));
+      }
+
+      if (remoteQuotes) {
+        const localQuotes = this.getQuotations();
+        const merged = this.mergeById(localQuotes, remoteQuotes);
+        this.set('quotations', merged);
+        const remoteIds = new Set(remoteQuotes.map(q => q.id));
+        localQuotes.filter(q => !remoteIds.has(q.id)).forEach(q => api.createQuotation(q).catch(() => {}));
+      }
+
+      if (remoteServices) {
+        const localServices = this.getServiceBookings();
+        const merged = this.mergeById(localServices, remoteServices);
+        this.set('service_bookings', merged);
+        const remoteIds = new Set(remoteServices.map(s => s.id));
+        localServices.filter(s => !remoteIds.has(s.id)).forEach(s => api.createService(s).catch(() => {}));
+      }
+
+      if (remotePartsOrders) {
+        const localParts = this.getSparePartsOrders();
+        const merged = this.mergeById(localParts, remotePartsOrders);
+        this.set('spare_parts_orders', merged);
+        const remoteIds = new Set(remotePartsOrders.map(p => p.id));
+        localParts.filter(p => !remoteIds.has(p.id)).forEach(p => api.createPartsOrder(p).catch(() => {}));
+      }
+
+      if (remoteTickets) {
+        const localTickets = this.getSupportTickets();
+        const merged = this.mergeById(localTickets, remoteTickets);
+        this.set('support_tickets', merged);
+        const remoteIds = new Set(remoteTickets.map(t => t.id));
+        localTickets.filter(t => !remoteIds.has(t.id)).forEach(t => api.createTicket(t).catch(() => {}));
+      }
+
+      if (remoteUsers) {
+        const localUsers = this.getRegisteredUsers();
+        const merged = this.mergeById(localUsers, remoteUsers);
+        this.set('registered_users', merged);
+        const remotePhones = new Set(remoteUsers.map(u => (u.phone || '').replace(/\D/g, '').trim()));
+        localUsers
+          .filter(u => !remotePhones.has((u.phone || '').replace(/\D/g, '').trim()))
+          .forEach(u => api.saveUser(u).catch(() => {}));
+      }
+
       if (remoteCategories && remoteCategories.length > 0) this.set('evahan_catalog_categories', remoteCategories);
       if (remoteBrands && remoteBrands.length > 0) this.set('evahan_catalog_brands', remoteBrands);
       if (remoteSubcategories && remoteSubcategories.length > 0) this.set('evahan_catalog_subcategories', remoteSubcategories);
       if (remoteAnnouncements && remoteAnnouncements.length > 0) this.set('announcements', remoteAnnouncements);
-      if (remoteUsers) this.set('registered_users', remoteUsers);
       if (remoteReviews) this.set('customer_verified_reviews', remoteReviews);
     } catch (err) {
       console.warn('Backend sync failed (seamless local fallback):', err);
