@@ -392,6 +392,8 @@ export interface CategoryItem {
   isFeatured: boolean;
   status: 'ACTIVE' | 'INACTIVE';
   displayOrder: number;
+  scaleTier?: '2W_PERSONAL' | '3W_COMMERCIAL' | '4W_PASSENGER' | 'LCV_TRUCKS' | 'HEAVY_COMMERCIAL' | 'SPECIAL_INDUSTRIAL' | 'BATTERY_STORAGE' | 'CHARGING_INFRA' | 'SPARE_COMPONENTS';
+  scaleLabel?: string;
   createdAt: string;
 }
 
@@ -402,6 +404,10 @@ export interface SubCategoryItem {
   name: string;
   slug: string;
   description: string;
+  vehicleSegment?: string;
+  speedRangeTier?: string;
+  typicalPayloadOrSeats?: string;
+  subsidyEligible?: boolean;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
 }

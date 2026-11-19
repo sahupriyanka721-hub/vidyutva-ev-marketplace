@@ -196,6 +196,13 @@ class ApiService {
     });
   }
 
+  async updateSubCategory(id: string, data: any): Promise<SubCategoryItem | null> {
+    return this.request<SubCategoryItem>(`/subcategories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  }
+
   async deleteSubCategory(id: string): Promise<boolean> {
     const res = await this.request<{ success: boolean }>(`/subcategories/${id}`, {
       method: 'DELETE'

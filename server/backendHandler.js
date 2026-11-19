@@ -142,6 +142,11 @@ export const handleApiRequest = async (req, res) => {
 
     if (pathname.startsWith('/subcategories/')) {
       const id = pathname.replace('/subcategories/', '');
+      if (method === 'PUT') {
+        const body = await parseBody(req);
+        const updated = db.update('subcategories', id, body);
+        return sendJson(res, 200, updated || { error: 'Not found' });
+      }
       if (method === 'DELETE') {
         db.delete('subcategories', id);
         return sendJson(res, 200, { success: true, id });

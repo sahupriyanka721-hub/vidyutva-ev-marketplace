@@ -97,6 +97,7 @@ export type AdminTab =
   | 'shop-list'
   | 'shop-payout'
   // Category & Brand Management
+  | 'catalog-architecture'
   | 'categories'
   | 'subcategories'
   | 'brands';
@@ -761,8 +762,9 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Catalog & Brands Architecture',
       icon: Sparkles,
       items: [
-        { id: 'categories' as AdminTab, label: 'Primary', badge: categories.length },
-        { id: 'subcategories' as AdminTab, label: 'Category', badge: subCategories.length },
+        { id: 'catalog-architecture' as AdminTab, label: 'Master Architecture Console', badge: 'Live' },
+        { id: 'categories' as AdminTab, label: 'Primary Categories', badge: categories.length },
+        { id: 'subcategories' as AdminTab, label: 'Categories (Sub-Categories)', badge: subCategories.length },
         { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
       ]
     },
@@ -800,6 +802,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Helper to get current active breadcrumb
   const getTabBreadcrumb = () => {
     if (activeTab === 'overview') return { group: 'Main Console', label: 'Dashboard' };
+    if (activeTab === 'catalog-architecture') return { group: 'Catalog & Brands Architecture', label: 'Master Architecture Console' };
     for (const group of adminAccordionGroups) {
       const match = group.items.find(item => item.id === activeTab);
       if (match) return { group: group.label, label: match.label };
@@ -836,7 +839,12 @@ export const AdminDashboardPage: React.FC = () => {
           <div key={group.id} className="space-y-1">
             {/* Parent Accordion Row */}
             <button
-              onClick={() => toggleMenu(group.id)}
+              onClick={() => {
+                toggleMenu(group.id);
+                if (group.id === 'catalog-architecture') {
+                  handleSelectTab('catalog-architecture', 'catalog-architecture');
+                }
+              }}
               className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-sm font-bold text-left ${
                 isExpanded
                   ? 'bg-[#183556] text-white shadow-sm border border-blue-400/20'
@@ -875,7 +883,7 @@ export const AdminDashboardPage: React.FC = () => {
                         {isSubActive && <span className="w-1.5 h-1.5 rounded-full bg-[#00D2FF] shadow-[0_0_6px_#00D2FF]"></span>}
                         <span className="truncate">{subItem.label}</span>
                       </div>
-                      {subItem.badge !== null && subItem.badge !== undefined && subItem.badge > 0 && (
+                      {subItem.badge !== null && subItem.badge !== undefined && (typeof subItem.badge === 'number' ? subItem.badge > 0 : Boolean(subItem.badge)) && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A]">
                           {subItem.badge}
                         </span>
@@ -898,7 +906,9 @@ export const AdminDashboardPage: React.FC = () => {
     description: '',
     type: 'VEHICLE' as CategoryItem['type'],
     imageUrl: '',
-    isFeatured: true
+    isFeatured: true,
+    scaleTier: '2W_PERSONAL' as CategoryItem['scaleTier'],
+    scaleLabel: 'Micro & Personal Mobility (2W)'
   });
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
@@ -906,10 +916,19 @@ export const AdminDashboardPage: React.FC = () => {
   const [subCategoryForm, setSubCategoryForm] = useState({
     categoryId: '',
     name: '',
-    description: ''
+    description: '',
+    vehicleSegment: '',
+    speedRangeTier: '',
+    typicalPayloadOrSeats: '',
+    subsidyEligible: true
   });
   const [isSubCategoryModalOpen, setIsSubCategoryModalOpen] = useState(false);
   const [subCategoryFilterParent, setSubCategoryFilterParent] = useState('ALL');
+
+  // Catalog Architecture Console State
+  const [archViewMode, setArchViewMode] = useState<'visual-tree' | 'primary-table' | 'subcategory-table' | 'brand-grid'>('visual-tree');
+  const [archSearchQuery, setArchSearchQuery] = useState('');
+  const [archScaleFilter, setArchScaleFilter] = useState('ALL');
 
   // Brand Form State
   const [brandForm, setBrandForm] = useState({
@@ -939,6 +958,8 @@ export const AdminDashboardPage: React.FC = () => {
       imageUrl: categoryForm.imageUrl.trim() || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
       isFeatured: categoryForm.isFeatured,
       status: 'ACTIVE',
+      scaleTier: categoryForm.scaleTier,
+      scaleLabel: categoryForm.scaleLabel,
       displayOrder: categories.length + 1
     });
     setCategories(storage.getCategories());
@@ -949,7 +970,9 @@ export const AdminDashboardPage: React.FC = () => {
       description: '',
       type: 'VEHICLE',
       imageUrl: '',
-      isFeatured: true
+      isFeatured: true,
+      scaleTier: '2W_PERSONAL',
+      scaleLabel: 'Micro & Personal Mobility (2W)'
     });
     setRefreshNotification(`✓ Category "${newCat.name}" created and published live to frontend!`);
     setTimeout(() => setRefreshNotification(null), 4000);
@@ -990,6 +1013,10 @@ export const AdminDashboardPage: React.FC = () => {
       name: subCategoryForm.name.trim(),
       slug,
       description: subCategoryForm.description.trim() || `${subCategoryForm.name} sub-type`,
+      vehicleSegment: subCategoryForm.vehicleSegment.trim() || undefined,
+      speedRangeTier: subCategoryForm.speedRangeTier.trim() || undefined,
+      typicalPayloadOrSeats: subCategoryForm.typicalPayloadOrSeats.trim() || undefined,
+      subsidyEligible: subCategoryForm.subsidyEligible,
       status: 'ACTIVE'
     });
     setSubCategories(storage.getSubCategories());
@@ -997,9 +1024,13 @@ export const AdminDashboardPage: React.FC = () => {
     setSubCategoryForm({
       categoryId: '',
       name: '',
-      description: ''
+      description: '',
+      vehicleSegment: '',
+      speedRangeTier: '',
+      typicalPayloadOrSeats: '',
+      subsidyEligible: true
     });
-    setRefreshNotification(`✓ Sub-Category "${newSub.name}" created and linked to ${parent?.name}!`);
+    setRefreshNotification(`✓ Category "${newSub.name}" created and linked to ${parent?.name}!`);
     setTimeout(() => setRefreshNotification(null), 4000);
   };
 
@@ -3961,6 +3992,766 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
             )}
+            {/* TAB: CATALOG & BRANDS ARCHITECTURE MASTER CONSOLE */}
+            {activeTab === 'catalog-architecture' && (() => {
+              const filteredCats = categories.filter(c => {
+                if (archScaleFilter !== 'ALL') {
+                  if (archScaleFilter === 'TECH_COMPONENTS') {
+                    if (c.type !== 'SPARE_PART' && c.scaleTier !== 'BATTERY_STORAGE' && c.scaleTier !== 'CHARGING_INFRA' && c.scaleTier !== 'SPARE_COMPONENTS') {
+                      return false;
+                    }
+                  } else if (c.scaleTier !== archScaleFilter) {
+                    return false;
+                  }
+                }
+                if (archSearchQuery) {
+                  const q = archSearchQuery.toLowerCase();
+                  const matchCat = c.name.toLowerCase().includes(q) || c.subtitle.toLowerCase().includes(q) || (c.scaleLabel && c.scaleLabel.toLowerCase().includes(q));
+                  const matchSub = subCategories.some(s => s.categoryId === c.id && (s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) || (s.vehicleSegment && s.vehicleSegment.toLowerCase().includes(q))));
+                  const matchBrand = brands.some(b => b.name.toLowerCase().includes(q) && b.categories.some(bc => bc.toLowerCase().includes(c.name.toLowerCase())));
+                  return matchCat || matchSub || matchBrand;
+                }
+                return true;
+              });
+
+              const filteredSubs = subCategories.filter(s => {
+                if (subCategoryFilterParent !== 'ALL' && s.categoryId !== subCategoryFilterParent) return false;
+                if (!archSearchQuery) return true;
+                const q = archSearchQuery.toLowerCase();
+                return (
+                  s.name.toLowerCase().includes(q) ||
+                  s.description.toLowerCase().includes(q) ||
+                  s.categoryName.toLowerCase().includes(q) ||
+                  (s.vehicleSegment && s.vehicleSegment.toLowerCase().includes(q))
+                );
+              });
+
+              const filteredBrands = brands.filter(b => {
+                if (!archSearchQuery) return true;
+                const q = archSearchQuery.toLowerCase();
+                return (
+                  b.name.toLowerCase().includes(q) ||
+                  b.origin.toLowerCase().includes(q) ||
+                  b.categories.some(c => c.toLowerCase().includes(q))
+                );
+              });
+
+              return (
+                <div className="space-y-6">
+                  {/* 1. Command Header Banner */}
+                  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#06152B] via-[#0E2442] to-[#12335C] p-6 sm:p-8 text-white shadow-xl border border-blue-400/20">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+                    <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                      <div className="space-y-2 max-w-3xl">
+                        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 text-[#B7F34A] text-xs font-black border border-emerald-400/30">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Master EV Vehicle Taxonomy & Brand Architecture</span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                          Catalog & Brands Architecture
+                        </h2>
+                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                          Complete hierarchical mobility classification: Primary Segments ➔ Granular Vehicle Scales (from 2W Micro to Heavy Commercial Transit Buses) ➔ Verified OEM Brands & Component Partners. Real working mode linked directly to customer storefront and booking flows.
+                        </p>
+                      </div>
+
+                      {/* Quick Add Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                        <button
+                          onClick={() => setIsCategoryModalOpen(true)}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4 text-[#B7F34A]" />
+                          <span>+ Add Primary Category</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (categories.length > 0 && !subCategoryForm.categoryId) {
+                              setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
+                            }
+                            setIsSubCategoryModalOpen(true);
+                          }}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4 text-white" />
+                          <span>+ Add Category (Sub-Category)</span>
+                        </button>
+
+                        <button
+                          onClick={() => setIsBrandModalOpen(true)}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                        >
+                          <Award className="w-4 h-4 text-purple-200" />
+                          <span>+ Add OEM Brand</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 2. Executive Taxonomy KPI Counters */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-6 mt-6 border-t border-white/10 text-xs">
+                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Primary Categories</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-2xl font-black text-white">{categories.length}</span>
+                          <span className="text-[10px] font-bold text-emerald-400">100% Live</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Master vehicle & parts segments</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Categories (Sub-Categories)</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-2xl font-black text-[#00D2FF]">{subCategories.length}</span>
+                          <span className="text-[10px] font-bold text-slate-300">All Scales</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Micro 2W to 55T heavy dumpers</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">PM E-DRIVE Qualified</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-2xl font-black text-[#B7F34A]">
+                            {subCategories.filter(s => s.subsidyEligible).length}
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-300">Subsidy Approved</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">AIS-156 & FAME compliant</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">OEM Brands & Partners</span>
+                        <div className="flex items-baseline gap-2 mt-1">
+                          <span className="text-2xl font-black text-amber-300">{brands.length}</span>
+                          <span className="text-[10px] font-bold text-amber-200">Tier-1 Verified</span>
+                        </div>
+                        <span className="text-[10px] text-slate-400">Official manufacturers on platform</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Control & Filter Center */}
+                  <div className="bg-white rounded-3xl p-5 sm:p-6 border border-gray-200 shadow-subtle space-y-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      {/* View Switcher Tabs */}
+                      <div className="flex items-center gap-1.5 p-1 bg-gray-100/90 rounded-2xl overflow-x-auto w-max">
+                        <button
+                          onClick={() => setArchViewMode('visual-tree')}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                            archViewMode === 'visual-tree'
+                              ? 'bg-[#06152B] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <Layers className="w-3.5 h-3.5 text-[#00D2FF]" />
+                          <span>Interactive Visual Hierarchy Tree</span>
+                        </button>
+
+                        <button
+                          onClick={() => setArchViewMode('primary-table')}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                            archViewMode === 'primary-table'
+                              ? 'bg-[#06152B] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Primary Categories ({categories.length})</span>
+                        </button>
+
+                        <button
+                          onClick={() => setArchViewMode('subcategory-table')}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                            archViewMode === 'subcategory-table'
+                              ? 'bg-[#06152B] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <Truck className="w-3.5 h-3.5 text-blue-500" />
+                          <span>Categories / Sub-Categories ({subCategories.length})</span>
+                        </button>
+
+                        <button
+                          onClick={() => setArchViewMode('brand-grid')}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                            archViewMode === 'brand-grid'
+                              ? 'bg-[#06152B] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <Award className="w-3.5 h-3.5 text-purple-500" />
+                          <span>OEM Brands ({brands.length})</span>
+                        </button>
+                      </div>
+
+                      {/* Live Search */}
+                      <div className="relative w-full md:w-72">
+                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Search category, model or brand..."
+                          value={archSearchQuery}
+                          onChange={(e) => setArchSearchQuery(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                        {archSearchQuery && (
+                          <button
+                            onClick={() => setArchSearchQuery('')}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Vehicle Scale Tier Filter Pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1">Vehicle Scale:</span>
+                      {[
+                        { key: 'ALL', label: 'All Vehicle Scales' },
+                        { key: '2W_PERSONAL', label: '2W (Micro & Personal)' },
+                        { key: '3W_COMMERCIAL', label: '3W (L5 & Cargo Autos)' },
+                        { key: '4W_PASSENGER', label: '4W (Cars, SUVs & Cabs)' },
+                        { key: 'LCV_TRUCKS', label: 'LCV (Mini-Trucks & Logistics)' },
+                        { key: 'HEAVY_COMMERCIAL', label: 'Heavy (Transit Buses & Haulers)' },
+                        { key: 'SPECIAL_INDUSTRIAL', label: 'Special (Agri & Industrial)' },
+                        { key: 'TECH_COMPONENTS', label: 'Tech (Batteries, Chargers & Parts)' },
+                      ].map(f => (
+                        <button
+                          key={f.key}
+                          onClick={() => setArchScaleFilter(f.key)}
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 text-xs ${
+                            archScaleFilter === f.key
+                              ? 'bg-[#16A34A] text-white shadow-sm'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* 4. CONTENT SECTIONS BASED ON archViewMode */}
+                  {/* MODE A: INTERACTIVE VISUAL HIERARCHY TREE */}
+                  {archViewMode === 'visual-tree' && (
+                    <div className="space-y-6">
+                      {filteredCats.map((cat) => {
+                        const childSubs = subCategories.filter(s => {
+                          const matchesParent = s.categoryId === cat.id;
+                          if (!matchesParent) return false;
+                          if (!archSearchQuery) return true;
+                          const q = archSearchQuery.toLowerCase();
+                          return (
+                            s.name.toLowerCase().includes(q) ||
+                            s.description.toLowerCase().includes(q) ||
+                            (s.vehicleSegment && s.vehicleSegment.toLowerCase().includes(q))
+                          );
+                        });
+
+                        const relatedBrands = brands.filter(b =>
+                          b.categories.some(bc =>
+                            bc.toLowerCase().includes(cat.name.toLowerCase()) ||
+                            cat.name.toLowerCase().includes(bc.toLowerCase()) ||
+                            (cat.slug.includes('2-wheeler') && bc.toLowerCase().includes('scooter')) ||
+                            (cat.slug.includes('3-wheeler') && bc.toLowerCase().includes('auto')) ||
+                            (cat.slug.includes('truck') && (bc.toLowerCase().includes('cargo') || bc.toLowerCase().includes('truck'))) ||
+                            (cat.slug.includes('bus') && (bc.toLowerCase().includes('bus') || bc.toLowerCase().includes('commercial'))) ||
+                            (cat.slug.includes('special') && bc.toLowerCase().includes('special')) ||
+                            (cat.slug.includes('batter') && bc.toLowerCase().includes('batter')) ||
+                            (cat.slug.includes('charger') && bc.toLowerCase().includes('charger')) ||
+                            (cat.slug.includes('spare') && bc.toLowerCase().includes('spare'))
+                          )
+                        );
+
+                        return (
+                          <div
+                            key={cat.id}
+                            className="bg-white rounded-3xl p-6 sm:p-7 border border-gray-200/90 shadow-subtle space-y-5 transition-all hover:border-emerald-300"
+                          >
+                            {/* Primary Category Header */}
+                            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+                              <div className="flex items-start sm:items-center gap-4">
+                                <img
+                                  src={cat.imageUrl}
+                                  alt={cat.name}
+                                  className="w-16 h-14 object-cover rounded-2xl bg-gray-100 border border-gray-200 shadow-xs shrink-0"
+                                />
+                                <div>
+                                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                                    <h3 className="text-lg font-black text-gray-900">{cat.name}</h3>
+                                    <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
+                                      /{cat.slug}
+                                    </span>
+                                    {cat.scaleLabel && (
+                                      <span className="px-2 py-0.5 rounded-md font-bold text-[10px] bg-blue-50 text-blue-700 border border-blue-200">
+                                        {cat.scaleLabel}
+                                      </span>
+                                    )}
+                                    <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                                      cat.type === 'VEHICLE' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                      cat.type === 'SPARE_PART' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                      'bg-purple-50 text-purple-700 border border-purple-200'
+                                    }`}>
+                                      {cat.type}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 font-medium">{cat.subtitle}</p>
+                                  <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{cat.description}</p>
+                                </div>
+                              </div>
+
+                              {/* Actions on Primary Category */}
+                              <div className="flex flex-wrap items-center gap-2 shrink-0 self-end lg:self-center">
+                                <button
+                                  onClick={() => {
+                                    setSubCategoryForm(prev => ({
+                                      ...prev,
+                                      categoryId: cat.id,
+                                      name: '',
+                                      description: '',
+                                      vehicleSegment: '',
+                                      speedRangeTier: '',
+                                      typicalPayloadOrSeats: '',
+                                      subsidyEligible: true
+                                    }));
+                                    setIsSubCategoryModalOpen(true);
+                                  }}
+                                  className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] text-xs font-bold transition-all border border-emerald-200 flex items-center gap-1.5"
+                                >
+                                  <Plus className="w-3.5 h-3.5 text-[#16A34A]" />
+                                  <span>+ Add Category under this</span>
+                                </button>
+
+                                <button
+                                  onClick={() => handleToggleCategoryStatus(cat.id)}
+                                  className={`px-2.5 py-1.5 rounded-xl font-bold text-[11px] transition-all ${
+                                    cat.status === 'ACTIVE'
+                                      ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                  }`}
+                                >
+                                  {cat.status === 'ACTIVE' ? '✓ LIVE' : 'HIDDEN'}
+                                </button>
+
+                                <button
+                                  onClick={() => handleDeleteCategory(cat.id)}
+                                  className="p-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                                  title="Delete Primary Category"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Nested Sub-Categories Grid */}
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-black text-gray-700 flex items-center gap-1.5">
+                                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                  <span>Categories / Sub-Categories ({childSubs.length})</span>
+                                </span>
+                                <span className="text-[11px] text-gray-400">
+                                  Specific vehicle sizes, variants & technical classes
+                                </span>
+                              </div>
+
+                              {childSubs.length === 0 ? (
+                                <div className="p-6 rounded-2xl bg-gray-50 border border-dashed border-gray-300 text-center space-y-2">
+                                  <p className="text-xs text-gray-500 font-medium">No sub-categories linked to this primary segment yet.</p>
+                                  <button
+                                    onClick={() => {
+                                      setSubCategoryForm(prev => ({ ...prev, categoryId: cat.id }));
+                                      setIsSubCategoryModalOpen(true);
+                                    }}
+                                    className="px-3.5 py-1.5 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-emerald-700 transition-all inline-flex items-center gap-1.5"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>Add First Category</span>
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                  {childSubs.map((sub) => (
+                                    <div
+                                      key={sub.id}
+                                      className="p-3.5 rounded-2xl bg-gray-50/90 border border-gray-200/80 flex flex-col justify-between space-y-2 hover:bg-white hover:shadow-xs transition-all"
+                                    >
+                                      <div className="space-y-1.5">
+                                        <div className="flex items-start justify-between gap-2">
+                                          <h4 className="text-xs font-black text-gray-900 leading-snug">
+                                            {sub.name}
+                                          </h4>
+                                          <button
+                                            onClick={() => handleToggleSubCategoryStatus(sub.id)}
+                                            className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
+                                              sub.status === 'ACTIVE'
+                                                ? 'bg-emerald-100 text-emerald-800'
+                                                : 'bg-gray-200 text-gray-600'
+                                            }`}
+                                          >
+                                            {sub.status}
+                                          </button>
+                                        </div>
+
+                                        {/* Segment & Specs Badges */}
+                                        <div className="flex flex-wrap gap-1">
+                                          {sub.vehicleSegment && (
+                                            <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">
+                                              {sub.vehicleSegment}
+                                            </span>
+                                          )}
+                                          {sub.speedRangeTier && (
+                                            <span className="px-2 py-0.5 rounded bg-gray-200/80 text-gray-800 text-[10px] font-medium">
+                                              ⚡ {sub.speedRangeTier}
+                                            </span>
+                                          )}
+                                          {sub.typicalPayloadOrSeats && (
+                                            <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 text-[10px] font-medium border border-amber-200">
+                                              📦 {sub.typicalPayloadOrSeats}
+                                            </span>
+                                          )}
+                                          {sub.subsidyEligible && (
+                                            <span className="px-2 py-0.5 rounded bg-emerald-50 text-[#16A34A] text-[10px] font-bold border border-emerald-200">
+                                              ✓ PM E-DRIVE Eligible
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        <p className="text-[11px] text-gray-500 line-clamp-2">
+                                          {sub.description}
+                                        </p>
+                                      </div>
+
+                                      <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-[10px]">
+                                        <span className="font-mono text-gray-400">/{sub.slug}</span>
+                                        <button
+                                          onClick={() => handleDeleteSubCategory(sub.id)}
+                                          className="text-rose-500 hover:text-rose-700 font-bold flex items-center gap-1"
+                                        >
+                                          <Trash2 className="w-3 h-3" />
+                                          <span>Remove</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Tagged Certified Brands for this Primary */}
+                            {relatedBrands.length > 0 && (
+                              <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-2 text-xs">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">
+                                  Verified OEM Brands:
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {relatedBrands.map(b => (
+                                    <span
+                                      key={b.id}
+                                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800"
+                                    >
+                                      <img src={b.logoUrl} alt={b.name} className="w-4 h-4 rounded-md object-cover" />
+                                      <span>{b.name}</span>
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* MODE B: PRIMARY CATEGORIES TABLE */}
+                  {archViewMode === 'primary-table' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-black text-gray-900">
+                          Primary Categories Master Desk ({filteredCats.length})
+                        </h3>
+                        <button
+                          onClick={() => setIsCategoryModalOpen(true)}
+                          className="px-3.5 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Create Primary</span>
+                        </button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Primary Name & Banner</th>
+                              <th className="p-3">Scale & Subtitle</th>
+                              <th className="p-3">Type</th>
+                              <th className="p-3">Categories</th>
+                              <th className="p-3">Live Status</th>
+                              <th className="p-3">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {filteredCats.map((cat) => {
+                              const subsCount = subCategories.filter(s => s.categoryId === cat.id).length;
+                              return (
+                                <tr key={cat.id} className="hover:bg-gray-50/70">
+                                  <td className="p-3">
+                                    <div className="flex items-center gap-3">
+                                      <img
+                                        src={cat.imageUrl}
+                                        alt={cat.name}
+                                        className="w-12 h-10 object-cover rounded-xl bg-gray-100 border border-gray-200"
+                                      />
+                                      <div>
+                                        <strong className="text-xs font-bold text-gray-900 block">{cat.name}</strong>
+                                        <span className="text-[10px] text-gray-400 font-mono">slug: /{cat.slug}</span>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-gray-900 block">{cat.scaleLabel || 'Multi-Category'}</span>
+                                    <span className="text-[11px] text-gray-500">{cat.subtitle}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                                      cat.type === 'VEHICLE' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                      cat.type === 'SPARE_PART' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                      'bg-purple-50 text-purple-700 border border-purple-200'
+                                    }`}>
+                                      {cat.type}
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg">
+                                      {subsCount} Categories
+                                    </span>
+                                  </td>
+                                  <td className="p-3">
+                                    <button
+                                      onClick={() => handleToggleCategoryStatus(cat.id)}
+                                      className={`px-2.5 py-1 rounded-md font-bold text-[10px] cursor-pointer transition-all ${
+                                        cat.status === 'ACTIVE'
+                                          ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      {cat.status === 'ACTIVE' ? '✓ LIVE' : 'HIDDEN'}
+                                    </button>
+                                  </td>
+                                  <td className="p-3">
+                                    <button
+                                      onClick={() => handleDeleteCategory(cat.id)}
+                                      className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                                      title="Delete Category"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MODE C: SUBCATEGORY TABLE */}
+                  {archViewMode === 'subcategory-table' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-black text-gray-900">
+                          Category / Sub-Categories Desk ({filteredSubs.length})
+                        </h3>
+                        <button
+                          onClick={() => {
+                            if (categories.length > 0 && !subCategoryForm.categoryId) {
+                              setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
+                            }
+                            setIsSubCategoryModalOpen(true);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Create Category</span>
+                        </button>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Category Name</th>
+                              <th className="p-3">Primary Segment</th>
+                              <th className="p-3">Vehicle Segment & Specs</th>
+                              <th className="p-3">Subsidy</th>
+                              <th className="p-3">Status</th>
+                              <th className="p-3">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {filteredSubs.map((sub) => (
+                              <tr key={sub.id} className="hover:bg-gray-50/70">
+                                <td className="p-3">
+                                  <strong className="text-xs font-bold text-gray-900 block">{sub.name}</strong>
+                                  <span className="font-mono text-gray-400 text-[10px]">/{sub.slug}</span>
+                                </td>
+                                <td className="p-3">
+                                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold text-[11px] border border-emerald-200">
+                                    {sub.categoryName}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  <div className="space-y-0.5">
+                                    {sub.vehicleSegment && (
+                                      <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[10px] inline-block mr-1">
+                                        {sub.vehicleSegment}
+                                      </span>
+                                    )}
+                                    {sub.speedRangeTier && (
+                                      <span className="text-gray-600 text-[10px] block">
+                                        ⚡ {sub.speedRangeTier}
+                                      </span>
+                                    )}
+                                    {sub.typicalPayloadOrSeats && (
+                                      <span className="text-amber-800 text-[10px] block">
+                                        📦 {sub.typicalPayloadOrSeats}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  {sub.subsidyEligible ? (
+                                    <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                      ✓ PM E-DRIVE
+                                    </span>
+                                  ) : (
+                                    <span className="text-gray-400 text-[10px]">Standard</span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  <button
+                                    onClick={() => handleToggleSubCategoryStatus(sub.id)}
+                                    className={`px-2 py-0.5 rounded font-bold text-[10px] ${
+                                      sub.status === 'ACTIVE'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : 'bg-gray-100 text-gray-500'
+                                    }`}
+                                  >
+                                    {sub.status}
+                                  </button>
+                                </td>
+                                <td className="p-3">
+                                  <button
+                                    onClick={() => handleDeleteSubCategory(sub.id)}
+                                    className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MODE D: BRAND GRID */}
+                  {archViewMode === 'brand-grid' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-black text-gray-900">
+                          OEM Brands & Verified Technology Partners ({filteredBrands.length})
+                        </h3>
+                        <button
+                          onClick={() => setIsBrandModalOpen(true)}
+                          className="px-3.5 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-1.5"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Register Brand</span>
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredBrands.map((b) => (
+                          <div
+                            key={b.id}
+                            className="p-5 rounded-2xl bg-gray-50 border border-gray-200/90 flex flex-col justify-between space-y-3 hover:shadow-sm transition-all"
+                          >
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="w-12 h-12 rounded-xl bg-white p-1 border border-gray-200 overflow-hidden flex items-center justify-center">
+                                  <img src={b.logoUrl} alt={b.name} className="w-full h-full object-cover rounded-lg" />
+                                </div>
+                                <button
+                                  onClick={() => handleToggleBrandStatus(b.id)}
+                                  className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${
+                                    b.status === 'ACTIVE'
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-gray-200 text-gray-600'
+                                  }`}
+                                >
+                                  {b.status === 'ACTIVE' ? '✓ ACTIVE' : 'INACTIVE'}
+                                </button>
+                              </div>
+
+                              <div>
+                                <h4 className="text-sm font-black text-gray-900">{b.name}</h4>
+                                <span className="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                                  <Globe className="w-3 h-3 text-gray-400" /> {b.origin}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-wrap gap-1">
+                                {b.categories.map((c, i) => (
+                                  <span key={i} className="text-[10px] font-bold text-gray-700 bg-white border border-gray-200 px-2 py-0.5 rounded">
+                                    {c}
+                                  </span>
+                                ))}
+                              </div>
+
+                              <div className="p-2.5 rounded-xl bg-white border border-gray-100 text-xs">
+                                <span className="text-[10px] font-bold text-gray-400 block uppercase">Warranty SLA:</span>
+                                <span className="font-bold text-[#16A34A]">{b.warrantyPeriod}</span>
+                              </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between">
+                              {b.website ? (
+                                <a
+                                  href={b.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[11px] font-bold text-gray-500 hover:text-emerald-700 flex items-center gap-1"
+                                >
+                                  <span>Website</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              ) : <span />}
+
+                              <button
+                                onClick={() => handleDeleteBrand(b.id)}
+                                className="p-1 rounded-md text-rose-500 hover:bg-rose-50 transition-colors"
+                                title="Delete Brand"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* TAB: PRIMARY CATEGORIES */}
             {activeTab === 'categories' && (
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
@@ -4339,6 +5130,39 @@ export const AdminDashboardPage: React.FC = () => {
                     </div>
 
                     <div>
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Vehicle Scale & Segment Tier</label>
+                      <select
+                        value={categoryForm.scaleTier || '2W_PERSONAL'}
+                        onChange={(e) => {
+                          const val = e.target.value as any;
+                          const labels: Record<string, string> = {
+                            '2W_PERSONAL': 'Micro & Personal Mobility (2W)',
+                            '3W_COMMERCIAL': 'Light Commercial 3-Wheeler (L5)',
+                            '4W_PASSENGER': 'Passenger Electric Cars (4W)',
+                            'LCV_TRUCKS': 'Commercial Fleet & LCV Mini-Trucks',
+                            'HEAVY_COMMERCIAL': 'Heavy Commercial & Public Transit',
+                            'SPECIAL_INDUSTRIAL': 'Agricultural, Industrial & Special EVs',
+                            'BATTERY_STORAGE': 'Energy Storage & Swappable Battery Tech',
+                            'CHARGING_INFRA': 'Charging Network & Infrastructure',
+                            'SPARE_COMPONENTS': 'OEM Components & ARAI Retrofit Kits'
+                          };
+                          setCategoryForm({ ...categoryForm, scaleTier: val, scaleLabel: labels[val] || val });
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                      >
+                        <option value="2W_PERSONAL">2-Wheeler (Micro & Personal Mobility)</option>
+                        <option value="3W_COMMERCIAL">3-Wheeler (L5 Commercial Passenger & Cargo)</option>
+                        <option value="4W_PASSENGER">4-Wheeler (Passenger Cars, SUVs & Cabs)</option>
+                        <option value="LCV_TRUCKS">LCV (Mini-Trucks & Delivery Vans)</option>
+                        <option value="HEAVY_COMMERCIAL">Heavy Commercial (Buses & Mining Tippers)</option>
+                        <option value="SPECIAL_INDUSTRIAL">Special EVs (Tractors, Forklifts & Campus)</option>
+                        <option value="BATTERY_STORAGE">Battery Packs & Energy Storage</option>
+                        <option value="CHARGING_INFRA">Charging Stations & Infrastructure</option>
+                        <option value="SPARE_COMPONENTS">OEM Spare Parts & Retrofit Kits</option>
+                      </select>
+                    </div>
+
+                    <div>
                       <label className="block text-xs font-bold text-gray-700 mb-1">Detailed Description</label>
                       <textarea
                         rows={2}
@@ -4420,6 +5244,56 @@ export const AdminDashboardPage: React.FC = () => {
                         onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
                       />
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Vehicle Segment / Scale Code</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. L2 High-Speed, L5M Auto, 1.5T Mini-Truck"
+                          value={subCategoryForm.vehicleSegment}
+                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, vehicleSegment: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Speed / Certified Range</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 85 km/h • 140 km Range"
+                          value={subCategoryForm.speedRangeTier}
+                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, speedRangeTier: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Seating / Payload Capacity</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. 4+1 Passengers, 1.5-Ton Payload"
+                          value={subCategoryForm.typicalPayloadOrSeats}
+                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, typicalPayloadOrSeats: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-6">
+                        <input
+                          type="checkbox"
+                          id="subsidyEligibleCheck"
+                          checked={subCategoryForm.subsidyEligible}
+                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, subsidyEligible: e.target.checked })}
+                          className="w-4 h-4 text-emerald-600 rounded"
+                        />
+                        <label htmlFor="subsidyEligibleCheck" className="text-xs font-bold text-gray-700 cursor-pointer">
+                          PM E-DRIVE Subsidy Eligible
+                        </label>
+                      </div>
                     </div>
 
                     <div>
