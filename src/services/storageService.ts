@@ -677,6 +677,18 @@ class StorageService {
     }
   }
 
+  updateServiceStatus(bookingId: string, status: any): boolean {
+    const bookings = this.getServiceBookings();
+    const idx = bookings.findIndex(b => b.id === bookingId);
+    if (idx !== -1) {
+      bookings[idx].status = status;
+      this.set('service_bookings', bookings);
+      api.updateServiceStatus(bookingId, bookings[idx]).catch(err => console.warn('Backend sync error:', err));
+      return true;
+    }
+    return false;
+  }
+
   // --- Spare Parts Orders (Real Data Only) ---
   getSparePartsOrders(): SparePartsOrder[] {
     const list = this.get<SparePartsOrder[]>('spare_parts_orders', []);

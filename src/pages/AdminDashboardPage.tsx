@@ -728,10 +728,11 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Service Management',
       icon: Layers,
       items: [
-        { id: 'service-history' as AdminTab, label: 'partner history', badge: null },
+        { id: 'sp-list' as AdminTab, label: 'Live Service Vans & Fleet', badge: serviceProviders.length },
+        { id: 'services' as AdminTab, label: 'Doorstep Service Bookings', badge: services.length },
         { id: 'service-categories' as AdminTab, label: 'Service Categories & Rates', badge: null },
         { id: 'service-approvals' as AdminTab, label: 'Customer Digital Approvals', badge: null },
-        { id: 'services' as AdminTab, label: 'Service Bookings & Vans', badge: services.length },
+        { id: 'service-history' as AdminTab, label: 'Partner Job History', badge: null },
       ]
     },
     {
@@ -739,11 +740,11 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Spare VendorManagement',
       icon: Box,
       items: [
-        { id: 'vendor-history' as AdminTab, label: 'Spare vendor history', badge: null },
-        { id: 'vendor-onboarding' as AdminTab, label: 'Spare vendor onboarding', badge: null },
-        { id: 'vendor-list' as AdminTab, label: 'Spare vendor List', badge: spareVendors.length },
-        { id: 'vendor-payout' as AdminTab, label: 'Spare vendor Payout', badge: null },
-        { id: 'parts' as AdminTab, label: 'Spare vendor products', badge: partsOrders.length },
+        { id: 'vendor-list' as AdminTab, label: 'Spare Vendor Hub & List', badge: spareVendors.length },
+        { id: 'parts' as AdminTab, label: 'Customer Parts Orders', badge: partsOrders.length },
+        { id: 'vendor-onboarding' as AdminTab, label: 'Spare Vendor Onboarding', badge: null },
+        { id: 'vendor-payout' as AdminTab, label: 'Spare Vendor Payouts', badge: null },
+        { id: 'vendor-history' as AdminTab, label: 'Spare Vendor History', badge: null },
       ]
     },
     {
@@ -751,10 +752,10 @@ export const AdminDashboardPage: React.FC = () => {
       label: 'Marketplace Management',
       icon: Store,
       items: [
-        { id: 'shop-onboarding' as AdminTab, label: 'Shopkeeper Onboarding', badge: null },
-        { id: 'shop-list' as AdminTab, label: 'Shopkeeper List', badge: shopkeepers.length },
-        { id: 'inventory' as AdminTab, label: 'Shopkeeper Products', badge: VEHICLES_DATA.length },
-        { id: 'shop-payout' as AdminTab, label: 'Shopkeeper Payout', badge: null },
+        { id: 'shop-list' as AdminTab, label: 'Showroom Dealers & List', badge: shopkeepers.length },
+        { id: 'inventory' as AdminTab, label: 'Dealership Floor Vehicles', badge: VEHICLES_DATA.length },
+        { id: 'shop-onboarding' as AdminTab, label: 'Showroom Onboarding', badge: null },
+        { id: 'shop-payout' as AdminTab, label: 'Dealership Commissions', badge: null },
       ]
     },
     {
@@ -803,6 +804,9 @@ export const AdminDashboardPage: React.FC = () => {
   const getTabBreadcrumb = () => {
     if (activeTab === 'overview') return { group: 'Main Console', label: 'Dashboard' };
     if (activeTab === 'catalog-architecture') return { group: 'Catalog & Brands Architecture', label: 'Master Architecture Console' };
+    if (activeTab === 'sp-list') return { group: 'Service Management', label: 'Live Service Vans & Mobile Fleet Hub' };
+    if (activeTab === 'vendor-list') return { group: 'Spare VendorManagement', label: 'Certified Vendors & Wholesale Hub' };
+    if (activeTab === 'shop-list') return { group: 'Marketplace Management', label: 'Showroom Dealers & Dealerships Hub' };
     for (const group of adminAccordionGroups) {
       const match = group.items.find(item => item.id === activeTab);
       if (match) return { group: group.label, label: match.label };
@@ -837,12 +841,22 @@ export const AdminDashboardPage: React.FC = () => {
 
         return (
           <div key={group.id} className="space-y-1">
-            {/* Parent Accordion Row */}
+            {/* Parent Accordion Row - Clicking parent immediately opens domain landing console */}
             <button
               onClick={() => {
                 toggleMenu(group.id);
-                if (group.id === 'catalog-architecture') {
-                  handleSelectTab('catalog-architecture', 'catalog-architecture');
+                const parentDefaultTabs: Record<string, AdminTab> = {
+                  'service-management': 'sp-list',
+                  'spare-vendor': 'vendor-list',
+                  'marketplace': 'shop-list',
+                  'catalog-architecture': 'catalog-architecture',
+                  'orders-management': 'orders',
+                  'user-management': 'customers',
+                  'support-communication': 'tickets'
+                };
+                const targetTab = parentDefaultTabs[group.id];
+                if (targetTab) {
+                  handleSelectTab(targetTab, group.id);
                 }
               }}
               className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl transition-all text-sm font-bold text-left ${
@@ -929,6 +943,35 @@ export const AdminDashboardPage: React.FC = () => {
   const [archViewMode, setArchViewMode] = useState<'visual-tree' | 'primary-table' | 'subcategory-table' | 'brand-grid'>('visual-tree');
   const [archSearchQuery, setArchSearchQuery] = useState('');
   const [archScaleFilter, setArchScaleFilter] = useState('ALL');
+
+  // Service Provider Fleet Master Console State
+  const [spViewMode, setSpViewMode] = useState<'fleet' | 'bookings' | 'payouts' | 'onboard'>('fleet');
+  const [spSearchQuery, setSpSearchQuery] = useState('');
+  const [spCityFilter, setSpCityFilter] = useState('ALL');
+
+  // Spare Vendor Wholesale Master Console State
+  const [vendorViewMode, setVendorViewMode] = useState<'vendors' | 'orders' | 'catalog' | 'settlements' | 'onboard'>('vendors');
+  const [vendorSearchQuery, setVendorSearchQuery] = useState('');
+  const [vendorCategoryFilter, setVendorCategoryFilter] = useState('ALL');
+
+  // Showroom Dealership Master Console State
+  const [shopViewMode, setShopViewMode] = useState<'dealers' | 'inventory' | 'test-drives' | 'commissions' | 'onboard'>('dealers');
+  const [shopSearchQuery, setShopSearchQuery] = useState('');
+  const [shopCityFilter, setShopCityFilter] = useState('ALL');
+
+  // Quick Action Handlers for Live Services & Orders
+  const handleUpdateServiceBookingStatus = (bookingId: string, nextStatus: any) => {
+    const updated = services.map(s => {
+      if (s.id === bookingId) {
+        return { ...s, status: nextStatus };
+      }
+      return s;
+    });
+    setServices(updated);
+    storage.updateServiceStatus(bookingId, nextStatus);
+    setRefreshNotification(`✓ Service booking status updated to ${nextStatus}!`);
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
 
   // Brand Form State
   const [brandForm, setBrandForm] = useState({
@@ -1736,10 +1779,77 @@ export const AdminDashboardPage: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Description */}
-                <p className="text-xs sm:text-sm text-slate-600 font-normal leading-relaxed">
-                  Multi-vendor EV marketplace management: live service vans, certified vendors, showroom dealers & master catalog.
-                </p>
+                {/* Multi-Vendor Operations Portal Switcher (Clickable Portals) */}
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs text-slate-600 font-medium">
+                    Multi-vendor EV marketplace management: (Click any domain below to open its dedicated live operations console):
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() => handleSelectTab('sp-list', 'service-management')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
+                        activeTab === 'sp-list'
+                          ? 'bg-[#183556] text-white border-blue-400/50 shadow-sm ring-2 ring-blue-500/20'
+                          : 'bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border-slate-200'
+                      }`}
+                      title="Open Live Service Vans & Mobile Fleet Operations Hub"
+                    >
+                      <Truck className={`w-3.5 h-3.5 ${activeTab === 'sp-list' ? 'text-[#00D2FF]' : 'text-blue-600'}`} />
+                      <span>Live Service Vans</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold">
+                        {activeServiceVansCount} Active
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => handleSelectTab('vendor-list', 'spare-vendor')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
+                        activeTab === 'vendor-list'
+                          ? 'bg-[#183556] text-white border-emerald-400/50 shadow-sm ring-2 ring-emerald-500/20'
+                          : 'bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border-slate-200'
+                      }`}
+                      title="Open Certified OEM Spare Parts Vendors & Wholesale Hub"
+                    >
+                      <Box className={`w-3.5 h-3.5 ${activeTab === 'vendor-list' ? 'text-[#00D2FF]' : 'text-emerald-600'}`} />
+                      <span>Certified Vendors</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
+                        {spareVendors.length} Verified
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => handleSelectTab('shop-list', 'marketplace')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
+                        activeTab === 'shop-list'
+                          ? 'bg-[#183556] text-white border-purple-400/50 shadow-sm ring-2 ring-purple-500/20'
+                          : 'bg-white hover:bg-purple-50 text-slate-700 hover:text-purple-700 border-slate-200'
+                      }`}
+                      title="Open Showroom Dealers & Marketplace Dealership Console"
+                    >
+                      <Store className={`w-3.5 h-3.5 ${activeTab === 'shop-list' ? 'text-[#00D2FF]' : 'text-purple-600'}`} />
+                      <span>Showroom Dealers</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 font-extrabold">
+                        {shopkeepers.length} Hubs
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => handleSelectTab('catalog-architecture', 'catalog-architecture')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
+                        activeTab === 'catalog-architecture'
+                          ? 'bg-[#183556] text-white border-amber-400/50 shadow-sm ring-2 ring-amber-500/20'
+                          : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 border-slate-200'
+                      }`}
+                      title="Open Master Catalog & Brands Architecture Console"
+                    >
+                      <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'catalog-architecture' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
+                      <span>Master Catalog</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold">
+                        {categories.length} Segments
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {/* Right Column: Status & Attention Cards */}
@@ -1952,6 +2062,178 @@ export const AdminDashboardPage: React.FC = () => {
         {/* Tab 1: Overview */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+            {/* Multi-Vendor Marketplace Operations Launchpad (4 Dedicated Portals) */}
+            <div className="bg-gradient-to-r from-[#06152B] via-[#0E284D] to-[#123668] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-blue-500/20 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-500/20 pb-4">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A] text-[11px] font-bold uppercase tracking-wider mb-1.5 border border-emerald-500/30">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Multi-Vendor Operations Network</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    Dedicated Partner Operations Consoles
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
+                    Click any pillar below to launch its dedicated enterprise console with real live working data and instant actions.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Live Service Vans Hub */}
+                <div
+                  onClick={() => handleSelectTab('sp-list', 'service-management')}
+                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-blue-400/20 hover:border-blue-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-400/30 group-hover:scale-105 transition-transform">
+                        <Truck className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                        {activeServiceVansCount} Active
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white group-hover:text-[#00D2FF] transition-colors">
+                        Live Service Vans Hub
+                      </h3>
+                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
+                        Mobile EV breakdown fleet, field dispatch, GPS van status & technician instant payouts.
+                      </p>
+                    </div>
+                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                      <div className="flex justify-between">
+                        <span>Total Fleet:</span>
+                        <strong className="text-white">{serviceProviders.length} Vans</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Doorstep Bookings:</span>
+                        <strong className="text-[#B7F34A]">{services.length} Requests</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-[#00D2FF] group-hover:translate-x-1 transition-transform">
+                    <span>Open Fleet Console →</span>
+                  </div>
+                </div>
+
+                {/* 2. Certified Spare Vendors Hub */}
+                <div
+                  onClick={() => handleSelectTab('vendor-list', 'spare-vendor')}
+                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-emerald-400/20 hover:border-emerald-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/30 group-hover:scale-105 transition-transform">
+                        <Box className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                        {spareVendors.length} Verified
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                        Certified OEM Vendors
+                      </h3>
+                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
+                        Tier-1 component manufacturers, warehouse hubs, parts SKU dispatch & NEFT settlements.
+                      </p>
+                    </div>
+                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                      <div className="flex justify-between">
+                        <span>Active SKUs:</span>
+                        <strong className="text-white">{spareVendors.reduce((acc, v) => acc + (v.activeSkus || 0), 0)} SKUs</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Customer Orders:</span>
+                        <strong className="text-[#B7F34A]">{partsOrders.length} Orders</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
+                    <span>Open Vendor Console →</span>
+                  </div>
+                </div>
+
+                {/* 3. Showroom Dealers Hub */}
+                <div
+                  onClick={() => handleSelectTab('shop-list', 'marketplace')}
+                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-purple-400/20 hover:border-purple-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-400/30 group-hover:scale-105 transition-transform">
+                        <Store className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                        {shopkeepers.length} Hubs
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
+                        Showroom Dealers Hub
+                      </h3>
+                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
+                        Authorized dealerships, floor vehicle display models, test drives & commission disbursements.
+                      </p>
+                    </div>
+                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                      <div className="flex justify-between">
+                        <span>Floor Models:</span>
+                        <strong className="text-white">{shopkeepers.reduce((acc, s) => acc + (s.inventoryCount || 0), 0)} Units</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Test Drives:</span>
+                        <strong className="text-[#B7F34A]">{testDrives.length} Bookings</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-purple-400 group-hover:translate-x-1 transition-transform">
+                    <span>Open Dealership Console →</span>
+                  </div>
+                </div>
+
+                {/* 4. Master Catalog Architecture Hub */}
+                <div
+                  onClick={() => handleSelectTab('catalog-architecture', 'catalog-architecture')}
+                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-amber-400/20 hover:border-amber-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-400/30 group-hover:scale-105 transition-transform">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                        {categories.length} Segments
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
+                        Master Catalog Architecture
+                      </h3>
+                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
+                        9-tier EV taxonomy (Micro 2W to 55T Buses), 35 specialized subcategories & 13 verified OEM brands.
+                      </p>
+                    </div>
+                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                      <div className="flex justify-between">
+                        <span>Subcategories:</span>
+                        <strong className="text-white">{subCategories.length} Types</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Verified Brands:</span>
+                        <strong className="text-[#B7F34A]">{brands.length} OEMs</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
+                    <span>Open Architecture Console →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
               {/* Recent Vehicle Orders */}
@@ -3338,87 +3620,633 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider List */}
-            {activeTab === 'sp-list' && (
-              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
-                  <div>
-                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                      <UserCheck className="w-5 h-5 text-[#16A34A]" />
-                      <span>Certified Service Providers & Mobile Fleet Directory ({serviceProviders.length})</span>
-                    </h2>
-                    <p className="text-xs text-gray-500">Live status, van allocations, completed work orders, and direct dispatch controls.</p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('sp-onboarding')}
-                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Onboard New Partner</span>
-                  </button>
-                </div>
+            {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider List (Master Console) */}
+            {activeTab === 'sp-list' && (() => {
+              const filteredFleet = serviceProviders.filter(sp => {
+                const matchesSearch =
+                  !spSearchQuery ||
+                  sp.name.toLowerCase().includes(spSearchQuery.toLowerCase()) ||
+                  sp.vanNumber.toLowerCase().includes(spSearchQuery.toLowerCase()) ||
+                  sp.phone.includes(spSearchQuery);
+                const matchesCity = spCityFilter === 'ALL' || sp.city === spCityFilter;
+                return matchesSearch && matchesCity;
+              });
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
-                      <tr>
-                        <th className="p-3">Technician Details</th>
-                        <th className="p-3">Assigned Van</th>
-                        <th className="p-3">Operational Hub</th>
-                        <th className="p-3">Specialization</th>
-                        <th className="p-3">Jobs & Rating</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {serviceProviders.map(sp => (
-                        <tr key={sp.id} className="hover:bg-gray-50/60">
-                          <td className="p-3">
-                            <strong className="text-xs font-bold text-gray-900 block">{sp.name}</strong>
-                            <a href={`tel:+91${sp.phone}`} className="text-[11px] text-emerald-700 font-mono hover:underline flex items-center gap-1">
-                              <Phone className="w-3 h-3" /> +91 {sp.phone}
-                            </a>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
-                              {sp.vanNumber}
-                            </span>
-                          </td>
-                          <td className="p-3 font-medium text-gray-800">{sp.city}</td>
-                          <td className="p-3 text-gray-600 max-w-xs">{sp.specialization}</td>
-                          <td className="p-3">
-                            <strong className="block text-gray-900">{sp.completedJobs} jobs</strong>
-                            <span className="text-amber-600 font-bold text-[11px]">⭐ {sp.rating}</span>
-                          </td>
-                          <td className="p-3">
-                            <button
-                              onClick={() => handleToggleSpStatus(sp.id)}
-                              className={`px-2 py-0.5 rounded-md font-bold text-[10px] transition-all cursor-pointer ${
-                                sp.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' :
-                                sp.status === 'ON_JOB' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
-                                'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                              title="Click to toggle partner status"
+              const totalCompletedJobs = serviceProviders.reduce((acc, sp) => acc + (sp.completedJobs || 0), 0);
+              const totalFleetPayoutPending = serviceProviders.reduce((acc, sp) => acc + (sp.pendingPayout || 0), 0);
+
+              return (
+                <div className="space-y-6">
+                  {/* Master Console Header */}
+                  <div className="bg-gradient-to-r from-[#06152B] via-[#0E284D] to-[#123668] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-blue-500/20 space-y-5">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-blue-500/20 pb-5">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-500/20 text-[#00D2FF] text-[11px] font-bold uppercase tracking-wider mb-2 border border-blue-500/30">
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>Enterprise Mobile Fleet Management</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                          <span>Live Service Vans & Fleet Operations Hub</span>
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A] border border-emerald-500/30 font-bold">
+                            Live GPS & Dispatch Active
+                          </span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+                          Manage real-time doorstep EV breakdown assistance vans, certified field technician duty rosters, live customer service queues, and instant 85% IMPS commission payouts.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          onClick={() => setSpViewMode('onboard')}
+                          className="px-4 py-2.5 rounded-xl bg-[#00D2FF] hover:bg-[#38bdf8] text-[#06152B] text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-cyan-500/20 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Onboard New Van</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSpSearchQuery('');
+                            setSpCityFilter('ALL');
+                            setSpViewMode('fleet');
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Reset</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Executive KPI Stats Bar */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Active Vans On Duty
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{activeServiceVansCount}</strong>
+                          <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">
+                            {serviceProviders.length} Total Fleet
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Field Jobs Completed
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{totalCompletedJobs}</strong>
+                          <span className="text-[11px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded">
+                            100% Resolved
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Doorstep Bookings Queue
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{services.length}</strong>
+                          <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded">
+                            {services.filter(s => s.status === 'REQUESTED' || s.status === 'AWAITING_CONFIRMATION').length} Pending
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Pending Payouts (85%)
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-[#B7F34A]">
+                            ₹{totalFleetPayoutPending.toLocaleString('en-IN')}
+                          </strong>
+                          <span className="text-[11px] font-bold text-slate-300">
+                            Instant IMPS
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Navigation Switcher Tabs */}
+                  <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
+                    <button
+                      onClick={() => setSpViewMode('fleet')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        spViewMode === 'fleet'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Truck className="w-3.5 h-3.5" />
+                      <span>Live Van Roster & Technicians ({filteredFleet.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setSpViewMode('bookings')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        spViewMode === 'bookings'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Doorstep Bookings Queue ({services.length})</span>
+                      {services.filter(s => s.status === 'REQUESTED' || s.status === 'AWAITING_CONFIRMATION').length > 0 && (
+                        <span className="text-[10px] bg-amber-500 text-white font-extrabold px-1.5 py-0.2 rounded-full">
+                          {services.filter(s => s.status === 'REQUESTED' || s.status === 'AWAITING_CONFIRMATION').length}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setSpViewMode('payouts')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        spViewMode === 'payouts'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Technician Payouts & Commission</span>
+                    </button>
+
+                    <button
+                      onClick={() => setSpViewMode('onboard')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        spViewMode === 'onboard'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Onboard New Service Van</span>
+                    </button>
+                  </div>
+
+                  {/* VIEW 1: FLEET ROSTER */}
+                  {spViewMode === 'fleet' && (
+                    <div className="space-y-4">
+                      {/* Search & City Filter Bar */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder="Search technician name, van number, mobile..."
+                            value={spSearchQuery}
+                            onChange={(e) => setSpSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">City Hub:</span>
+                          <select
+                            value={spCityFilter}
+                            onChange={(e) => setSpCityFilter(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-[#16A34A] focus:outline-none bg-white"
+                          >
+                            <option value="ALL">All Operational Hubs ({serviceProviders.length})</option>
+                            <option value="Delhi NCR">Delhi NCR</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Bhopal">Bhopal</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Van Fleet Grid Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredFleet.map(sp => (
+                          <div key={sp.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-subtle hover:border-blue-300 transition-all space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <span className="font-mono text-xs font-black text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg border border-gray-200 block w-max">
+                                  {sp.vanNumber}
+                                </span>
+                                <h3 className="text-sm font-black text-gray-900 mt-2">{sp.name}</h3>
+                                <p className="text-[11px] text-gray-500 font-medium">{sp.city} Hub</p>
+                              </div>
+
+                              <button
+                                onClick={() => handleToggleSpStatus(sp.id)}
+                                className={`px-2.5 py-1 rounded-lg font-bold text-[10px] transition-all cursor-pointer border ${
+                                  sp.status === 'ACTIVE'
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                                    : sp.status === 'ON_JOB'
+                                    ? 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
+                                    : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-gray-200'
+                                }`}
+                                title="Click to toggle status (ACTIVE / ON JOB / OFFLINE)"
+                              >
+                                {sp.status === 'ACTIVE' ? '🟢 ON DUTY' : sp.status === 'ON_JOB' ? '🔵 ON JOB' : '⚪ OFFLINE'}
+                              </button>
+                            </div>
+
+                            <div className="text-xs text-gray-600 bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                              <div className="text-[10px] font-bold text-gray-400 uppercase">Specialization</div>
+                              <div className="font-medium text-gray-800 line-clamp-1">{sp.specialization}</div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-gray-100">
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Performance</span>
+                                <strong className="text-gray-900 font-bold block">{sp.completedJobs} Jobs</strong>
+                                <span className="text-amber-600 text-[11px] font-bold">⭐ {sp.rating} Rating</span>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Pending Payout</span>
+                                <strong className="text-[#16A34A] font-black font-mono block">
+                                  ₹{sp.pendingPayout.toLocaleString('en-IN')}
+                                </strong>
+                                <span className="text-[10px] text-gray-400">Total: ₹{sp.totalEarnings.toLocaleString('en-IN')}</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                              <a
+                                href={`tel:+91${sp.phone}`}
+                                className="flex-1 py-2 px-3 rounded-xl bg-gray-100 hover:bg-emerald-50 text-gray-800 hover:text-emerald-800 font-bold text-xs text-center transition-all inline-flex items-center justify-center gap-1.5"
+                              >
+                                <Phone className="w-3.5 h-3.5 text-[#16A34A]" />
+                                <span>Call (+91 {sp.phone})</span>
+                              </a>
+                              {sp.pendingPayout > 0 && (
+                                <button
+                                  onClick={() => handleDisburseSpPayout(sp.id)}
+                                  className="py-2 px-3 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                                  title="Disburse instant commission"
+                                >
+                                  Disburse
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Dense Table View */}
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-3">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <h3 className="text-sm font-bold text-gray-900">
+                            Complete Authorized Van Fleet Roster ({filteredFleet.length})
+                          </h3>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Technician Details</th>
+                                <th className="p-3">Assigned Van</th>
+                                <th className="p-3">Operational Hub</th>
+                                <th className="p-3">Specialization</th>
+                                <th className="p-3">Jobs & Rating</th>
+                                <th className="p-3">Status</th>
+                                <th className="p-3">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {filteredFleet.map(sp => (
+                                <tr key={sp.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">{sp.name}</strong>
+                                    <span className="text-[11px] text-gray-500 font-mono">+91 {sp.phone}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                                      {sp.vanNumber}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 font-medium text-gray-800">{sp.city}</td>
+                                  <td className="p-3 text-gray-600 max-w-xs truncate">{sp.specialization}</td>
+                                  <td className="p-3">
+                                    <strong className="block text-gray-900">{sp.completedJobs} jobs</strong>
+                                    <span className="text-amber-600 font-bold text-[11px]">⭐ {sp.rating}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <button
+                                      onClick={() => handleToggleSpStatus(sp.id)}
+                                      className={`px-2 py-0.5 rounded-md font-bold text-[10px] transition-all cursor-pointer ${
+                                        sp.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' :
+                                        sp.status === 'ON_JOB' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
+                                        'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      {sp.status.replace('_', ' ')}
+                                    </button>
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="flex items-center gap-1.5">
+                                      <a
+                                        href={`tel:+91${sp.phone}`}
+                                        className="p-1.5 rounded-lg bg-gray-100 hover:bg-emerald-50 text-emerald-800"
+                                        title="Call Technician"
+                                      >
+                                        <Phone className="w-3.5 h-3.5" />
+                                      </a>
+                                      {sp.pendingPayout > 0 && (
+                                        <button
+                                          onClick={() => handleDisburseSpPayout(sp.id)}
+                                          className="px-2 py-1 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded text-[10px]"
+                                        >
+                                          Pay ₹{sp.pendingPayout}
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 2: DOORSTEP BOOKINGS QUEUE */}
+                  {spViewMode === 'bookings' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <Layers className="w-5 h-5 text-blue-600" />
+                            <span>Live Doorstep Service Booking & Van Dispatch Queue ({services.length})</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Real customer doorstep maintenance & emergency breakdown work orders awaiting dispatch.</p>
+                        </div>
+                      </div>
+
+                      {services.length === 0 ? (
+                        <div className="p-8 text-center text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                          No active doorstep service bookings in the queue.
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Booking ID</th>
+                                <th className="p-3">Customer Details</th>
+                                <th className="p-3">Service Package</th>
+                                <th className="p-3">Date & Slot</th>
+                                <th className="p-3">Service Location</th>
+                                <th className="p-3">Digital Approval</th>
+                                <th className="p-3">Status & Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {services.map(s => (
+                                <tr key={s.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3 font-mono font-bold text-gray-900">
+                                    {s.bookingNumber || s.id}
+                                  </td>
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">{s.customerName}</strong>
+                                    <a href={`tel:+91${s.customerPhone}`} className="text-[11px] text-emerald-700 font-mono hover:underline flex items-center gap-1">
+                                      <Phone className="w-3 h-3" /> +91 {s.customerPhone}
+                                    </a>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-gray-900 block">{s.serviceCategoryName}</span>
+                                    <span className="text-[10px] text-gray-500">{s.vehicleType}</span>
+                                  </td>
+                                  <td className="p-3 font-medium text-gray-800">
+                                    {s.appointmentDate} ({s.appointmentSlot})
+                                  </td>
+                                  <td className="p-3 text-gray-600 max-w-xs">
+                                    {s.addressLine}, {s.city} ({s.pincode})
+                                  </td>
+                                  <td className="p-3">
+                                    {s.isCustomerApproved ? (
+                                      <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                        <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> Approved
+                                      </span>
+                                    ) : (
+                                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3 text-amber-600" /> Pending
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="flex flex-col gap-1">
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-center ${
+                                        s.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                                        s.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
+                                        s.status === 'CONFIRMED' ? 'bg-purple-100 text-purple-800' :
+                                        'bg-amber-100 text-amber-800'
+                                      }`}>
+                                        {s.status}
+                                      </span>
+                                      <div className="flex items-center gap-1">
+                                        {s.status !== 'IN_PROGRESS' && s.status !== 'COMPLETED' && (
+                                          <button
+                                            onClick={() => handleUpdateServiceBookingStatus(s.id, 'IN_PROGRESS')}
+                                            className="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 cursor-pointer"
+                                            title="Dispatch service van"
+                                          >
+                                            Dispatch
+                                          </button>
+                                        )}
+                                        {s.status !== 'COMPLETED' && (
+                                          <button
+                                            onClick={() => handleUpdateServiceBookingStatus(s.id, 'COMPLETED')}
+                                            className="text-[9px] px-1.5 py-0.5 bg-[#16A34A] text-white rounded font-bold hover:bg-emerald-700 cursor-pointer"
+                                            title="Mark as completed"
+                                          >
+                                            Complete
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* VIEW 3: TECHNICIAN PAYOUTS */}
+                  {spViewMode === 'payouts' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                            <span>Service Provider Payout & Commission Disbursement</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Weekly job earnings, 85% technician revenue share, and live instant bank payouts.</p>
+                        </div>
+                        <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                          Platform Split: 85% Partner / 15% Platform
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Service Partner</th>
+                              <th className="p-3">Van Reg</th>
+                              <th className="p-3">Jobs Completed</th>
+                              <th className="p-3">Total Earned</th>
+                              <th className="p-3">Pending Payout</th>
+                              <th className="p-3">Disbursement Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {serviceProviders.map(sp => (
+                              <tr key={sp.id} className="hover:bg-gray-50/60">
+                                <td className="p-3">
+                                  <strong className="text-xs font-bold text-gray-900 block">{sp.name}</strong>
+                                  <span className="text-[11px] text-gray-500 font-mono">+91 {sp.phone}</span>
+                                </td>
+                                <td className="p-3 font-mono font-bold">{sp.vanNumber}</td>
+                                <td className="p-3 font-bold text-gray-900">{sp.completedJobs} jobs</td>
+                                <td className="p-3 font-bold text-gray-900">₹{sp.totalEarnings.toLocaleString('en-IN')}</td>
+                                <td className="p-3">
+                                  <span className={`font-mono font-black ${sp.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                                    ₹{sp.pendingPayout.toLocaleString('en-IN')}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  {sp.pendingPayout > 0 ? (
+                                    <button
+                                      onClick={() => handleDisburseSpPayout(sp.id)}
+                                      className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs cursor-pointer"
+                                    >
+                                      Disburse Payout (₹{sp.pendingPayout.toLocaleString('en-IN')})
+                                    </button>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 4: ONBOARD NEW SERVICE VAN */}
+                  {spViewMode === 'onboard' && (
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <UserCheck className="w-5 h-5 text-[#16A34A]" />
+                          <span>Service Provider Onboarding & Van Authorization</span>
+                        </h2>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Register a new certified EV technician, allocate a mobile service van, and authorize doorstep work orders.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleRegisterServiceProvider} className="space-y-4 max-w-2xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Technician Full Name *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Santosh Kumar"
+                              value={spForm.name}
+                              onChange={e => setSpForm({ ...spForm, name: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Mobile Number (+91) *</label>
+                            <input
+                              type="tel"
+                              required
+                              maxLength={10}
+                              placeholder="10-digit mobile number"
+                              value={spForm.phone}
+                              onChange={e => setSpForm({ ...spForm, phone: e.target.value.replace(/\D/g, '') })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Assigned Mobile Van Number *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. DL-1EV-8899"
+                              value={spForm.vanNumber}
+                              onChange={e => setSpForm({ ...spForm, vanNumber: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono uppercase focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Operational City Hub *</label>
+                            <select
+                              value={spForm.city}
+                              onChange={e => setSpForm({ ...spForm, city: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
                             >
-                              {sp.status.replace('_', ' ')}
-                            </button>
-                          </td>
-                          <td className="p-3">
-                            <a
-                              href={`tel:+91${sp.phone}`}
-                              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-emerald-50 text-gray-700 hover:text-emerald-800 font-bold text-[11px] inline-flex items-center gap-1"
-                            >
-                              <Phone className="w-3 h-3" /> Call
-                            </a>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                              <option value="Delhi NCR">Delhi NCR</option>
+                              <option value="Bengaluru">Bengaluru</option>
+                              <option value="Mumbai">Mumbai</option>
+                              <option value="Pune">Pune</option>
+                              <option value="Bhopal">Bhopal</option>
+                              <option value="Hyderabad">Hyderabad</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Specialization & Certifications *</label>
+                          <select
+                            value={spForm.specialization}
+                            onChange={e => setSpForm({ ...spForm, specialization: e.target.value })}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          >
+                            <option value="Battery Diagnostics & Controller Repair">Battery Diagnostics & Controller Repair</option>
+                            <option value="Doorstep Periodic Maintenance & Brake Servicing">Doorstep Periodic Maintenance & Brake Servicing</option>
+                            <option value="Motor & Electrical Diagnostic Calibration">Motor & Electrical Diagnostic Calibration</option>
+                            <option value="Brake & Suspension Overhaul Specialist">Brake & Suspension Overhaul Specialist</option>
+                            <option value="Emergency Roadside EV Assistance">Emergency Roadside EV Assistance</option>
+                          </select>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="submit"
+                            className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                          >
+                            <span>Register Service Provider & Issue Van Pass</span>
+                            <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSpViewMode('fleet')}
+                            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB: SERVICE PROVIDER MANAGEMENT - Service Provider Payout */}
             {activeTab === 'sp-payout' && (
@@ -3633,70 +4461,649 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor List */}
-            {activeTab === 'vendor-list' && (
-              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
-                  <div>
-                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                      <Box className="w-5 h-5 text-[#16A34A]" />
-                      <span>Approved Spare Part Vendors & Distributors ({spareVendors.length})</span>
-                    </h2>
-                    <p className="text-xs text-gray-500">Tier-1 OEM vendors, verified supply warehouses, SKU catalogs, and fulfillment SLA.</p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('vendor-onboarding')}
-                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Onboard OEM Vendor</span>
-                  </button>
-                </div>
+            {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor List (Master Console) */}
+            {activeTab === 'vendor-list' && (() => {
+              const filteredVendors = spareVendors.filter(v => {
+                const matchesSearch =
+                  !vendorSearchQuery ||
+                  v.companyName.toLowerCase().includes(vendorSearchQuery.toLowerCase()) ||
+                  v.contactPerson.toLowerCase().includes(vendorSearchQuery.toLowerCase()) ||
+                  v.location.toLowerCase().includes(vendorSearchQuery.toLowerCase()) ||
+                  v.phone.includes(vendorSearchQuery);
+                const matchesCat = vendorCategoryFilter === 'ALL' || v.categories.includes(vendorCategoryFilter);
+                return matchesSearch && matchesCat;
+              });
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
-                      <tr>
-                        <th className="p-3">Vendor Name</th>
-                        <th className="p-3">Contact Person</th>
-                        <th className="p-3">Warehouse Hub</th>
-                        <th className="p-3">Parts Category</th>
-                        <th className="p-3">Active SKUs</th>
-                        <th className="p-3">SLA Rating</th>
-                        <th className="p-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {spareVendors.map(v => (
-                        <tr key={v.id} className="hover:bg-gray-50/60">
-                          <td className="p-3">
-                            <strong className="text-xs font-bold text-gray-900 block">{v.companyName}</strong>
-                            <span className="text-[11px] text-gray-500 font-mono">{v.email}</span>
-                          </td>
-                          <td className="p-3">
-                            <strong className="block text-gray-900">{v.contactPerson}</strong>
-                            <a href={`tel:+91${v.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
-                              +91 {v.phone}
-                            </a>
-                          </td>
-                          <td className="p-3 text-gray-700">{v.location}</td>
-                          <td className="p-3 font-medium text-gray-800">{v.categories}</td>
-                          <td className="p-3 font-mono font-bold text-gray-900">{v.activeSkus} SKUs</td>
-                          <td className="p-3">
-                            <span className="text-amber-600 font-bold">⭐ {v.rating}</span>
-                          </td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> VERIFIED
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              const totalActiveSkus = spareVendors.reduce((acc, v) => acc + (v.activeSkus || 0), 0);
+              const totalFulfilledParts = spareVendors.reduce((acc, v) => acc + (v.fulfilledOrders || 0), 0);
+              const totalSettlementPending = spareVendors.reduce((acc, v) => acc + (v.pendingPayout || 0), 0);
+
+              return (
+                <div className="space-y-6">
+                  {/* Master Console Header */}
+                  <div className="bg-gradient-to-r from-[#06152B] via-[#0E284D] to-[#123668] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-emerald-500/20 space-y-5">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-emerald-500/20 pb-5">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A] text-[11px] font-bold uppercase tracking-wider mb-2 border border-emerald-500/30">
+                          <Box className="w-3.5 h-3.5" />
+                          <span>OEM Parts Supply Network & Logistics Hub</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                          <span>Certified OEM Vendors & Wholesale Hub</span>
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A] border border-emerald-500/30 font-bold">
+                            Verified Tier-1 Network
+                          </span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+                          Manage certified OEM component manufacturers, regional fulfillment warehouses, customer spare parts dispatch queues, and corporate NEFT settlements.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          onClick={() => setVendorViewMode('onboard')}
+                          className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Onboard OEM Vendor</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setVendorSearchQuery('');
+                            setVendorCategoryFilter('ALL');
+                            setVendorViewMode('vendors');
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Reset</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Executive KPI Stats Bar */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Verified OEM Vendors
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{spareVendors.length}</strong>
+                          <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">
+                            100% Verified
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Active Marketplace SKUs
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{totalActiveSkus}</strong>
+                          <span className="text-[11px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded">
+                            {SPARE_PARTS_DATA.length} Catalog SKUs
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Fulfilled Parts Units
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{totalFulfilledParts}</strong>
+                          <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded">
+                            {partsOrders.length} Orders
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Pending NEFT Settlement
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-[#B7F34A]">
+                            ₹{totalSettlementPending.toLocaleString('en-IN')}
+                          </strong>
+                          <span className="text-[11px] font-bold text-slate-300">
+                            7-Day Cycle
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Navigation Switcher Tabs */}
+                  <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
+                    <button
+                      onClick={() => setVendorViewMode('vendors')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        vendorViewMode === 'vendors'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Box className="w-3.5 h-3.5" />
+                      <span>Approved Vendor Directory ({filteredVendors.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setVendorViewMode('orders')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        vendorViewMode === 'orders'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Parts Orders Dispatch Queue ({partsOrders.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setVendorViewMode('catalog')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        vendorViewMode === 'catalog'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Marketplace Spare Parts Catalog ({SPARE_PARTS_DATA.length} SKUs)</span>
+                    </button>
+
+                    <button
+                      onClick={() => setVendorViewMode('settlements')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        vendorViewMode === 'settlements'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Vendor Settlements & NEFT Ledger</span>
+                    </button>
+
+                    <button
+                      onClick={() => setVendorViewMode('onboard')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        vendorViewMode === 'onboard'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Onboard OEM Vendor</span>
+                    </button>
+                  </div>
+
+                  {/* VIEW 1: VENDOR DIRECTORY */}
+                  {vendorViewMode === 'vendors' && (
+                    <div className="space-y-4">
+                      {/* Search & Category Filter */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder="Search company, contact person, location..."
+                            value={vendorSearchQuery}
+                            onChange={(e) => setVendorSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Category:</span>
+                          <select
+                            value={vendorCategoryFilter}
+                            onChange={(e) => setVendorCategoryFilter(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-[#16A34A] focus:outline-none bg-white"
+                          >
+                            <option value="ALL">All Categories ({spareVendors.length})</option>
+                            <option value="Battery">Battery & BMS</option>
+                            <option value="Brakes">Brakes & Motors</option>
+                            <option value="Tyres">EV Tyres</option>
+                            <option value="Chargers">Fast Chargers</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Vendor Cards Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        {filteredVendors.map(v => (
+                          <div key={v.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-subtle hover:border-emerald-300 transition-all space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 inline-flex items-center gap-1">
+                                  <ShieldCheck className="w-3 h-3 text-[#16A34A]" /> VERIFIED OEM VENDOR
+                                </span>
+                                <h3 className="text-base font-black text-gray-900 mt-1.5">{v.companyName}</h3>
+                                <p className="text-[11px] text-gray-500 font-medium">{v.location}</p>
+                              </div>
+                              <span className="text-amber-600 font-black text-xs bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+                                ⭐ {v.rating} SLA
+                              </span>
+                            </div>
+
+                            <div className="text-xs text-gray-600 bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1">
+                              <div className="text-[10px] font-bold text-gray-400 uppercase">Parts Category</div>
+                              <div className="font-semibold text-gray-800">{v.categories}</div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2 text-xs pt-1 border-t border-gray-100">
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Active SKUs</span>
+                                <strong className="text-gray-900 font-bold block">{v.activeSkus} SKUs</strong>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Fulfilled</span>
+                                <strong className="text-emerald-700 font-bold block">{v.fulfilledOrders} Units</strong>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Pending NEFT</span>
+                                <strong className="text-[#16A34A] font-black font-mono block">
+                                  ₹{v.pendingPayout.toLocaleString('en-IN')}
+                                </strong>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100 text-xs">
+                              <div>
+                                <span className="text-gray-400 text-[10px] block">Contact Person</span>
+                                <strong className="text-gray-900 font-bold">{v.contactPerson}</strong>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={`tel:+91${v.phone}`}
+                                  className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-emerald-50 text-gray-800 hover:text-emerald-800 font-bold text-[11px] inline-flex items-center gap-1"
+                                >
+                                  <Phone className="w-3 h-3 text-[#16A34A]" /> +91 {v.phone}
+                                </a>
+                                {v.pendingPayout > 0 && (
+                                  <button
+                                    onClick={() => handleDisburseVendorPayout(v.id)}
+                                    className="px-3 py-1.5 rounded-lg bg-[#16A34A] hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer"
+                                  >
+                                    Pay
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Dense Table View */}
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-3">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <h3 className="text-sm font-bold text-gray-900">
+                            Approved Spare Part Vendors & Distributors ({filteredVendors.length})
+                          </h3>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Vendor Details</th>
+                                <th className="p-3">Contact Person</th>
+                                <th className="p-3">Warehouse Hub</th>
+                                <th className="p-3">Parts Category</th>
+                                <th className="p-3">Active SKUs</th>
+                                <th className="p-3">SLA Rating</th>
+                                <th className="p-3">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {filteredVendors.map(v => (
+                                <tr key={v.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">{v.companyName}</strong>
+                                    <span className="text-[11px] text-gray-500 font-mono">{v.email}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <strong className="block text-gray-900">{v.contactPerson}</strong>
+                                    <a href={`tel:+91${v.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
+                                      +91 {v.phone}
+                                    </a>
+                                  </td>
+                                  <td className="p-3 text-gray-700">{v.location}</td>
+                                  <td className="p-3 font-medium text-gray-800">{v.categories}</td>
+                                  <td className="p-3 font-mono font-bold text-gray-900">{v.activeSkus} SKUs</td>
+                                  <td className="p-3">
+                                    <span className="text-amber-600 font-bold">⭐ {v.rating}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> VERIFIED
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 2: CUSTOMER PARTS ORDERS QUEUE */}
+                  {vendorViewMode === 'orders' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <ShoppingBag className="w-5 h-5 text-emerald-600" />
+                            <span>Customer Spare Parts Orders & Dispatch Queue ({partsOrders.length})</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Live wholesale fulfillment and courier dispatch pipeline.</p>
+                        </div>
+                      </div>
+
+                      {partsOrders.length === 0 ? (
+                        <div className="p-8 text-center text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                          No spare parts orders placed yet.
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Order Number</th>
+                                <th className="p-3">Customer Details</th>
+                                <th className="p-3">Delivery Address</th>
+                                <th className="p-3">Amount</th>
+                                <th className="p-3">Courier Tracking</th>
+                                <th className="p-3">Status & Action</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {partsOrders.map(order => (
+                                <tr key={order.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3 font-mono font-bold text-gray-900">
+                                    {order.orderNumber}
+                                  </td>
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">
+                                      {order.deliveryAddress?.fullName || 'Customer'}
+                                    </strong>
+                                    <span className="text-[11px] text-gray-500 font-mono">
+                                      +91 {order.deliveryAddress?.phone}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-gray-600 max-w-xs">
+                                    {order.deliveryAddress?.line1}, {order.deliveryAddress?.city} ({order.deliveryAddress?.pincode})
+                                  </td>
+                                  <td className="p-3 font-mono font-black text-gray-900">
+                                    ₹{order.grandTotal.toLocaleString('en-IN')}
+                                  </td>
+                                  <td className="p-3">
+                                    {order.courierTracking ? (
+                                      <div className="text-[11px]">
+                                        <span className="font-bold text-gray-800 block">{order.courierTracking.carrierName}</span>
+                                        <span className="font-mono text-gray-500">{order.courierTracking.trackingNumber}</span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-400 text-[10px]">Awaiting Dispatch</span>
+                                    )}
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="flex flex-col gap-1">
+                                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold text-center ${
+                                        order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-800' :
+                                        order.status === 'DISPATCHED' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-amber-100 text-amber-800'
+                                      }`}>
+                                        {order.status}
+                                      </span>
+                                      <div className="flex items-center gap-1">
+                                        {order.status !== 'DISPATCHED' && order.status !== 'DELIVERED' && (
+                                          <button
+                                            onClick={() => handleUpdatePartsOrderStatus(order.id, 'DISPATCHED')}
+                                            className="text-[9px] px-1.5 py-0.5 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 cursor-pointer"
+                                          >
+                                            Dispatch
+                                          </button>
+                                        )}
+                                        {order.status !== 'DELIVERED' && (
+                                          <button
+                                            onClick={() => handleUpdatePartsOrderStatus(order.id, 'DELIVERED')}
+                                            className="text-[9px] px-1.5 py-0.5 bg-[#16A34A] text-white rounded font-bold hover:bg-emerald-700 cursor-pointer"
+                                          >
+                                            Deliver
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* VIEW 3: MARKETPLACE SPARE PARTS CATALOG */}
+                  {vendorViewMode === 'catalog' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-amber-500" />
+                            <span>Marketplace Spare Parts Catalog & OEM Components ({SPARE_PARTS_DATA.length})</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Available component SKUs, verified OEM specifications, warranty tiers, and stock status.</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {SPARE_PARTS_DATA.map(part => (
+                          <div key={part.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex gap-3">
+                            <img
+                              src={part.imageUrl}
+                              alt={part.name}
+                              className="w-20 h-20 rounded-xl object-cover border border-gray-200 bg-white shrink-0"
+                            />
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <span className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                {part.categoryName}
+                              </span>
+                              <h4 className="text-xs font-black text-gray-900 line-clamp-1">{part.name}</h4>
+                              <p className="text-[11px] text-gray-500 line-clamp-1">Brand: {part.brand}</p>
+                              <div className="flex items-baseline justify-between pt-1">
+                                <strong className="text-sm font-black text-gray-900 font-mono">
+                                  ₹{part.sellingPrice.toLocaleString('en-IN')}
+                                </strong>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${part.stockQuantity > 0 ? 'text-emerald-700 bg-emerald-50' : 'text-rose-700 bg-rose-50'}`}>
+                                  {part.stockQuantity > 0 ? `${part.stockQuantity} In Stock` : 'Out of Stock'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 4: VENDOR SETTLEMENTS LEDGER */}
+                  {vendorViewMode === 'settlements' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                            <span>Spare Vendor Settlements & Consignment Ledger</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">OEM procurement settlements, parts GMV disbursement, and NEFT/RTGS transaction records.</p>
+                        </div>
+                        <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                          Net Settlement Cycle: 7 Days
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">OEM Vendor</th>
+                              <th className="p-3">Dispatched Units</th>
+                              <th className="p-3">Total Settled</th>
+                              <th className="p-3">Pending Settlement</th>
+                              <th className="p-3">Settlement Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {spareVendors.map(v => (
+                              <tr key={v.id} className="hover:bg-gray-50/60">
+                                <td className="p-3">
+                                  <strong className="text-xs font-bold text-gray-900 block">{v.companyName}</strong>
+                                  <span className="text-[11px] text-gray-500 font-mono">{v.location}</span>
+                                </td>
+                                <td className="p-3 font-bold text-gray-900">{v.fulfilledOrders} parts</td>
+                                <td className="p-3 font-bold text-gray-900">₹{v.totalDisbursed.toLocaleString('en-IN')}</td>
+                                <td className="p-3">
+                                  <span className={`font-mono font-black ${v.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                                    ₹{v.pendingPayout.toLocaleString('en-IN')}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  {v.pendingPayout > 0 ? (
+                                    <button
+                                      onClick={() => handleDisburseVendorPayout(v.id)}
+                                      className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs cursor-pointer"
+                                    >
+                                      Process NEFT Settlement (₹{v.pendingPayout.toLocaleString('en-IN')})
+                                    </button>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 5: ONBOARD NEW OEM VENDOR */}
+                  {vendorViewMode === 'onboard' && (
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <Box className="w-5 h-5 text-[#16A34A]" />
+                          <span>Onboard Certified OEM Spare Parts Vendor</span>
+                        </h2>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Register a tier-1 component manufacturer or warehouse distributor into the Vidyutva parts marketplace.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleRegisterSpareVendor} className="space-y-4 max-w-2xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Company / Manufacturer Name *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. NexCharge Powertrain Ltd."
+                              value={vendorForm.companyName}
+                              onChange={e => setVendorForm({ ...vendorForm, companyName: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Contact Person Name *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Vikram Malhotra"
+                              value={vendorForm.contactPerson}
+                              onChange={e => setVendorForm({ ...vendorForm, contactPerson: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Mobile / Direct Phone *</label>
+                            <input
+                              type="tel"
+                              required
+                              maxLength={10}
+                              placeholder="10-digit mobile number"
+                              value={vendorForm.phone}
+                              onChange={e => setVendorForm({ ...vendorForm, phone: e.target.value.replace(/\D/g, '') })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Corporate Email Address</label>
+                            <input
+                              type="email"
+                              placeholder="vendor@company.com"
+                              value={vendorForm.email}
+                              onChange={e => setVendorForm({ ...vendorForm, email: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Central Warehouse Location *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Manesar Logistics Park, Haryana"
+                            value={vendorForm.location}
+                            onChange={e => setVendorForm({ ...vendorForm, location: e.target.value })}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Parts Category Supplied *</label>
+                          <select
+                            value={vendorForm.categories}
+                            onChange={e => setVendorForm({ ...vendorForm, categories: e.target.value })}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          >
+                            <option value="LFP Battery Modules & Smart Controllers">LFP Battery Modules & Smart Controllers</option>
+                            <option value="Ceramic Brakes, Motors & Electronic Sensors">Ceramic Brakes, Motors & Electronic Sensors</option>
+                            <option value="Low Rolling Resistance Tubeless EV Tyres">Low Rolling Resistance Tubeless EV Tyres</option>
+                            <option value="Fast Chargers, Smart Cables & BMS Wiring Kits">Fast Chargers, Smart Cables & BMS Wiring Kits</option>
+                          </select>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="submit"
+                            className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                          >
+                            <span>Register & Verify OEM Vendor</span>
+                            <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setVendorViewMode('vendors')}
+                            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB: SPARE VENDOR MANAGEMENT - Spare vendor Payout */}
             {activeTab === 'vendor-payout' && (
@@ -3866,71 +5273,649 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper List */}
-            {activeTab === 'shop-list' && (
-              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
-                  <div>
-                    <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                      <Store className="w-5 h-5 text-[#16A34A]" />
-                      <span>Authorized EV Dealerships & Showroom Partners ({shopkeepers.length})</span>
-                    </h2>
-                    <p className="text-xs text-gray-500">Showroom vehicle stock, unit sales volume, commission tiers, and dealer principal contacts.</p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('shop-onboarding')}
-                    className="px-3.5 py-2 rounded-xl bg-[#06152B] hover:bg-[#0B2545] text-white text-xs font-bold transition-all flex items-center gap-1.5 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Onboard Showroom</span>
-                  </button>
-                </div>
+            {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper List (Master Console) */}
+            {activeTab === 'shop-list' && (() => {
+              const filteredShops = shopkeepers.filter(s => {
+                const matchesSearch =
+                  !shopSearchQuery ||
+                  s.shopName.toLowerCase().includes(shopSearchQuery.toLowerCase()) ||
+                  s.ownerName.toLowerCase().includes(shopSearchQuery.toLowerCase()) ||
+                  s.city.toLowerCase().includes(shopSearchQuery.toLowerCase()) ||
+                  s.gstNumber.toLowerCase().includes(shopSearchQuery.toLowerCase()) ||
+                  s.phone.includes(shopSearchQuery);
+                const matchesCity = shopCityFilter === 'ALL' || s.city === shopCityFilter;
+                return matchesSearch && matchesCity;
+              });
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
-                      <tr>
-                        <th className="p-3">Dealership Hub</th>
-                        <th className="p-3">Dealer Principal</th>
-                        <th className="p-3">City & Address</th>
-                        <th className="p-3">Floor Models</th>
-                        <th className="p-3">Total Sold</th>
-                        <th className="p-3">Commission Tier</th>
-                        <th className="p-3">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {shopkeepers.map(s => (
-                        <tr key={s.id} className="hover:bg-gray-50/60">
-                          <td className="p-3">
-                            <strong className="text-xs font-bold text-gray-900 block">{s.shopName}</strong>
-                            <span className="text-[10px] text-gray-400 font-mono">GST: {s.gstNumber}</span>
-                          </td>
-                          <td className="p-3">
-                            <strong className="block text-gray-900">{s.ownerName}</strong>
-                            <a href={`tel:+91${s.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
-                              +91 {s.phone}
-                            </a>
-                          </td>
-                          <td className="p-3">
-                            <span className="font-bold text-gray-900 block">{s.city}</span>
-                            <span className="text-gray-500 text-[11px]">{s.address}</span>
-                          </td>
-                          <td className="p-3 font-mono font-bold text-gray-900">{s.inventoryCount} Models</td>
-                          <td className="p-3 font-bold text-emerald-700">{s.totalSales} Units</td>
-                          <td className="p-3 font-mono font-bold text-purple-700">{s.commissionRate}</td>
-                          <td className="p-3">
-                            <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> ACTIVE
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              const totalFloorInventory = shopkeepers.reduce((acc, s) => acc + (s.inventoryCount || 0), 0);
+              const totalVehiclesDelivered = shopkeepers.reduce((acc, s) => acc + (s.totalSales || 0), 0);
+              const totalCommissionPending = shopkeepers.reduce((acc, s) => acc + (s.pendingPayout || 0), 0);
+
+              return (
+                <div className="space-y-6">
+                  {/* Master Console Header */}
+                  <div className="bg-gradient-to-r from-[#06152B] via-[#0E284D] to-[#123668] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-purple-500/20 space-y-5">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-purple-500/20 pb-5">
+                      <div>
+                        <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[11px] font-bold uppercase tracking-wider mb-2 border border-purple-500/30">
+                          <Store className="w-3.5 h-3.5" />
+                          <span>EV Dealership Network & Showroom Operations</span>
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                          <span>Showroom Dealers & Dealerships Hub</span>
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                            Authorized Dealer Network
+                          </span>
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-3xl">
+                          Manage authorized EV dealerships, floor display inventory allocations, customer test drive appointments, dealer delivery volumes, and weekly sales commission payouts.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          onClick={() => setShopViewMode('onboard')}
+                          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-purple-600/20 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4" />
+                          <span>Onboard Showroom</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShopSearchQuery('');
+                            setShopCityFilter('ALL');
+                            setShopViewMode('dealers');
+                          }}
+                          className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-2 border border-white/10 cursor-pointer"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Reset</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Executive KPI Stats Bar */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Authorized Dealerships
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{shopkeepers.length}</strong>
+                          <span className="text-[11px] font-bold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded">
+                            {shopkeepers.filter(s => s.status === 'ACTIVE').length} Active
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Floor Demo Vehicles
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{totalFloorInventory}</strong>
+                          <span className="text-[11px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded">
+                            {VEHICLES_DATA.length} Models
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Total Units Delivered
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-white">{totalVehiclesDelivered}</strong>
+                          <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded">
+                            {testDrives.length} Test Drives
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+                          Pending Commissions
+                        </span>
+                        <div className="flex items-baseline justify-between mt-1">
+                          <strong className="text-2xl font-black text-[#B7F34A]">
+                            ₹{totalCommissionPending.toLocaleString('en-IN')}
+                          </strong>
+                          <span className="text-[11px] font-bold text-slate-300">
+                            Avg 3.5%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Navigation Switcher Tabs */}
+                  <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
+                    <button
+                      onClick={() => setShopViewMode('dealers')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        shopViewMode === 'dealers'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Store className="w-3.5 h-3.5" />
+                      <span>Authorized Showrooms ({filteredShops.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShopViewMode('inventory')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        shopViewMode === 'inventory'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Tag className="w-3.5 h-3.5" />
+                      <span>Dealership Floor Vehicles ({VEHICLES_DATA.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShopViewMode('test-drives')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        shopViewMode === 'test-drives'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Customer Test Drives ({testDrives.length})</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShopViewMode('commissions')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        shopViewMode === 'commissions'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Dealer Commission Settlements</span>
+                    </button>
+
+                    <button
+                      onClick={() => setShopViewMode('onboard')}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                        shopViewMode === 'onboard'
+                          ? 'bg-[#06152B] text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>+ Onboard Showroom Dealership</span>
+                    </button>
+                  </div>
+
+                  {/* VIEW 1: DEALERS DIRECTORY */}
+                  {shopViewMode === 'dealers' && (
+                    <div className="space-y-4">
+                      {/* Search & City Filter */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+                        <div className="relative flex-1 max-w-md">
+                          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                          <input
+                            type="text"
+                            placeholder="Search showroom name, owner, city, GSTIN..."
+                            value={shopSearchQuery}
+                            onChange={(e) => setShopSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-500 whitespace-nowrap">City Hub:</span>
+                          <select
+                            value={shopCityFilter}
+                            onChange={(e) => setShopCityFilter(e.target.value)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-[#16A34A] focus:outline-none bg-white"
+                          >
+                            <option value="ALL">All Dealership Hubs ({shopkeepers.length})</option>
+                            <option value="Delhi NCR">Delhi NCR</option>
+                            <option value="Bengaluru">Bengaluru</option>
+                            <option value="Mumbai">Mumbai</option>
+                            <option value="Pune">Pune</option>
+                            <option value="Bhopal">Bhopal</option>
+                            <option value="Hyderabad">Hyderabad</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Showroom Cards Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        {filteredShops.map(s => (
+                          <div key={s.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-subtle hover:border-purple-300 transition-all space-y-3">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <span className="text-[10px] font-bold text-purple-800 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200 inline-flex items-center gap-1">
+                                  <Store className="w-3 h-3 text-purple-600" /> AUTHORIZED DEALERSHIP
+                                </span>
+                                <h3 className="text-base font-black text-gray-900 mt-1.5">{s.shopName}</h3>
+                                <p className="text-[11px] text-gray-500 font-medium">{s.city} • <span className="font-mono">{s.gstNumber}</span></p>
+                              </div>
+                              <span className="text-purple-700 font-black text-xs bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+                                {s.commissionRate} Margin
+                              </span>
+                            </div>
+
+                            <div className="text-xs text-gray-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                              <div className="text-[10px] font-bold text-gray-400 uppercase">Showroom Address</div>
+                              <div className="font-medium text-gray-800">{s.address}</div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2 text-xs pt-1 border-t border-gray-100">
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Floor Models</span>
+                                <strong className="text-gray-900 font-bold block">{s.inventoryCount} Models</strong>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Total Sold</span>
+                                <strong className="text-emerald-700 font-bold block">{s.totalSales} Units</strong>
+                              </div>
+                              <div>
+                                <span className="text-[10px] text-gray-400 block font-medium">Pending Commission</span>
+                                <strong className="text-[#16A34A] font-black font-mono block">
+                                  ₹{s.pendingPayout.toLocaleString('en-IN')}
+                                </strong>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 pt-2 border-t border-gray-100 text-xs">
+                              <div>
+                                <span className="text-gray-400 text-[10px] block">Dealer Principal</span>
+                                <strong className="text-gray-900 font-bold">{s.ownerName}</strong>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <a
+                                  href={`tel:+91${s.phone}`}
+                                  className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-emerald-50 text-gray-800 hover:text-emerald-800 font-bold text-[11px] inline-flex items-center gap-1"
+                                >
+                                  <Phone className="w-3 h-3 text-[#16A34A]" /> +91 {s.phone}
+                                </a>
+                                {s.pendingPayout > 0 && (
+                                  <button
+                                    onClick={() => handleDisburseShopkeeperPayout(s.id)}
+                                    className="px-3 py-1.5 rounded-lg bg-[#16A34A] hover:bg-emerald-700 text-white font-bold text-[11px] cursor-pointer"
+                                  >
+                                    Pay
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Dense Table View */}
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-3">
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                          <h3 className="text-sm font-bold text-gray-900">
+                            Authorized EV Dealerships & Showroom Partners ({filteredShops.length})
+                          </h3>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Dealership Hub</th>
+                                <th className="p-3">Dealer Principal</th>
+                                <th className="p-3">City & Address</th>
+                                <th className="p-3">Floor Models</th>
+                                <th className="p-3">Total Sold</th>
+                                <th className="p-3">Commission Tier</th>
+                                <th className="p-3">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {filteredShops.map(s => (
+                                <tr key={s.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">{s.shopName}</strong>
+                                    <span className="text-[10px] text-gray-400 font-mono">GST: {s.gstNumber}</span>
+                                  </td>
+                                  <td className="p-3">
+                                    <strong className="block text-gray-900">{s.ownerName}</strong>
+                                    <a href={`tel:+91${s.phone}`} className="text-emerald-700 font-mono text-[11px] hover:underline">
+                                      +91 {s.phone}
+                                    </a>
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="font-bold text-gray-900 block">{s.city}</span>
+                                    <span className="text-gray-500 text-[11px]">{s.address}</span>
+                                  </td>
+                                  <td className="p-3 font-mono font-bold text-gray-900">{s.inventoryCount} Models</td>
+                                  <td className="p-3 font-bold text-emerald-700">{s.totalSales} Units</td>
+                                  <td className="p-3 font-mono font-bold text-purple-700">{s.commissionRate}</td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[10px] inline-flex items-center gap-1">
+                                      <CheckCircle2 className="w-3 h-3 text-[#16A34A]" /> ACTIVE
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 2: DEALERSHIP FLOOR INVENTORY */}
+                  {shopViewMode === 'inventory' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <Tag className="w-5 h-5 text-purple-600" />
+                            <span>Dealership Floor Display Models & Stock ({VEHICLES_DATA.length})</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Live vehicles available for showroom display, test drives, and customer delivery.</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {VEHICLES_DATA.map(vehicle => (
+                          <div key={vehicle.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col justify-between space-y-3">
+                            <div>
+                              <div className="relative h-40 rounded-xl overflow-hidden bg-white mb-3">
+                                <img
+                                  src={vehicle.images[0]?.url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80'}
+                                  alt={vehicle.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                <span className="absolute top-2 left-2 px-2 py-0.5 bg-[#06152B]/80 text-white rounded text-[10px] font-bold">
+                                  {vehicle.brand}
+                                </span>
+                              </div>
+                              <h4 className="text-sm font-black text-gray-900">{vehicle.name}</h4>
+                              <p className="text-[11px] text-gray-500">{vehicle.tagline || vehicle.category}</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2 text-[11px] bg-white p-2.5 rounded-xl border border-gray-200">
+                              <div>
+                                <span className="text-gray-400 block text-[10px]">Range</span>
+                                <strong className="text-gray-900 font-bold">{vehicle.certifiedRangeKm} km</strong>
+                              </div>
+                              <div>
+                                <span className="text-gray-400 block text-[10px]">Top Speed</span>
+                                <strong className="text-gray-900 font-bold">{vehicle.topSpeedKmph} km/h</strong>
+                              </div>
+                            </div>
+
+                            <div className="flex items-baseline justify-between pt-1 border-t border-gray-200">
+                              <div>
+                                <span className="text-[10px] text-gray-400 block">Ex-Showroom Price</span>
+                                <strong className="text-sm font-black text-gray-900 font-mono">
+                                  ₹{vehicle.exShowroomPrice.toLocaleString('en-IN')}
+                                </strong>
+                              </div>
+                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                Allocated to Showrooms
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 3: TEST DRIVES QUEUE */}
+                  {shopViewMode === 'test-drives' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-blue-600" />
+                            <span>Assigned Customer Test Drives Queue ({testDrives.length})</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Scheduled doorstep and showroom demo drive slots booked by verified customers.</p>
+                        </div>
+                      </div>
+
+                      {testDrives.length === 0 ? (
+                        <div className="p-8 text-center text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                          No test drives booked yet.
+                        </div>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                              <tr>
+                                <th className="p-3">Vehicle Model</th>
+                                <th className="p-3">Customer Details</th>
+                                <th className="p-3">Date & Slot</th>
+                                <th className="p-3">Location & Hub</th>
+                                <th className="p-3">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                              {testDrives.map(td => (
+                                <tr key={td.id} className="hover:bg-gray-50/60">
+                                  <td className="p-3 font-bold text-gray-900">
+                                    {td.vehicleName}
+                                  </td>
+                                  <td className="p-3">
+                                    <strong className="text-xs font-bold text-gray-900 block">{td.customerName}</strong>
+                                    <span className="text-[11px] text-gray-500 font-mono">+91 {td.customerPhone}</span>
+                                  </td>
+                                  <td className="p-3 font-medium text-gray-800">
+                                    {td.preferredDate} ({td.timeSlot})
+                                  </td>
+                                  <td className="p-3 text-gray-600">
+                                    {td.city} ({td.pincode})
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 font-bold text-[10px]">
+                                      {td.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* VIEW 4: DEALER COMMISSIONS */}
+                  {shopViewMode === 'commissions' && (
+                    <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                        <div>
+                          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <DollarSign className="w-5 h-5 text-[#16A34A]" />
+                            <span>Dealership Commission Settlements Ledger</span>
+                          </h2>
+                          <p className="text-xs text-gray-500">Showroom sales commissions, booking referral incentives, and payout settlements.</p>
+                        </div>
+                        <span className="text-xs font-bold bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl border border-emerald-200">
+                          Average Margin: 3.5% - 4.0%
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs text-left">
+                          <thead className="bg-gray-50 text-gray-500 uppercase tracking-wider font-bold">
+                            <tr>
+                              <th className="p-3">Showroom Partner</th>
+                              <th className="p-3">Delivered Units</th>
+                              <th className="p-3">Total Disbursed</th>
+                              <th className="p-3">Pending Commission</th>
+                              <th className="p-3">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {shopkeepers.map(s => (
+                              <tr key={s.id} className="hover:bg-gray-50/60">
+                                <td className="p-3">
+                                  <strong className="text-xs font-bold text-gray-900 block">{s.shopName}</strong>
+                                  <span className="text-[11px] text-gray-500 font-mono">{s.city}</span>
+                                </td>
+                                <td className="p-3 font-bold text-gray-900">{s.totalSales} vehicles</td>
+                                <td className="p-3 font-bold text-gray-900">₹{s.totalDisbursed.toLocaleString('en-IN')}</td>
+                                <td className="p-3">
+                                  <span className={`font-mono font-black ${s.pendingPayout > 0 ? 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded' : 'text-gray-400'}`}>
+                                    ₹{s.pendingPayout.toLocaleString('en-IN')}
+                                  </span>
+                                </td>
+                                <td className="p-3">
+                                  {s.pendingPayout > 0 ? (
+                                    <button
+                                      onClick={() => handleDisburseShopkeeperPayout(s.id)}
+                                      className="px-3 py-1.5 bg-[#16A34A] hover:bg-emerald-700 text-white font-bold rounded-lg transition-all shadow-sm text-xs cursor-pointer"
+                                    >
+                                      Disburse Commission (₹{s.pendingPayout.toLocaleString('en-IN')})
+                                    </button>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-400 font-medium">✓ Settled</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW 5: ONBOARD NEW SHOWROOM */}
+                  {shopViewMode === 'onboard' && (
+                    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                          <Store className="w-5 h-5 text-[#16A34A]" />
+                          <span>Onboard Authorized EV Dealership Partner</span>
+                        </h2>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Register a multi-brand EV showroom dealer, configure floor allocation quotas, and issue dealer portal credentials.
+                        </p>
+                      </div>
+
+                      <form onSubmit={handleRegisterShopkeeper} className="space-y-4 max-w-2xl">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Showroom / Dealership Name *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. GreenWheels EV World"
+                              value={shopForm.shopName}
+                              onChange={e => setShopForm({ ...shopForm, shopName: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Dealer Principal (Owner Name) *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Rajesh Singhania"
+                              value={shopForm.ownerName}
+                              onChange={e => setShopForm({ ...shopForm, ownerName: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Mobile Number (+91) *</label>
+                            <input
+                              type="tel"
+                              required
+                              maxLength={10}
+                              placeholder="10-digit mobile number"
+                              value={shopForm.phone}
+                              onChange={e => setShopForm({ ...shopForm, phone: e.target.value.replace(/\D/g, '') })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Showroom City Hub *</label>
+                            <select
+                              value={shopForm.city}
+                              onChange={e => setShopForm({ ...shopForm, city: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            >
+                              <option value="Delhi NCR">Delhi NCR</option>
+                              <option value="Bengaluru">Bengaluru</option>
+                              <option value="Mumbai">Mumbai</option>
+                              <option value="Pune">Pune</option>
+                              <option value="Bhopal">Bhopal</option>
+                              <option value="Hyderabad">Hyderabad</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">Full Commercial Address *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="Plot / Showroom No., Sector / Road, Landmark"
+                            value={shopForm.address}
+                            onChange={e => setShopForm({ ...shopForm, address: e.target.value })}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">GSTIN Registration Number *</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. 07AABC1234F1Z5"
+                              value={shopForm.gstNumber}
+                              onChange={e => setShopForm({ ...shopForm, gstNumber: e.target.value.toUpperCase() })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-mono uppercase focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Commission Rate Tier *</label>
+                            <select
+                              value={shopForm.commissionRate}
+                              onChange={e => setShopForm({ ...shopForm, commissionRate: e.target.value })}
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                            >
+                              <option value="3.5%">3.5% Standard Dealership</option>
+                              <option value="4.0%">4.0% Premier Dealership</option>
+                              <option value="4.5%">4.5% Exclusive Flagship Hub</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="submit"
+                            className="px-6 py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                          >
+                            <span>Onboard EV Dealership Partner</span>
+                            <ArrowRight className="w-4 h-4 text-[#B7F34A]" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShopViewMode('dealers')}
+                            className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB: MARKETPLACE MANAGEMENT - Shopkeeper Payout */}
             {activeTab === 'shop-payout' && (
