@@ -870,10 +870,50 @@ class StorageService {
   getCategories(): CategoryItem[] {
     const stored = this.get<CategoryItem[]>('evahan_catalog_categories', DEFAULT_PRIMARY_CATEGORIES);
     const merged = this.mergeById(stored, DEFAULT_PRIMARY_CATEGORIES);
-    if (merged.length !== stored.length) {
+    
+    // Auto-migrate & ensure categoryKey is set for URL query compatibility
+    let updated = false;
+    merged.forEach(c => {
+      if (!c.categoryKey) {
+        if (c.id === 'cat-electric-scooters' || c.id === 'cat-2w-personal' || c.name.toLowerCase().includes('scooter')) {
+          c.categoryKey = 'ELECTRIC_SCOOTER';
+          updated = true;
+        } else if (c.id === 'cat-electric-autos' || c.id === 'cat-3w-commercial' || c.name.toLowerCase().includes('auto')) {
+          c.categoryKey = 'ELECTRIC_PASSENGER_AUTO';
+          updated = true;
+        } else if (c.id === 'cat-electric-cargo' || c.name.toLowerCase().includes('cargo')) {
+          c.categoryKey = 'ELECTRIC_CARGO_AUTO';
+          updated = true;
+        } else if (c.id === 'cat-electric-loaders' || c.id === 'cat-lcv-trucks' || c.name.toLowerCase().includes('loader')) {
+          c.categoryKey = 'ELECTRIC_LOADER';
+          updated = true;
+        } else {
+          c.categoryKey = c.name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+          updated = true;
+        }
+      }
+    });
+
+    if (updated || merged.length !== stored.length) {
       this.set('evahan_catalog_categories', merged);
     }
     return merged;
+  }
+
+  getCategoryByKeyOrSlug(keyOrSlug: string): CategoryItem | undefined {
+    const all = this.getCategories();
+    const query = keyOrSlug.trim().toLowerCase();
+    return all.find(c => 
+      (c.categoryKey && c.categoryKey.toLowerCase() === query) ||
+      c.slug.toLowerCase() === query ||
+      c.id.toLowerCase() === query ||
+      c.name.toLowerCase() === query
+    );
+  }
+
+  getSubCategoriesByCategoryId(categoryId: string): SubCategoryItem[] {
+    const all = this.getSubCategories();
+    return all.filter(s => s.categoryId === categoryId && s.status === 'ACTIVE');
   }
 
   addCategory(category: Omit<CategoryItem, 'id' | 'createdAt'>): CategoryItem {

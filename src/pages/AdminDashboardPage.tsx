@@ -916,6 +916,7 @@ export const AdminDashboardPage: React.FC = () => {
     // Category Form State
   const [categoryForm, setCategoryForm] = useState({
     name: '',
+    categoryKey: '',
     subtitle: '',
     description: '',
     type: 'VEHICLE' as CategoryItem['type'],
@@ -992,9 +993,11 @@ export const AdminDashboardPage: React.FC = () => {
       return;
     }
     const slug = categoryForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const categoryKey = categoryForm.categoryKey.trim() || categoryForm.name.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
     const newCat = storage.addCategory({
       name: categoryForm.name.trim(),
       slug,
+      categoryKey,
       subtitle: categoryForm.subtitle.trim(),
       description: categoryForm.description.trim() || `${categoryForm.name} catalog and models`,
       type: categoryForm.type,
@@ -1009,6 +1012,7 @@ export const AdminDashboardPage: React.FC = () => {
     setIsCategoryModalOpen(false);
     setCategoryForm({
       name: '',
+      categoryKey: '',
       subtitle: '',
       description: '',
       type: 'VEHICLE',
@@ -1017,7 +1021,7 @@ export const AdminDashboardPage: React.FC = () => {
       scaleTier: '2W_PERSONAL',
       scaleLabel: 'Micro & Personal Mobility (2W)'
     });
-    setRefreshNotification(`✓ Category "${newCat.name}" created and published live to frontend!`);
+    setRefreshNotification(`✓ Category "${newCat.name}" (${categoryKey}) created and published live to frontend!`);
     setTimeout(() => setRefreshNotification(null), 4000);
   };
 
@@ -6267,6 +6271,11 @@ export const AdminDashboardPage: React.FC = () => {
                                 <div>
                                   <div className="flex flex-wrap items-center gap-2 mb-1">
                                     <h3 className="text-lg font-black text-gray-900">{cat.name}</h3>
+                                    {cat.categoryKey && (
+                                      <span className="font-mono font-bold text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                        Key: {cat.categoryKey}
+                                      </span>
+                                    )}
                                     <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
                                       /{cat.slug}
                                     </span>
@@ -6290,6 +6299,19 @@ export const AdminDashboardPage: React.FC = () => {
 
                               {/* Actions on Primary Category */}
                               <div className="flex flex-wrap items-center gap-2 shrink-0 self-end lg:self-center">
+                                {cat.type === 'VEHICLE' && (
+                                  <a
+                                    href={`/vehicles?category=${cat.categoryKey || cat.slug}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200 flex items-center gap-1.5"
+                                    title="Open filtered customer storefront page"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    <span>Storefront ↗</span>
+                                  </a>
+                                )}
+
                                 <button
                                   onClick={() => {
                                     setSubCategoryForm(prev => ({
@@ -6304,10 +6326,10 @@ export const AdminDashboardPage: React.FC = () => {
                                     }));
                                     setIsSubCategoryModalOpen(true);
                                   }}
-                                  className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] text-xs font-bold transition-all border border-emerald-200 flex items-center gap-1.5"
+                                  className="px-3.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] text-xs font-bold transition-all border border-emerald-200 flex items-center gap-1.5 cursor-pointer"
                                 >
                                   <Plus className="w-3.5 h-3.5 text-[#16A34A]" />
-                                  <span>+ Add Category under this</span>
+                                  <span>+ Add Subcategory (Dropdown)</span>
                                 </button>
 
                                 <button
@@ -7103,9 +7125,17 @@ export const AdminDashboardPage: React.FC = () => {
                           <input
                             type="text"
                             required
-                            placeholder="e.g. Electric Motorcycles"
+                            placeholder="e.g. Electric Scooters or Electric Autos"
                             value={categoryForm.name}
-                            onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              const autoKey = val.toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+                              setCategoryForm(prev => ({
+                                ...prev,
+                                name: val,
+                                categoryKey: !prev.categoryKey || prev.categoryKey === autoKey.slice(0, -1) ? autoKey : prev.categoryKey
+                              }));
+                            }}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
                           />
                         </div>
@@ -7115,12 +7145,30 @@ export const AdminDashboardPage: React.FC = () => {
                           <input
                             type="text"
                             required
-                            placeholder="e.g. Sports & Highway Cruisers"
+                            placeholder="e.g. Urban, High-Speed & Delivery Scooters"
                             value={categoryForm.subtitle}
                             onChange={(e) => setCategoryForm({ ...categoryForm, subtitle: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
                           />
                         </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                        <label className="block text-xs font-bold text-gray-800 mb-1">
+                          Category Filter Key / URL Code * (e.g. ELECTRIC_SCOOTER)
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. ELECTRIC_SCOOTER or ELECTRIC_PASSENGER_AUTO"
+                          value={categoryForm.categoryKey}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, categoryKey: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '') })}
+                          className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-mono font-bold text-gray-900 focus:ring-2 focus:ring-[#16A34A] focus:outline-none bg-white"
+                        />
+                        <p className="text-[11px] text-gray-500 mt-1 flex items-center justify-between">
+                          <span>Storefront Filter URL:</span>
+                          <span className="font-mono text-emerald-700 font-bold">/vehicles?category={categoryForm.categoryKey || 'CATEGORY_KEY'}</span>
+                        </p>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -7319,20 +7367,38 @@ export const AdminDashboardPage: React.FC = () => {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Parent Category *</label>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5 flex items-center justify-between">
+                            <span>Select Primary Category (Dropdown) *</span>
+                            <span className="text-[10px] text-emerald-600 font-semibold">Parent Segment</span>
+                          </label>
                           <select
                             required
                             value={subCategoryForm.categoryId}
                             onChange={(e) => setSubCategoryForm({ ...subCategoryForm, categoryId: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900 bg-white"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900 bg-white shadow-xs"
                           >
-                            <option value="">-- Choose Primary Category --</option>
+                            <option value="">-- Choose Primary Category (Dropdown) --</option>
                             {categories.map((c) => (
                               <option key={c.id} value={c.id}>
-                                {c.name} ({c.type})
+                                {c.name} {c.categoryKey ? `[${c.categoryKey}]` : `[${c.slug}]`} ({c.type})
                               </option>
                             ))}
                           </select>
+                          {(() => {
+                            const selectedCat = categories.find(c => c.id === subCategoryForm.categoryId);
+                            if (!selectedCat) return null;
+                            const count = subCategories.filter(s => s.categoryId === selectedCat.id).length;
+                            return (
+                              <div className="mt-2 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200/60 flex items-center justify-between text-[11px] text-emerald-800">
+                                <span className="font-bold flex items-center gap-1">
+                                  ✓ Target: {selectedCat.name}
+                                </span>
+                                <span className="font-mono text-[10px] bg-white px-2 py-0.5 rounded border border-emerald-200">
+                                  Filter Code: {selectedCat.categoryKey || selectedCat.slug} • {count} Existing Subcategories
+                                </span>
+                              </div>
+                            );
+                          })()}
                         </div>
 
                         <div>

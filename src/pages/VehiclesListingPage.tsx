@@ -16,18 +16,29 @@ import {
 import { VEHICLES_DATA } from '../data/seedData';
 import { VehicleCard } from '../components/vehicles/VehicleCard';
 import { useLocation } from '../context/LocationContext';
-import { VehicleItem } from '../types';
+import { VehicleItem, CategoryItem, SubCategoryItem } from '../types';
+import { storage } from '../services/storageService';
 
 export const VehiclesListingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { city, pincode, openLocationModal } = useLocation();
 
+  // Dynamic Categories & SubCategories from Storage / Backend
+  const [categoriesList, setCategoriesList] = useState<CategoryItem[]>(() =>
+    storage.getCategories().filter(c => c.type === 'VEHICLE' && c.status === 'ACTIVE')
+  );
+  const [subCategoriesList, setSubCategoriesList] = useState<SubCategoryItem[]>(() =>
+    storage.getSubCategories().filter(s => s.status === 'ACTIVE')
+  );
+
   // URL Query Params Initializers
   const initialCategory = searchParams.get('category') || 'ALL';
+  const initialSubCategory = searchParams.get('subcategory') || 'ALL';
   const initialSearch = searchParams.get('search') || '';
 
   // Local Filter States
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(initialSubCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [selectedBrand, setSelectedBrand] = useState<string>('ALL');
   const [selectedUsage, setSelectedUsage] = useState<string>('ALL');
@@ -41,15 +52,26 @@ export const VehiclesListingPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('GRID');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
+  // Sync with Storage Real-Time Events
+  useEffect(() => {
+    return storage.onSync(() => {
+      setCategoriesList(storage.getCategories().filter(c => c.type === 'VEHICLE' && c.status === 'ACTIVE'));
+      setSubCategoriesList(storage.getSubCategories().filter(s => s.status === 'ACTIVE'));
+    });
+  }, []);
+
   // Sync with URL params
   useEffect(() => {
     const cat = searchParams.get('category');
     if (cat) setSelectedCategory(cat);
+    const sub = searchParams.get('subcategory');
+    if (sub) setSelectedSubCategory(sub);
     const q = searchParams.get('search');
     if (q !== null) {
       setSearchQuery(q);
       if (q.trim()) {
         setSelectedCategory('ALL');
+        setSelectedSubCategory('ALL');
         setSelectedBrand('ALL');
       }
     }
@@ -63,8 +85,47 @@ export const VehiclesListingPage: React.FC = () => {
   // Filtered & Sorted vehicles
   const filteredVehicles = useMemo(() => {
     return VEHICLES_DATA.filter((v) => {
-      // Category
-      if (selectedCategory !== 'ALL' && v.category !== selectedCategory) return false;
+      // Category Filter (supports direct key e.g. ELECTRIC_SCOOTER or slug e.g. electric-scooters)
+      if (selectedCategory !== 'ALL') {
+        const queryNorm = selectedCategory.trim().toUpperCase();
+        let match = v.category === selectedCategory || v.category.toUpperCase() === queryNorm;
+
+        if (!match) {
+          const catObj = categoriesList.find(c =>
+            (c.categoryKey && c.categoryKey.toUpperCase() === queryNorm) ||
+            c.slug.toUpperCase() === queryNorm ||
+            c.id.toUpperCase() === queryNorm ||
+            c.name.toUpperCase() === queryNorm
+          );
+
+          if (catObj) {
+            if (catObj.categoryKey && v.category === catObj.categoryKey) {
+              match = true;
+            } else if (catObj.scaleTier) {
+              if (catObj.scaleTier === '2W_PERSONAL' && v.category === 'ELECTRIC_SCOOTER') match = true;
+              if (catObj.scaleTier === '3W_COMMERCIAL' && (v.category === 'ELECTRIC_PASSENGER_AUTO' || v.category === 'ELECTRIC_CARGO_AUTO')) match = true;
+              if (catObj.scaleTier === 'LCV_TRUCKS' && v.category === 'ELECTRIC_LOADER') match = true;
+            }
+          }
+        }
+
+        if (!match) return false;
+      }
+
+      // Subcategory Filter
+      if (selectedSubCategory !== 'ALL') {
+        const subObj = subCategoriesList.find(s => s.id === selectedSubCategory || s.slug === selectedSubCategory);
+        if (subObj) {
+          const subTerm = subObj.name.toLowerCase();
+          const matchesSub =
+            v.name.toLowerCase().includes(subTerm) ||
+            v.tagline.toLowerCase().includes(subTerm) ||
+            v.description.toLowerCase().includes(subTerm) ||
+            (subObj.vehicleSegment && v.description.toLowerCase().includes(subObj.vehicleSegment.toLowerCase())) ||
+            (subObj.subsidyEligible && v.subsidyEstimate > 0);
+          if (!matchesSub) return false;
+        }
+      }
 
       // Search Query
       if (searchQuery.trim()) {
@@ -111,6 +172,9 @@ export const VehiclesListingPage: React.FC = () => {
     });
   }, [
     selectedCategory,
+    selectedSubCategory,
+    categoriesList,
+    subCategoriesList,
     searchQuery,
     selectedBrand,
     selectedUsage,
@@ -125,6 +189,7 @@ export const VehiclesListingPage: React.FC = () => {
 
   const resetAllFilters = () => {
     setSelectedCategory('ALL');
+    setSelectedSubCategory('ALL');
     setSearchQuery('');
     setSelectedBrand('ALL');
     setSelectedUsage('ALL');
@@ -139,6 +204,7 @@ export const VehiclesListingPage: React.FC = () => {
 
   const hasActiveFilters =
     selectedCategory !== 'ALL' ||
+    selectedSubCategory !== 'ALL' ||
     searchQuery.trim() !== '' ||
     selectedBrand !== 'ALL' ||
     selectedUsage !== 'ALL' ||
@@ -257,49 +323,86 @@ export const VehiclesListingPage: React.FC = () => {
 
           </div>
 
-          {/* Quick Category Buttons */}
-          <div className="flex gap-2 overflow-x-auto pb-1 text-xs font-bold">
+          {/* Quick Category Buttons (Dynamic from Storage/Backend) */}
+          <div className="flex gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
             <button
-              onClick={() => setSelectedCategory('ALL')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
-                selectedCategory === 'ALL' ? 'bg-[#14532D] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              onClick={() => {
+                setSelectedCategory('ALL');
+                setSelectedSubCategory('ALL');
+                setSearchParams({});
+              }}
+              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                selectedCategory === 'ALL' ? 'bg-[#14532D] text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
               All Categories
             </button>
-            <button
-              onClick={() => setSelectedCategory('ELECTRIC_SCOOTER')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
-                selectedCategory === 'ELECTRIC_SCOOTER' ? 'bg-[#14532D] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Electric Scooters
-            </button>
-            <button
-              onClick={() => setSelectedCategory('ELECTRIC_PASSENGER_AUTO')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
-                selectedCategory === 'ELECTRIC_PASSENGER_AUTO' ? 'bg-[#14532D] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Passenger Autos
-            </button>
-            <button
-              onClick={() => setSelectedCategory('ELECTRIC_CARGO_AUTO')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
-                selectedCategory === 'ELECTRIC_CARGO_AUTO' ? 'bg-[#14532D] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Cargo 3-Wheelers
-            </button>
-            <button
-              onClick={() => setSelectedCategory('ELECTRIC_LOADER')}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
-                selectedCategory === 'ELECTRIC_LOADER' ? 'bg-[#14532D] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              Industrial Loaders
-            </button>
+            {categoriesList.map((cat) => {
+              const catTargetKey = cat.categoryKey || cat.slug;
+              const isSelected =
+                selectedCategory === catTargetKey ||
+                selectedCategory === cat.categoryKey ||
+                selectedCategory === cat.slug ||
+                selectedCategory === cat.id;
+
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(catTargetKey);
+                    setSelectedSubCategory('ALL');
+                    setSearchParams({ category: catTargetKey });
+                  }}
+                  className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
+                    isSelected ? 'bg-[#14532D] text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
           </div>
+
+          {/* Child Subcategories Pills when a Primary Category is selected */}
+          {selectedCategory !== 'ALL' && (() => {
+            const activeCat = categoriesList.find(c =>
+              c.categoryKey === selectedCategory ||
+              c.slug === selectedCategory ||
+              c.id === selectedCategory
+            );
+            if (!activeCat) return null;
+            const childSubs = subCategoriesList.filter(s => s.categoryId === activeCat.id);
+            if (childSubs.length === 0) return null;
+
+            return (
+              <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 text-[11px] font-medium border-t border-gray-100">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0">Subcategories:</span>
+                <button
+                  onClick={() => setSelectedSubCategory('ALL')}
+                  className={`px-2.5 py-1 rounded-lg transition-all shrink-0 cursor-pointer ${
+                    selectedSubCategory === 'ALL'
+                      ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300'
+                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                  }`}
+                >
+                  All {activeCat.name}
+                </button>
+                {childSubs.map(sub => (
+                  <button
+                    key={sub.id}
+                    onClick={() => setSelectedSubCategory(sub.slug)}
+                    className={`px-2.5 py-1 rounded-lg transition-all shrink-0 cursor-pointer ${
+                      selectedSubCategory === sub.slug
+                        ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                    }`}
+                  >
+                    {sub.name}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Active Filter Chips */}
           {hasActiveFilters && (
@@ -308,7 +411,17 @@ export const VehiclesListingPage: React.FC = () => {
               {selectedCategory !== 'ALL' && (
                 <span className="inline-flex items-center gap-1 bg-emerald-50 text-[#14532D] px-2.5 py-1 rounded-lg font-semibold border border-emerald-100">
                   Category: {selectedCategory.replace('ELECTRIC_', '')}
-                  <button onClick={() => setSelectedCategory('ALL')}><X className="w-3 h-3" /></button>
+                  <button onClick={() => {
+                    setSelectedCategory('ALL');
+                    setSelectedSubCategory('ALL');
+                    setSearchParams({});
+                  }}><X className="w-3 h-3" /></button>
+                </span>
+              )}
+              {selectedSubCategory !== 'ALL' && (
+                <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-900 px-2.5 py-1 rounded-lg font-semibold border border-emerald-200">
+                  Subcategory: {selectedSubCategory}
+                  <button onClick={() => setSelectedSubCategory('ALL')}><X className="w-3 h-3" /></button>
                 </span>
               )}
               {selectedBrand !== 'ALL' && (

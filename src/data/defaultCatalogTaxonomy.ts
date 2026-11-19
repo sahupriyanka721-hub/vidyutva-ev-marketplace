@@ -2,10 +2,11 @@ import { CategoryItem, SubCategoryItem, BrandItem } from '../types';
 
 export const DEFAULT_PRIMARY_CATEGORIES: CategoryItem[] = [
   {
-    id: 'cat-2w-personal',
-    name: '2-Wheeler Electric Vehicles',
-    slug: '2-wheeler-electric',
-    subtitle: 'Urban Scooters, Motorcycles & Delivery E-Bikes',
+    id: 'cat-electric-scooters',
+    name: 'Electric Scooters',
+    slug: 'electric-scooters',
+    categoryKey: 'ELECTRIC_SCOOTER',
+    subtitle: 'Urban, High-Speed & Delivery 2-Wheelers',
     description: 'Personal, commuter, high-speed and commercial last-mile delivery 2-wheelers with smart BMS and swappable battery tech.',
     type: 'VEHICLE',
     imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80',
@@ -17,11 +18,12 @@ export const DEFAULT_PRIMARY_CATEGORIES: CategoryItem[] = [
     createdAt: '2026-01-15'
   },
   {
-    id: 'cat-3w-commercial',
-    name: '3-Wheeler Passenger & Cargo Autos',
-    slug: '3-wheeler-autos',
-    subtitle: 'E-Rickshaws, L5 Passenger & High-Payload Cargo Loaders',
-    description: 'High-earning commercial 3-wheelers for green urban passenger transport and heavy-duty logistics with ultra-low per-km running cost.',
+    id: 'cat-electric-autos',
+    name: 'Electric Autos',
+    slug: 'electric-autos',
+    categoryKey: 'ELECTRIC_PASSENGER_AUTO',
+    subtitle: 'E-Rickshaws & L5 Passenger 3-Wheelers',
+    description: 'High-earning commercial 3-wheelers for green urban passenger transport and city routes with ultra-low per-km running cost.',
     type: 'VEHICLE',
     imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     isFeatured: true,
@@ -32,33 +34,51 @@ export const DEFAULT_PRIMARY_CATEGORIES: CategoryItem[] = [
     createdAt: '2026-01-15'
   },
   {
+    id: 'cat-electric-cargo',
+    name: 'Electric Cargo Autos',
+    slug: 'electric-cargo-autos',
+    categoryKey: 'ELECTRIC_CARGO_AUTO',
+    subtitle: 'L5 Cargo & Fleet Delivery Loaders',
+    description: 'High-payload commercial 3-wheelers for intra-city logistics, delivery supply chains, and last-mile cargo transport.',
+    type: 'VEHICLE',
+    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
+    isFeatured: true,
+    status: 'ACTIVE',
+    displayOrder: 3,
+    scaleTier: '3W_COMMERCIAL',
+    scaleLabel: 'Commercial Cargo 3-Wheeler',
+    createdAt: '2026-01-15'
+  },
+  {
+    id: 'cat-electric-loaders',
+    name: 'Electric Loaders & Trucks',
+    slug: 'electric-loaders',
+    categoryKey: 'ELECTRIC_LOADER',
+    subtitle: '1-Ton to 2.5-Ton Intra-City Delivery & Logistics Haulers',
+    description: 'Purpose-built electric mini-trucks and delivery vans engineered for FMCG, e-commerce hubs, cold storage, and zero-emission urban supply chains.',
+    type: 'VEHICLE',
+    imageUrl: 'https://images.unsplash.com/photo-1580674684081-7617fbf3d745?auto=format&fit=crop&w=600&q=80',
+    isFeatured: true,
+    status: 'ACTIVE',
+    displayOrder: 4,
+    scaleTier: 'LCV_TRUCKS',
+    scaleLabel: 'Commercial Fleet & LCV Mini-Trucks',
+    createdAt: '2026-01-15'
+  },
+  {
     id: 'cat-4w-personal',
     name: '4-Wheeler Passenger Cars & SUVs',
     slug: '4-wheeler-passenger',
+    categoryKey: 'ELECTRIC_PASSENGER_4W',
     subtitle: 'Electric Hatchbacks, Compact SUVs & Fleet Sedans',
     description: 'Advanced zero-emission passenger cars, family electric SUVs, and high-efficiency commercial taxi fleet vehicles with 300+ km range.',
     type: 'VEHICLE',
     imageUrl: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=600&q=80',
     isFeatured: true,
     status: 'ACTIVE',
-    displayOrder: 3,
+    displayOrder: 5,
     scaleTier: '4W_PASSENGER',
     scaleLabel: 'Passenger Electric Cars (4W)',
-    createdAt: '2026-01-15'
-  },
-  {
-    id: 'cat-lcv-trucks',
-    name: 'Light Commercial Electric Trucks (LCV)',
-    slug: 'light-commercial-trucks',
-    subtitle: '1-Ton to 2.5-Ton Intra-City Delivery & Logistics Haulers',
-    description: 'Purpose-built electric mini-trucks and delivery vans engineered for FMCG, e-commerce hubs, cold storage, and zero-emission urban supply chains.',
-    type: 'VEHICLE',
-    imageUrl: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80',
-    isFeatured: true,
-    status: 'ACTIVE',
-    displayOrder: 4,
-    scaleTier: 'LCV_TRUCKS',
-    scaleLabel: 'Commercial Fleet & LCV Mini-Trucks',
     createdAt: '2026-01-15'
   },
   {
@@ -139,11 +159,11 @@ export const DEFAULT_PRIMARY_CATEGORIES: CategoryItem[] = [
 ];
 
 export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
-  // 2-Wheeler
+  // 2-Wheeler (Electric Scooters)
   {
     id: 'sub-2w-highspeed',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'High-Speed Performance Scooters',
     slug: 'high-speed-scooters',
     description: 'Top speed 85-115 km/h, dual hydraulic disc brakes, fast charging support',
@@ -156,8 +176,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-2w-commuter',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'Family City Commuter Scooters',
     slug: 'city-commuter-scooters',
     description: 'Comfortable flat floorboard, 34L boot space, 100+ km real-world family range',
@@ -170,8 +190,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-2w-nonrto',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'Low-Speed Non-RTO Scooters',
     slug: 'non-rto-scooters',
     description: '25 km/h capped speed, no driving license or RTO registration required (AIS-049)',
@@ -184,8 +204,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-2w-motorcycle',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'Electric Sports & Commuter Motorcycles',
     slug: 'electric-motorcycles',
     description: 'High-torque mid-drive PMSM powertrain, dual-channel ABS, highway cruising ability',
@@ -198,8 +218,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-2w-delivery',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'B2B Delivery & Swappable Cargo E-Bikes',
     slug: 'swappable-delivery-bikes',
     description: 'Reinforced 65kg heavy rear carrier, dual quick-swappable battery trays for delivery fleets',
@@ -212,8 +232,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-2w-pedelec',
-    categoryId: 'cat-2w-personal',
-    categoryName: '2-Wheeler Electric Vehicles',
+    categoryId: 'cat-electric-scooters',
+    categoryName: 'Electric Scooters',
     name: 'Foldable Electric Cycles & Micro-Pedelecs',
     slug: 'electric-cycles',
     description: 'Pedal-assist with 36V removable lithium battery, ultra-lightweight city mobility',
@@ -225,11 +245,11 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
     createdAt: '2026-01-20'
   },
 
-  // 3-Wheeler
+  // 3-Wheeler (Electric Autos)
   {
     id: 'sub-3w-erickshaw',
-    categoryId: 'cat-3w-commercial',
-    categoryName: '3-Wheeler Passenger & Cargo Autos',
+    categoryId: 'cat-electric-autos',
+    categoryName: 'Electric Autos',
     name: 'Passenger E-Rickshaws (4+1 Seater)',
     slug: 'passenger-e-rickshaws',
     description: 'Economical city feeder passenger rickshaws with low operating cost of ₹0.30 per km',
@@ -242,8 +262,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-3w-l5m',
-    categoryId: 'cat-3w-commercial',
-    categoryName: '3-Wheeler Passenger & Cargo Autos',
+    categoryId: 'cat-electric-autos',
+    categoryName: 'Electric Autos',
     name: 'High-Speed L5M Passenger Electric Autos',
     slug: 'l5m-passenger-autos',
     description: 'Automotive grade suspension, 55 km/h top speed, AIS-028 certified safety roll cage',
@@ -256,8 +276,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-3w-delivery-box',
-    categoryId: 'cat-3w-commercial',
-    categoryName: '3-Wheeler Passenger & Cargo Autos',
+    categoryId: 'cat-electric-cargo',
+    categoryName: 'Electric Cargo Autos',
     name: 'Closed Box Cargo 3-Wheelers',
     slug: 'delivery-box-cargo-3w',
     description: 'Weatherproof high-cube container box for courier, parcel, and FMCG retail distribution',
@@ -270,8 +290,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-3w-flatbed',
-    categoryId: 'cat-3w-commercial',
-    categoryName: '3-Wheeler Passenger & Cargo Autos',
+    categoryId: 'cat-electric-cargo',
+    categoryName: 'Electric Cargo Autos',
     name: 'Open Flatbed Heavy E-Loaders',
     slug: 'flatbed-loaders-3w',
     description: 'Reinforced tubular steel chassis with drop-side panels for heavy industrial material haulage',
@@ -284,8 +304,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-3w-tipper',
-    categoryId: 'cat-3w-commercial',
-    categoryName: '3-Wheeler Passenger & Cargo Autos',
+    categoryId: 'cat-electric-cargo',
+    categoryName: 'Electric Cargo Autos',
     name: 'Hydraulic Tipper / Municipal Waste 3W',
     slug: 'hydraulic-tipper-3w',
     description: 'Twin compartment electro-hydraulic tipping hopper for municipal solid waste collection',
@@ -355,11 +375,11 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
     createdAt: '2026-01-20'
   },
 
-  // LCV Trucks
+  // LCV Loaders & Trucks
   {
     id: 'sub-lcv-mini-truck',
-    categoryId: 'cat-lcv-trucks',
-    categoryName: 'Light Commercial Electric Trucks (LCV)',
+    categoryId: 'cat-electric-loaders',
+    categoryName: 'Electric Loaders & Trucks',
     name: 'Mini Electric Cargo Trucks (1 to 1.5-Ton)',
     slug: 'mini-electric-cargo-trucks',
     description: 'Tata Ace EV class commercial mini-trucks for city distribution with 150 km range and fast DC capability',
@@ -372,8 +392,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-lcv-cold-chain',
-    categoryId: 'cat-lcv-trucks',
-    categoryName: 'Light Commercial Electric Trucks (LCV)',
+    categoryId: 'cat-electric-loaders',
+    categoryName: 'Electric Loaders & Trucks',
     name: 'Insulated Cold-Chain & Refrigerated LCVs',
     slug: 'refrigerated-cold-chain-lcv',
     description: 'Active battery-powered refrigeration unit (-20°C to +15°C) for pharmaceuticals, milk and frozen foods',
@@ -386,8 +406,8 @@ export const DEFAULT_SUBCATEGORIES: SubCategoryItem[] = [
   },
   {
     id: 'sub-lcv-heavy-2t',
-    categoryId: 'cat-lcv-trucks',
-    categoryName: 'Light Commercial Electric Trucks (LCV)',
+    categoryId: 'cat-electric-loaders',
+    categoryName: 'Electric Loaders & Trucks',
     name: 'Flatbed LCV Transporters (2-Ton to 2.5-Ton)',
     slug: 'flatbed-transporter-lcv-2t',
     description: 'Heavy duty twin-rear wheel intra-city cargo platform with regenerative heavy braking system',

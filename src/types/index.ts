@@ -4,7 +4,8 @@ export type VehicleCategoryType =
   | 'ELECTRIC_SCOOTER'
   | 'ELECTRIC_PASSENGER_AUTO'
   | 'ELECTRIC_CARGO_AUTO'
-  | 'ELECTRIC_LOADER';
+  | 'ELECTRIC_LOADER'
+  | (string & {});
 
 export type VehicleUsageType = 'PERSONAL' | 'COMMERCIAL' | 'FLEET';
 
@@ -385,6 +386,7 @@ export interface CategoryItem {
   id: string;
   name: string;
   slug: string;
+  categoryKey?: string;
   subtitle: string;
   description: string;
   type: 'VEHICLE' | 'SPARE_PART' | 'SERVICE' | 'ACCESSORY';
