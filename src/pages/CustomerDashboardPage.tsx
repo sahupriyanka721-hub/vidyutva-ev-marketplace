@@ -511,52 +511,108 @@ export const CustomerDashboardPage: React.FC = () => {
                   </div>
                 ))}
 
-                {/* Reschedule Modal */}
+                {/* Reschedule Full-Screen Studio */}
                 {rescheduleData && (
-                  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                      <h3 className="text-base font-bold text-gray-900">Reschedule Test Drive Slot</h3>
-                      <form onSubmit={handleRescheduleTestDrive} className="space-y-3 text-xs">
+                  <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                    {/* Top Sticky Header */}
+                    <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setRescheduleData(null)}
+                          className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
+                        >
+                          <span>← Back</span>
+                        </button>
                         <div>
-                          <label className="block font-bold text-gray-700 mb-1">New Date</label>
-                          <input
-                            type="date"
-                            required
-                            min={new Date().toISOString().split('T')[0]}
-                            value={rescheduleData.date}
-                            onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
-                            className="w-full p-2 border rounded-xl"
-                          />
+                          <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                            Test Drive Management
+                          </div>
+                          <h2 className="text-base sm:text-lg font-black text-white">
+                            Reschedule Test Drive Slot
+                          </h2>
                         </div>
-                        <div>
-                          <label className="block font-bold text-gray-700 mb-1">New Time Slot</label>
-                          <select
-                            value={rescheduleData.slot}
-                            onChange={(e) => setRescheduleData({ ...rescheduleData, slot: e.target.value })}
-                            className="w-full p-2 border rounded-xl"
-                          >
-                            <option value="10:00 AM - 11:30 AM">10:00 AM - 11:30 AM</option>
-                            <option value="11:30 AM - 01:00 PM">11:30 AM - 01:00 PM</option>
-                            <option value="02:00 PM - 03:30 PM">02:00 PM - 03:30 PM</option>
-                            <option value="04:00 PM - 05:30 PM">04:00 PM - 05:30 PM</option>
-                          </select>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setRescheduleData(null)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleRescheduleTestDrive(e as any)}
+                          className="px-5 py-2 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                        >
+                          Confirm Reschedule
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content Body */}
+                    <div className="flex-1 p-6 sm:p-10 max-w-2xl mx-auto w-full">
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                        <div className="border-b border-gray-100 pb-4">
+                          <h3 className="text-base font-bold text-gray-900">Select Date & Time Window</h3>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            Pick an upcoming date and convenient slot for your dealership or doorstep EV test drive.
+                          </p>
                         </div>
-                        <div className="flex justify-end gap-2 pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setRescheduleData(null)}
-                            className="px-4 py-2 bg-gray-100 rounded-xl font-bold"
-                          >
-                            Close
-                          </button>
-                          <button
-                            type="submit"
-                            className="px-4 py-2 bg-[#14532D] text-white rounded-xl font-bold"
-                          >
-                            Confirm Reschedule
-                          </button>
-                        </div>
-                      </form>
+
+                        <form onSubmit={handleRescheduleTestDrive} className="space-y-4 text-xs">
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1.5">New Preferred Date *</label>
+                            <input
+                              type="date"
+                              required
+                              min={new Date().toISOString().split('T')[0]}
+                              value={rescheduleData.date}
+                              onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1.5">New Time Slot *</label>
+                            <select
+                              value={rescheduleData.slot}
+                              onChange={(e) => setRescheduleData({ ...rescheduleData, slot: e.target.value })}
+                              className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium bg-white"
+                            >
+                              <option value="10:00 AM - 11:30 AM">10:00 AM - 11:30 AM (Morning Slot)</option>
+                              <option value="11:30 AM - 01:00 PM">11:30 AM - 01:00 PM (Noon Slot)</option>
+                              <option value="02:00 PM - 03:30 PM">02:00 PM - 03:30 PM (Afternoon Slot)</option>
+                              <option value="04:00 PM - 05:30 PM">04:00 PM - 05:30 PM (Evening Slot)</option>
+                            </select>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 space-y-1">
+                            <strong className="block font-bold">ℹ️ Instant Confirmation:</strong>
+                            <p className="text-[11px] leading-relaxed text-blue-800">
+                              Your rescheduled slot will be instantly synchronized with the showroom EV advisor. An SMS confirmation will be sent to your registered phone.
+                            </p>
+                          </div>
+
+                          <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                            <button
+                              type="button"
+                              onClick={() => setRescheduleData(null)}
+                              className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all cursor-pointer"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="submit"
+                              className="px-6 py-2.5 bg-[#16A34A] hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-md cursor-pointer"
+                            >
+                              Confirm Reschedule
+                            </button>
+                          </div>
+                        </form>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -838,109 +894,194 @@ export const CustomerDashboardPage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Add Address Modal */}
+                {/* Add Address Full-Screen Studio */}
                 {newAddressModal && (
-                  <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-                      <h3 className="text-base font-bold text-gray-900">Add New Address</h3>
-                      <form onSubmit={handleAddAddressSubmit} className="space-y-3 text-xs">
+                  <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                    {/* Top Sticky Header */}
+                    <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setNewAddressModal(false)}
+                          className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
+                        >
+                          <span>← Back</span>
+                        </button>
                         <div>
-                          <label className="block font-bold text-gray-700 mb-1">Label</label>
-                          <select
-                            value={addressForm.label}
-                            onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value as any })}
-                            className="w-full p-2 border rounded-xl"
-                          >
-                            <option value="HOME">Home</option>
-                            <option value="OFFICE">Office</option>
-                            <option value="DEALERSHIP_PICKUP">Workshop / Warehouse</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block font-bold text-gray-700 mb-1">Street Address</label>
-                          <input
-                            type="text"
-                            required
-                            value={addressForm.line1}
-                            onChange={(e) => setAddressForm({ ...addressForm, line1: e.target.value })}
-                            className="w-full p-2 border rounded-xl"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="block font-bold text-gray-700 mb-1">City</label>
-                            <input
-                              type="text"
-                              list="dashboard-cities-list"
-                              required
-                              placeholder="e.g. Darbhanga, Patna..."
-                              value={addressForm.city}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                const trimmed = val.trim();
-                                if (trimmed.length >= 2) {
-                                  const entry = lookupCityOrPincode(trimmed);
-                                  if (entry && entry.pincode && !entry.city.startsWith('PIN ')) {
-                                    setAddressForm(prev => ({
-                                      ...prev,
-                                      city: val,
-                                      pincode: entry.pincode,
-                                      state: entry.state || prev.state
-                                    }));
-                                    return;
-                                  }
-                                }
-                                setAddressForm(prev => ({ ...prev, city: val }));
-                              }}
-                              className="w-full p-2 border rounded-xl"
-                            />
-                            <datalist id="dashboard-cities-list">
-                              {ALL_INDIAN_CITIES.map((c) => (
-                                <option key={`dash-${c.city}-${c.pincode}`} value={c.city}>
-                                  {c.city} ({c.state} - {c.pincode})
-                                </option>
-                              ))}
-                            </datalist>
+                          <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                            Saved Addresses Management
                           </div>
-                          <div>
-                            <label className="block font-bold text-gray-700 mb-1">PIN Code</label>
-                            <input
-                              type="text"
-                              maxLength={6}
-                              required
-                              placeholder="6-digit PIN"
-                              value={addressForm.pincode}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                                if (val.length === 6) {
-                                  const entry = lookupCityOrPincode(val);
-                                  if (entry && entry.city && !entry.city.startsWith('PIN ') && !addressForm.city) {
-                                    setAddressForm(prev => ({ ...prev, pincode: val, city: entry.city, state: entry.state || prev.state }));
-                                    return;
-                                  }
-                                }
-                                setAddressForm(prev => ({ ...prev, pincode: val }));
-                              }}
-                              className="w-full p-2 border rounded-xl font-mono"
-                            />
+                          <h2 className="text-base sm:text-lg font-black text-white">
+                            Add New Delivery & Service Location
+                          </h2>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setNewAddressModal(false)}
+                          className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleAddAddressSubmit(e as any)}
+                          className="px-5 py-2 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md cursor-pointer"
+                        >
+                          Save Address
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Content Body */}
+                    <div className="flex-1 p-6 sm:p-10 max-w-4xl mx-auto w-full">
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Form Inputs */}
+                        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-5">
+                          <div className="border-b border-gray-100 pb-4">
+                            <h3 className="text-base font-bold text-gray-900">Address Information</h3>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              This address will be available for quick checkout on genuine spare parts and doorstep EV mobile service vans.
+                            </p>
+                          </div>
+
+                          <form onSubmit={handleAddAddressSubmit} className="space-y-4 text-xs">
+                            <div>
+                              <label className="block text-xs font-bold text-gray-700 mb-1.5">Address Type / Label *</label>
+                              <select
+                                value={addressForm.label}
+                                onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value as any })}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium bg-white"
+                              >
+                                <option value="HOME">Home (Residential Delivery)</option>
+                                <option value="OFFICE">Office (Commercial Premise)</option>
+                                <option value="DEALERSHIP_PICKUP">Workshop / Fleet Warehouse</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-bold text-gray-700 mb-1.5">Street Address & Landmark *</label>
+                              <input
+                                type="text"
+                                required
+                                placeholder="Flat, Building No., Street, Landmark..."
+                                value={addressForm.line1}
+                                onChange={(e) => setAddressForm({ ...addressForm, line1: e.target.value })}
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5">City / District *</label>
+                                <input
+                                  type="text"
+                                  list="dashboard-cities-list-full"
+                                  required
+                                  placeholder="e.g. Darbhanga, Patna..."
+                                  value={addressForm.city}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    const trimmed = val.trim();
+                                    if (trimmed.length >= 2) {
+                                      const entry = lookupCityOrPincode(trimmed);
+                                      if (entry && entry.pincode && !entry.city.startsWith('PIN ')) {
+                                        setAddressForm(prev => ({
+                                          ...prev,
+                                          city: val,
+                                          pincode: entry.pincode,
+                                          state: entry.state || prev.state
+                                        }));
+                                        return;
+                                      }
+                                    }
+                                    setAddressForm(prev => ({ ...prev, city: val }));
+                                  }}
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                                />
+                                <datalist id="dashboard-cities-list-full">
+                                  {ALL_INDIAN_CITIES.map((c) => (
+                                    <option key={`dash-full-${c.city}-${c.pincode}`} value={c.city}>
+                                      {c.city} ({c.state} - {c.pincode})
+                                    </option>
+                                  ))}
+                                </datalist>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5">PIN Code *</label>
+                                <input
+                                  type="text"
+                                  maxLength={6}
+                                  required
+                                  placeholder="6-digit PIN"
+                                  value={addressForm.pincode}
+                                  onChange={(e) => {
+                                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                                    if (val.length === 6) {
+                                      const entry = lookupCityOrPincode(val);
+                                      if (entry && entry.city && !entry.city.startsWith('PIN ') && !addressForm.city) {
+                                        setAddressForm(prev => ({ ...prev, pincode: val, city: entry.city, state: entry.state || prev.state }));
+                                        return;
+                                      }
+                                    }
+                                    setAddressForm(prev => ({ ...prev, pincode: val }));
+                                  }}
+                                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-[#16A34A] focus:outline-none"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-4 border-t border-gray-100">
+                              <button
+                                type="button"
+                                onClick={() => setNewAddressModal(false)}
+                                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-all cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-6 py-2.5 bg-[#16A34A] hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-md cursor-pointer"
+                              >
+                                Save Location
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+
+                        {/* Preview Card */}
+                        <div className="space-y-4">
+                          <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                              Live Address Card Preview
+                            </h4>
+                            <div className="p-4 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-gray-700 space-y-2">
+                              <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] uppercase font-bold inline-block">
+                                {addressForm.label}
+                              </span>
+                              <p className="font-bold text-gray-900 text-sm">
+                                {user?.fullName || 'Customer Name'}
+                              </p>
+                              <p className="text-gray-600 leading-relaxed">
+                                {addressForm.line1 || 'Street address line will appear here...'}
+                              </p>
+                              <p className="text-gray-500 font-mono text-[11px]">
+                                {addressForm.city || 'City'}, {addressForm.state || 'State'} - {addressForm.pincode || 'PIN'}
+                              </p>
+                            </div>
+
+                            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-900 space-y-1">
+                              <strong className="block font-bold">🚚 Serviceability Note:</strong>
+                              <p className="text-[11px] leading-relaxed text-emerald-800">
+                                Verified PIN codes automatically enable next-day courier delivery and priority doorstep van allocation.
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex justify-end gap-2 pt-2">
-                          <button
-                            type="button"
-                            onClick={() => setNewAddressModal(false)}
-                            className="px-4 py-2 bg-gray-100 rounded-xl font-bold"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            className="px-4 py-2 bg-[#14532D] text-white rounded-xl font-bold"
-                          >
-                            Save Address
-                          </button>
-                        </div>
-                      </form>
+                      </div>
                     </div>
                   </div>
                 )}

@@ -7043,354 +7043,624 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
 
-            {/* MODALS */}
-            {/* 1. Create Category Modal */}
+            {/* 1. Create Category Full-Screen Studio */}
             {isCategoryModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative max-h-[90vh] overflow-y-auto">
-                  <button
-                    onClick={() => setIsCategoryModalOpen(false)}
-                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-gray-900">Create New Primary Category</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      This primary category will be immediately published to the live Homepage and Header catalog.
-                    </p>
+              <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                {/* Full Screen Top Nav Header */}
+                <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryModalOpen(false)}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
+                    >
+                      <span>← Back</span>
+                    </button>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                        Master Catalog Architecture / New Segment
+                      </div>
+                      <h2 className="text-base sm:text-lg font-black text-white">
+                        Create New Primary EV Category
+                      </h2>
+                    </div>
                   </div>
 
-                  <form onSubmit={handleCreateCategory} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Primary Title *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Electric Motorcycles"
-                        value={categoryForm.name}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoryModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCreateCategory(e as any)}
+                      className="px-5 py-2 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Publish Category</span>
+                    </button>
+                  </div>
+                </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Subtitle / Tagline *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Sports & Highway Cruisers"
-                        value={categoryForm.subtitle}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, subtitle: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
+                {/* Full Screen Content Body */}
+                <div className="flex-1 p-6 sm:p-10 max-w-6xl mx-auto w-full">
+                  <form onSubmit={handleCreateCategory} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left 2 Cols: Form Inputs */}
+                    <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-5">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h3 className="text-base font-bold text-gray-900">Category Specifications</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Configure the title, scale tier, segment classification, and live storefront display parameters.
+                        </p>
+                      </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Catalog Section Type *</label>
-                        <select
-                          value={categoryForm.type}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, type: e.target.value as any })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                        >
-                          <option value="VEHICLE">Electric Vehicles</option>
-                          <option value="SPARE_PART">Genuine Spare Parts</option>
-                          <option value="SERVICE">Doorstep Services</option>
-                          <option value="ACCESSORY">EV Accessories</option>
-                        </select>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Primary Title *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Electric Motorcycles"
+                            value={categoryForm.name}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Subtitle / Tagline *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Sports & Highway Cruisers"
+                            value={categoryForm.subtitle}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, subtitle: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Catalog Section Type *</label>
+                          <select
+                            value={categoryForm.type}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, type: e.target.value as any })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium bg-white"
+                          >
+                            <option value="VEHICLE">Electric Vehicles</option>
+                            <option value="SPARE_PART">Genuine Spare Parts</option>
+                            <option value="SERVICE">Doorstep Services</option>
+                            <option value="ACCESSORY">EV Accessories</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Vehicle Scale & Segment Tier</label>
+                          <select
+                            value={categoryForm.scaleTier || '2W_PERSONAL'}
+                            onChange={(e) => {
+                              const val = e.target.value as any;
+                              const labels: Record<string, string> = {
+                                '2W_PERSONAL': 'Micro & Personal Mobility (2W)',
+                                '3W_COMMERCIAL': 'Light Commercial 3-Wheeler (L5)',
+                                '4W_PASSENGER': 'Passenger Electric Cars (4W)',
+                                'LCV_TRUCKS': 'Commercial Fleet & LCV Mini-Trucks',
+                                'HEAVY_COMMERCIAL': 'Heavy Commercial & Public Transit',
+                                'SPECIAL_INDUSTRIAL': 'Agricultural, Industrial & Special EVs',
+                                'BATTERY_STORAGE': 'Energy Storage & Swappable Battery Tech',
+                                'CHARGING_INFRA': 'Charging Network & Infrastructure',
+                                'SPARE_COMPONENTS': 'OEM Components & ARAI Retrofit Kits'
+                              };
+                              setCategoryForm({ ...categoryForm, scaleTier: val, scaleLabel: labels[val] || val });
+                            }}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium bg-white"
+                          >
+                            <option value="2W_PERSONAL">2-Wheeler (Micro & Personal Mobility)</option>
+                            <option value="3W_COMMERCIAL">3-Wheeler (L5 Commercial Passenger & Cargo)</option>
+                            <option value="4W_PASSENGER">4-Wheeler (Passenger Cars, SUVs & Cabs)</option>
+                            <option value="LCV_TRUCKS">LCV (Mini-Trucks & Delivery Vans)</option>
+                            <option value="HEAVY_COMMERCIAL">Heavy Commercial (Buses & Mining Tippers)</option>
+                            <option value="SPECIAL_INDUSTRIAL">Special EVs (Tractors, Forklifts & Campus)</option>
+                            <option value="BATTERY_STORAGE">Battery Packs & Energy Storage</option>
+                            <option value="CHARGING_INFRA">Charging Stations & Infrastructure</option>
+                            <option value="SPARE_COMPONENTS">OEM Spare Parts & Retrofit Kits</option>
+                          </select>
+                        </div>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Cover Image URL</label>
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Cover Image URL</label>
                         <input
                           type="url"
                           placeholder="https://images.unsplash.com/..."
                           value={categoryForm.imageUrl}
                           onChange={(e) => setCategoryForm({ ...categoryForm, imageUrl: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Vehicle Scale & Segment Tier</label>
-                      <select
-                        value={categoryForm.scaleTier || '2W_PERSONAL'}
-                        onChange={(e) => {
-                          const val = e.target.value as any;
-                          const labels: Record<string, string> = {
-                            '2W_PERSONAL': 'Micro & Personal Mobility (2W)',
-                            '3W_COMMERCIAL': 'Light Commercial 3-Wheeler (L5)',
-                            '4W_PASSENGER': 'Passenger Electric Cars (4W)',
-                            'LCV_TRUCKS': 'Commercial Fleet & LCV Mini-Trucks',
-                            'HEAVY_COMMERCIAL': 'Heavy Commercial & Public Transit',
-                            'SPECIAL_INDUSTRIAL': 'Agricultural, Industrial & Special EVs',
-                            'BATTERY_STORAGE': 'Energy Storage & Swappable Battery Tech',
-                            'CHARGING_INFRA': 'Charging Network & Infrastructure',
-                            'SPARE_COMPONENTS': 'OEM Components & ARAI Retrofit Kits'
-                          };
-                          setCategoryForm({ ...categoryForm, scaleTier: val, scaleLabel: labels[val] || val });
-                        }}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      >
-                        <option value="2W_PERSONAL">2-Wheeler (Micro & Personal Mobility)</option>
-                        <option value="3W_COMMERCIAL">3-Wheeler (L5 Commercial Passenger & Cargo)</option>
-                        <option value="4W_PASSENGER">4-Wheeler (Passenger Cars, SUVs & Cabs)</option>
-                        <option value="LCV_TRUCKS">LCV (Mini-Trucks & Delivery Vans)</option>
-                        <option value="HEAVY_COMMERCIAL">Heavy Commercial (Buses & Mining Tippers)</option>
-                        <option value="SPECIAL_INDUSTRIAL">Special EVs (Tractors, Forklifts & Campus)</option>
-                        <option value="BATTERY_STORAGE">Battery Packs & Energy Storage</option>
-                        <option value="CHARGING_INFRA">Charging Stations & Infrastructure</option>
-                        <option value="SPARE_COMPONENTS">OEM Spare Parts & Retrofit Kits</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Detailed Description</label>
-                      <textarea
-                        rows={2}
-                        placeholder="Describe the vehicle or parts segment for search engines and customers..."
-                        value={categoryForm.description}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium resize-none"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-2 pt-1">
-                      <input
-                        type="checkbox"
-                        id="featuredCat"
-                        checked={categoryForm.isFeatured}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, isFeatured: e.target.checked })}
-                        className="w-4 h-4 text-emerald-600 rounded"
-                      />
-                      <label htmlFor="featuredCat" className="text-xs font-bold text-gray-700 cursor-pointer">
-                        Feature this Category on Homepage "Shop by Category" Grid
-                      </label>
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4 text-[#B7F34A]" />
-                      <span>Create Primary & Publish Live</span>
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
-
-            {/* 2. Create Sub-Category Modal */}
-            {isSubCategoryModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative">
-                  <button
-                    onClick={() => setIsSubCategoryModalOpen(false)}
-                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-gray-900">Add New Category</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Link a specific model type or component sub-division to an existing primary category.
-                    </p>
-                  </div>
-
-                  <form onSubmit={handleCreateSubCategory} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Select Primary Category *</label>
-                      <select
-                        required
-                        value={subCategoryForm.categoryId}
-                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, categoryId: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900"
-                      >
-                        <option value="">-- Choose Primary Category --</option>
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} ({c.type})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Category Name *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Swappable Battery Commuters"
-                        value={subCategoryForm.name}
-                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Vehicle Segment / Scale Code</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. L2 High-Speed, L5M Auto, 1.5T Mini-Truck"
-                          value={subCategoryForm.vehicleSegment}
-                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, vehicleSegment: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Speed / Certified Range</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. 85 km/h • 140 km Range"
-                          value={subCategoryForm.speedRangeTier}
-                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, speedRangeTier: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Seating / Payload Capacity</label>
-                        <input
-                          type="text"
-                          placeholder="e.g. 4+1 Passengers, 1.5-Ton Payload"
-                          value={subCategoryForm.typicalPayloadOrSeats}
-                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, typicalPayloadOrSeats: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Detailed Description</label>
+                        <textarea
+                          rows={4}
+                          placeholder="Describe the vehicle or parts segment for search engines and customers..."
+                          value={categoryForm.description}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium resize-none"
                         />
                       </div>
 
-                      <div className="flex items-center gap-2 pt-6">
+                      <div className="flex items-center gap-2 pt-2">
                         <input
                           type="checkbox"
-                          id="subsidyEligibleCheck"
-                          checked={subCategoryForm.subsidyEligible}
-                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, subsidyEligible: e.target.checked })}
+                          id="featuredCatFull"
+                          checked={categoryForm.isFeatured}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, isFeatured: e.target.checked })}
                           className="w-4 h-4 text-emerald-600 rounded"
                         />
-                        <label htmlFor="subsidyEligibleCheck" className="text-xs font-bold text-gray-700 cursor-pointer">
-                          PM E-DRIVE Subsidy Eligible
+                        <label htmlFor="featuredCatFull" className="text-xs font-bold text-gray-700 cursor-pointer">
+                          Feature this Category on Homepage "Shop by Category" Grid
                         </label>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Description *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Dual battery compartments, AIS-156 safety certified"
-                        value={subCategoryForm.description}
-                        onChange={(e) => setSubCategoryForm({ ...subCategoryForm, description: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
+                    {/* Right 1 Col: Live Preview Card */}
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          Live Storefront Preview
+                        </h4>
+                        <div className="rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 shadow-xs">
+                          <img
+                            src={categoryForm.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80'}
+                            alt="Category Preview"
+                            className="w-full h-44 object-cover"
+                          />
+                          <div className="p-4 space-y-1">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                              {categoryForm.type}
+                            </span>
+                            <h4 className="text-sm font-black text-gray-900 mt-1">
+                              {categoryForm.name || 'Category Name'}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {categoryForm.subtitle || 'Category Subtitle / Tagline'}
+                            </p>
+                          </div>
+                        </div>
 
-                    <button
-                      type="submit"
-                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
-                    >
-                      <Plus className="w-4 h-4 text-[#B7F34A]" />
-                      <span>Create Category</span>
-                    </button>
+                        <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 space-y-1">
+                          <strong className="block font-bold">ℹ️ Enterprise Architecture Tip:</strong>
+                          <p className="text-[11px] leading-relaxed text-blue-800">
+                            Saving this category creates a top-level taxonomy node in the catalog. You can immediately attach specialized vehicle subcategories and certified OEM brands under it.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="flex-1 py-3.5 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4 text-[#B7F34A]" />
+                          <span>Publish Category Live</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsCategoryModalOpen(false)}
+                          className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-2xl transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </form>
                 </div>
               </div>
             )}
 
-            {/* 3. Create Brand Modal */}
-            {isBrandModalOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-                <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-200 relative max-h-[90vh] overflow-y-auto">
-                  <button
-                    onClick={() => setIsBrandModalOpen(false)}
-                    className="absolute right-5 top-5 p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  <div className="mb-6">
-                    <h3 className="text-xl font-black text-gray-900">Register OEM Brand Partner</h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Register an electric vehicle manufacturer, component OEM, or battery partner for the live brand showcase.
-                    </p>
+            {/* 2. Create Sub-Category Full-Screen Studio */}
+            {isSubCategoryModalOpen && (
+              <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                {/* Full Screen Top Nav Header */}
+                <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsSubCategoryModalOpen(false)}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
+                    >
+                      <span>← Back</span>
+                    </button>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                        Master Catalog Architecture / Vehicle Tier
+                      </div>
+                      <h2 className="text-base sm:text-lg font-black text-white">
+                        Create EV Subcategory & Segment Tier
+                      </h2>
+                    </div>
                   </div>
 
-                  <form onSubmit={handleCreateBrand} className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Brand Name *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Hero Electric"
-                          value={brandForm.name}
-                          onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">Origin City / Hub *</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Gurugram, India"
-                          value={brandForm.origin}
-                          onChange={(e) => setBrandForm({ ...brandForm, origin: e.target.value })}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Brand Logo Image URL</label>
-                      <input
-                        type="url"
-                        placeholder="https://images.unsplash.com/... or brand logo URL"
-                        value={brandForm.logoUrl}
-                        onChange={(e) => setBrandForm({ ...brandForm, logoUrl: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Official Website</label>
-                      <input
-                        type="url"
-                        placeholder="https://www.brand-website.com"
-                        value={brandForm.website}
-                        onChange={(e) => setBrandForm({ ...brandForm, website: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 mb-1">Warranty SLA Guarantee *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. 3 Years / 40,000 km Warranty"
-                        value={brandForm.warrantyPeriod}
-                        onChange={(e) => setBrandForm({ ...brandForm, warrantyPeriod: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
-                      />
-                    </div>
-
+                  <div className="flex items-center gap-2">
                     <button
-                      type="submit"
-                      className="w-full py-3 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                      type="button"
+                      onClick={() => setIsSubCategoryModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCreateSubCategory(e as any)}
+                      className="px-5 py-2 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Publish Subcategory</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Full Screen Content Body */}
+                <div className="flex-1 p-6 sm:p-10 max-w-6xl mx-auto w-full">
+                  <form onSubmit={handleCreateSubCategory} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left 2 Cols: Form Inputs */}
+                    <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-5">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h3 className="text-base font-bold text-gray-900">Subcategory & Segment Configuration</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Link a specific model class, powertrain scale, or payload configuration under an active parent category.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Parent Category *</label>
+                          <select
+                            required
+                            value={subCategoryForm.categoryId}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, categoryId: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold text-gray-900 bg-white"
+                          >
+                            <option value="">-- Choose Primary Category --</option>
+                            {categories.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.name} ({c.type})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Subcategory Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Swappable Battery Commuters"
+                            value={subCategoryForm.name}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, name: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Vehicle Segment / Regulatory Class</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. L2 High-Speed, L5M Auto, 1.5T Mini-Truck"
+                            value={subCategoryForm.vehicleSegment}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, vehicleSegment: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Speed / Certified Range Standard</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 85 km/h • 140 km Range"
+                            value={subCategoryForm.speedRangeTier}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, speedRangeTier: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Seating / Payload Capacity</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. 4+1 Passengers, 1.5-Ton Payload"
+                            value={subCategoryForm.typicalPayloadOrSeats}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, typicalPayloadOrSeats: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-6">
+                          <input
+                            type="checkbox"
+                            id="subsidyEligibleCheckFull"
+                            checked={subCategoryForm.subsidyEligible}
+                            onChange={(e) => setSubCategoryForm({ ...subCategoryForm, subsidyEligible: e.target.checked })}
+                            className="w-5 h-5 text-emerald-600 rounded cursor-pointer"
+                          />
+                          <label htmlFor="subsidyEligibleCheckFull" className="text-xs font-bold text-gray-800 cursor-pointer">
+                            PM E-DRIVE Central Subsidy Eligible
+                            <span className="block text-[11px] text-gray-500 font-normal">Display government subsidy badges on vehicle listings</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Subcategory Description *</label>
+                        <textarea
+                          rows={3}
+                          required
+                          placeholder="e.g. Dual battery compartments, AIS-156 safety certified, swappable quick-release design."
+                          value={subCategoryForm.description}
+                          onChange={(e) => setSubCategoryForm({ ...subCategoryForm, description: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right 1 Col: Live Preview Card */}
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          Live Architecture Preview
+                        </h4>
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 space-y-3 shadow-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
+                              {categories.find(c => c.id === subCategoryForm.categoryId)?.name || 'Parent Category'}
+                            </span>
+                            {subCategoryForm.subsidyEligible && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                PM E-DRIVE ✓
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="text-base font-black text-gray-900">
+                              {subCategoryForm.name || 'Subcategory Title'}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {subCategoryForm.description || 'Description of this subcategory segment...'}
+                            </p>
+                          </div>
+                          <div className="pt-2 border-t border-gray-200/60 grid grid-cols-2 gap-2 text-[11px]">
+                            <div className="bg-white p-2 rounded-lg border border-gray-100">
+                              <span className="text-gray-400 block text-[9px] uppercase font-bold">Segment</span>
+                              <strong className="text-gray-800">{subCategoryForm.vehicleSegment || 'N/A'}</strong>
+                            </div>
+                            <div className="bg-white p-2 rounded-lg border border-gray-100">
+                              <span className="text-gray-400 block text-[9px] uppercase font-bold">Speed / Range</span>
+                              <strong className="text-gray-800">{subCategoryForm.speedRangeTier || 'N/A'}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-xs text-amber-900 space-y-1">
+                          <strong className="block font-bold">⚡ Taxonomy Mapping:</strong>
+                          <p className="text-[11px] leading-relaxed text-amber-800">
+                            Subcategories provide customers with granular search filters on the vehicle marketplace and auto-associate with relevant OEM spare parts.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="flex-1 py-3.5 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4 text-[#B7F34A]" />
+                          <span>Save Subcategory</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsSubCategoryModalOpen(false)}
+                          className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-2xl transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Register Brand Full-Screen Studio */}
+            {isBrandModalOpen && (
+              <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                {/* Full Screen Top Nav Header */}
+                <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsBrandModalOpen(false)}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
+                    >
+                      <span>← Back</span>
+                    </button>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                        Master Catalog Architecture / OEM Partnerships
+                      </div>
+                      <h2 className="text-base sm:text-lg font-black text-white">
+                        Register Certified OEM Brand Partner
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsBrandModalOpen(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCreateBrand(e as any)}
+                      className="px-5 py-2 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
                     >
                       <Award className="w-4 h-4 text-[#B7F34A]" />
-                      <span>Register Brand & Publish Live</span>
+                      <span>Register Brand</span>
                     </button>
+                  </div>
+                </div>
+
+                {/* Full Screen Content Body */}
+                <div className="flex-1 p-6 sm:p-10 max-w-6xl mx-auto w-full">
+                  <form onSubmit={handleCreateBrand} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left 2 Cols: Form Inputs */}
+                    <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-5">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h3 className="text-base font-bold text-gray-900">Brand Partner Credentials</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Register an authorized electric vehicle manufacturer, component OEM, or battery partner for the verified storefront.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Brand Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Hero Electric, Tata Motors, Ather"
+                            value={brandForm.name}
+                            onChange={(e) => setBrandForm({ ...brandForm, name: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Origin City / Manufacturing HQ *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Gurugram, Bengaluru, Pune, India"
+                            value={brandForm.origin}
+                            onChange={(e) => setBrandForm({ ...brandForm, origin: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Brand Logo Image URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://images.unsplash.com/... or brand logo URL"
+                            value={brandForm.logoUrl}
+                            onChange={(e) => setBrandForm({ ...brandForm, logoUrl: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Official Website URL</label>
+                          <input
+                            type="url"
+                            placeholder="https://www.brand-website.com"
+                            value={brandForm.website}
+                            onChange={(e) => setBrandForm({ ...brandForm, website: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Warranty SLA Guarantee *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 3 Years / 40,000 km Warranty"
+                            value={brandForm.warrantyPeriod}
+                            onChange={(e) => setBrandForm({ ...brandForm, warrantyPeriod: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Primary Specialization Tag</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. High-Performance Scooters, Cargo Autos"
+                            defaultValue={brandForm.categories[0] || 'Electric Vehicles'}
+                            onChange={(e) => setBrandForm({ ...brandForm, categories: [e.target.value] })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right 1 Col: Live Brand Showcase Preview */}
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          Live Brand Partner Card
+                        </h4>
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 flex flex-col items-center text-center shadow-xs">
+                          <img
+                            src={brandForm.logoUrl || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=200&q=80'}
+                            alt="Brand Logo"
+                            className="w-20 h-20 rounded-2xl object-cover border border-gray-200 shadow-sm mb-3 bg-white"
+                          />
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 mb-1">
+                            ✓ Verified OEM Partner
+                          </span>
+                          <h4 className="text-base font-black text-gray-900">
+                            {brandForm.name || 'Brand Name'}
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            {brandForm.origin || 'Manufacturing HQ'}
+                          </p>
+                          <div className="w-full mt-4 pt-3 border-t border-gray-200 text-[11px] text-gray-600 flex justify-between">
+                            <span>Warranty SLA:</span>
+                            <strong className="text-gray-900">{brandForm.warrantyPeriod || '3 Years'}</strong>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-900 space-y-1">
+                          <strong className="block font-bold">🎖️ Verified Partner Badge:</strong>
+                          <p className="text-[11px] leading-relaxed text-emerald-800">
+                            Certified brands gain instant trust badges across vehicles, genuine parts listings, and showroom dealership locators.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="flex-1 py-3.5 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Award className="w-4 h-4 text-[#B7F34A]" />
+                          <span>Register Brand Live</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsBrandModalOpen(false)}
+                          className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-2xl transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   </form>
                 </div>
               </div>
@@ -7398,74 +7668,32 @@ export const AdminDashboardPage: React.FC = () => {
         </main>
       </div>
 
-      {/* Customer Profile Details Modal */}
+      {/* Customer Profile Details Full-Screen Studio */}
       {selectedCustomerModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 space-y-6 relative max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#06152B] to-[#16A34A] text-white flex items-center justify-center font-black text-base uppercase shadow-md">
-                  {selectedCustomerModal.fullName?.slice(0, 2) || 'CU'}
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-gray-900">{selectedCustomerModal.fullName}</h3>
-                  <p className="text-xs text-gray-400 font-mono">User ID: {selectedCustomerModal.id}</p>
-                </div>
-              </div>
+        <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+          {/* Full Screen Top Nav Header */}
+          <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+            <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => setSelectedCustomerModal(null)}
-                className="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border border-white/10"
               >
-                <X className="w-5 h-5" />
+                <span>← Back</span>
               </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="text-[10px] font-bold text-gray-400 block uppercase">Mobile Number</span>
-                <strong className="text-gray-900 font-mono text-sm block mt-0.5">+91 {selectedCustomerModal.phone}</strong>
-              </div>
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="text-[10px] font-bold text-gray-400 block uppercase">Email Address</span>
-                <strong className="text-gray-900 text-xs block mt-0.5 truncate">{selectedCustomerModal.email || 'Not Provided'}</strong>
-              </div>
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="text-[10px] font-bold text-gray-400 block uppercase">City & PIN</span>
-                <strong className="text-gray-900 text-xs block mt-0.5">{selectedCustomerModal.city || 'India'} ({selectedCustomerModal.pincode || 'Pincode N/A'})</strong>
-              </div>
-              <div className="p-3.5 rounded-xl bg-gray-50 border border-gray-100">
-                <span className="text-[10px] font-bold text-gray-400 block uppercase">KYC Status</span>
-                <span className={`inline-block mt-0.5 font-bold text-[11px] px-2 py-0.5 rounded ${selectedCustomerModal.isKycVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                  {selectedCustomerModal.isKycVerified ? '✓ Verified KYC' : 'Pending KYC'}
-                </span>
-              </div>
-            </div>
-
-            {/* Saved Delivery Addresses */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">
-                Saved Delivery Addresses ({selectedCustomerModal.savedAddresses?.length || 0})
-              </h4>
-              {selectedCustomerModal.savedAddresses && selectedCustomerModal.savedAddresses.length > 0 ? (
-                <div className="space-y-2">
-                  {selectedCustomerModal.savedAddresses.map((addr, idx) => (
-                    <div key={addr.id || idx} className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-700">
-                      <div className="flex items-center justify-between font-bold text-gray-900 mb-1">
-                        <span>{addr.fullName} ({addr.label})</span>
-                        <span className="font-mono text-[11px] text-emerald-700">+91 {addr.phone}</span>
-                      </div>
-                      <p>{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</p>
-                      <p className="text-gray-500 text-[11px]">{addr.city}, {addr.state} - {addr.pincode}</p>
-                    </div>
-                  ))}
+              <div>
+                <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                  Customer Directory / KYC & Account Inspector
                 </div>
-              ) : (
-                <p className="text-xs text-gray-400 italic">No saved delivery addresses found.</p>
-              )}
+                <h2 className="text-base sm:text-lg font-black text-white">
+                  {selectedCustomerModal.fullName} • Profile & Compliance Console
+                </h2>
+              </div>
             </div>
 
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={() => {
                   handleToggleCustomerKyc(selectedCustomerModal);
                   setSelectedCustomerModal({
@@ -7473,19 +7701,157 @@ export const AdminDashboardPage: React.FC = () => {
                     isKycVerified: !selectedCustomerModal.isKycVerified
                   });
                 }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   selectedCustomerModal.isKycVerified
-                    ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
-                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40 hover:bg-amber-500/30'
+                    : 'bg-[#16A34A] text-white hover:bg-emerald-700 shadow-sm'
                 }`}
               >
                 {selectedCustomerModal.isKycVerified ? 'Mark KYC Pending' : '✓ Approve KYC Status'}
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedCustomerModal(null)}
-                className="px-5 py-2.5 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
                 Close
+              </button>
+            </div>
+          </div>
+
+          {/* Full Screen Content Body */}
+          <div className="flex-1 p-6 sm:p-10 max-w-6xl mx-auto w-full space-y-6">
+            {/* Top Identity Card */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#06152B] to-[#16A34A] text-white flex items-center justify-center font-black text-xl uppercase shadow-md">
+                  {selectedCustomerModal.fullName?.slice(0, 2) || 'CU'}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-900">{selectedCustomerModal.fullName}</h3>
+                    <span className={`font-bold text-[11px] px-2.5 py-0.5 rounded-full ${
+                      selectedCustomerModal.isKycVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {selectedCustomerModal.isKycVerified ? '✓ Verified KYC' : 'Pending KYC'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 font-mono mt-0.5">System User ID: {selectedCustomerModal.id}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-gray-400 block">Registration Status</span>
+                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 inline-block mt-0.5">
+                    Active Verified Customer
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Identity Detail Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-subtle">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Registered Mobile</span>
+                <strong className="text-gray-900 font-mono text-base block mt-1">+91 {selectedCustomerModal.phone}</strong>
+                <span className="text-[11px] text-emerald-600 font-medium mt-1 inline-block">OTP Verified</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-subtle">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Email Address</span>
+                <strong className="text-gray-900 text-sm block mt-1 truncate">{selectedCustomerModal.email || 'Not Provided'}</strong>
+                <span className="text-[11px] text-gray-400 font-medium mt-1 inline-block">Direct Alerts & Invoices</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-subtle">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Primary Location</span>
+                <strong className="text-gray-900 text-sm block mt-1">{selectedCustomerModal.city || 'India'}</strong>
+                <span className="text-[11px] text-gray-500 font-medium mt-1 inline-block">PIN: {selectedCustomerModal.pincode || 'N/A'}</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white border border-gray-200 shadow-subtle">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Compliance Status</span>
+                <strong className="text-gray-900 text-sm block mt-1">
+                  {selectedCustomerModal.isKycVerified ? 'Aadhaar / DL Verified' : 'Under Review'}
+                </strong>
+                <span className={`text-[11px] font-medium mt-1 inline-block ${selectedCustomerModal.isKycVerified ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {selectedCustomerModal.isKycVerified ? 'Subsidies Unlocked' : 'Action Required'}
+                </span>
+              </div>
+            </div>
+
+            {/* Saved Delivery Addresses Section */}
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-4">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <div>
+                  <h4 className="text-base font-bold text-gray-900">
+                    Saved Delivery & Doorstep Addresses
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Addresses stored for spare parts delivery and mobile service van dispatch.
+                  </p>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-700 rounded-full">
+                  Total: {selectedCustomerModal.savedAddresses?.length || 0}
+                </span>
+              </div>
+
+              {selectedCustomerModal.savedAddresses && selectedCustomerModal.savedAddresses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedCustomerModal.savedAddresses.map((addr, idx) => (
+                    <div key={addr.id || idx} className="p-5 rounded-2xl bg-gray-50/70 border border-gray-200 text-xs text-gray-700 space-y-2">
+                      <div className="flex items-center justify-between font-bold text-gray-900">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] uppercase font-bold">
+                            {addr.label}
+                          </span>
+                          <span className="text-sm">{addr.fullName}</span>
+                        </div>
+                        <span className="font-mono text-xs text-emerald-700 font-bold">+91 {addr.phone}</span>
+                      </div>
+                      <p className="text-gray-800 leading-relaxed font-medium">
+                        {addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}
+                      </p>
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-200/60 text-[11px] text-gray-500">
+                        <span>{addr.city}, {addr.state}</span>
+                        <span className="font-mono font-bold text-gray-700">PIN: {addr.pincode}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <p className="text-xs text-gray-400 italic">No saved delivery addresses found for this account.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex items-center justify-end gap-3 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  handleToggleCustomerKyc(selectedCustomerModal);
+                  setSelectedCustomerModal({
+                    ...selectedCustomerModal,
+                    isKycVerified: !selectedCustomerModal.isKycVerified
+                  });
+                }}
+                className={`px-5 py-3 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  selectedCustomerModal.isKycVerified
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                    : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-md'
+                }`}
+              >
+                {selectedCustomerModal.isKycVerified ? 'Mark KYC Pending' : '✓ Approve KYC Status'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedCustomerModal(null)}
+                className="px-6 py-3 bg-gray-900 text-white rounded-2xl text-xs font-bold hover:bg-gray-800 cursor-pointer shadow-md"
+              >
+                Close Inspector
               </button>
             </div>
           </div>
