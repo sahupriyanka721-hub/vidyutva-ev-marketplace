@@ -760,10 +760,10 @@ export const AdminDashboardPage: React.FC = () => {
     },
     {
       id: 'catalog-architecture',
-      label: 'Catalog & Brands Architecture',
+      label: 'EV Categories & Catalog Hub',
       icon: Sparkles,
       items: [
-        { id: 'catalog-architecture' as AdminTab, label: 'Master Architecture Console', badge: 'Live' },
+        { id: 'catalog-architecture' as AdminTab, label: 'Catalog Landing Hub', badge: 'Live' },
         { id: 'categories' as AdminTab, label: 'Primary Categories', badge: categories.length },
         { id: 'subcategories' as AdminTab, label: 'Categories (Sub-Categories)', badge: subCategories.length },
         { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
@@ -803,7 +803,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Helper to get current active breadcrumb
   const getTabBreadcrumb = () => {
     if (activeTab === 'overview') return { group: 'Main Console', label: 'Dashboard' };
-    if (activeTab === 'catalog-architecture') return { group: 'Catalog & Brands Architecture', label: 'Master Architecture Console' };
+    if (activeTab === 'catalog-architecture') return { group: 'EV Categories & Catalog Hub', label: 'Master Catalog Landing Page' };
     if (activeTab === 'sp-list') return { group: 'Service Management', label: 'Live Service Vans & Mobile Fleet Hub' };
     if (activeTab === 'vendor-list') return { group: 'Spare VendorManagement', label: 'Certified Vendors & Wholesale Hub' };
     if (activeTab === 'shop-list') return { group: 'Marketplace Management', label: 'Showroom Dealers & Dealerships Hub' };
@@ -940,8 +940,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [isSubCategoryModalOpen, setIsSubCategoryModalOpen] = useState(false);
   const [subCategoryFilterParent, setSubCategoryFilterParent] = useState('ALL');
 
-  // Catalog Architecture Console State
-  const [archViewMode, setArchViewMode] = useState<'visual-tree' | 'primary-table' | 'subcategory-table' | 'brand-grid'>('visual-tree');
+  // Catalog & Categories Console State
+  const [archViewMode, setArchViewMode] = useState<'overview-hub' | 'visual-tree' | 'primary-table' | 'subcategory-table' | 'brand-grid'>('overview-hub');
   const [archSearchQuery, setArchSearchQuery] = useState('');
   const [archScaleFilter, setArchScaleFilter] = useState('ALL');
 
@@ -1844,12 +1844,12 @@ export const AdminDashboardPage: React.FC = () => {
                           ? 'bg-[#183556] text-white border-amber-400/50 shadow-sm ring-2 ring-amber-500/20'
                           : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 border-slate-200'
                       }`}
-                      title="Open Master Catalog & Brands Architecture Console"
+                      title="Open EV Categories & Catalog Landing Hub"
                     >
                       <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'catalog-architecture' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
-                      <span>Master Catalog</span>
+                      <span>EV Categories & Catalog</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold">
-                        {categories.length} Segments
+                        {categories.length} Categories
                       </span>
                     </button>
                   </div>
@@ -2198,7 +2198,7 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 4. Master Catalog Architecture Hub */}
+                {/* 4. EV Categories & Catalog Landing Hub */}
                 <div
                   onClick={() => handleSelectTab('catalog-architecture', 'catalog-architecture')}
                   className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-amber-400/20 hover:border-amber-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
@@ -2209,15 +2209,15 @@ export const AdminDashboardPage: React.FC = () => {
                         <Sparkles className="w-5 h-5" />
                       </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                        {categories.length} Segments
+                        {categories.length} Categories
                       </span>
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
-                        Master Catalog Architecture
+                        EV Categories & Catalog Hub
                       </h3>
                       <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                        9-tier EV taxonomy (Micro 2W to 55T Buses), 35 specialized subcategories & 13 verified OEM brands.
+                        Electric Scooters, Electric Autos, Cargo, Loaders, 35+ Subcategories with PM E-DRIVE subsidies & OEM Brands.
                       </p>
                     </div>
                     <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
@@ -2232,7 +2232,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="mt-4 pt-2 flex items-center text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
-                    <span>Open Architecture Console →</span>
+                    <span>Open Catalog Landing Page →</span>
                   </div>
                 </div>
               </div>
@@ -6034,14 +6034,14 @@ export const AdminDashboardPage: React.FC = () => {
                       <div className="space-y-2 max-w-3xl">
                         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/15 text-[#B7F34A] text-xs font-black border border-emerald-400/30">
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span>Master EV Vehicle Taxonomy & Brand Architecture</span>
+                          <span>EV Vahan Categories & Master Catalog Hub</span>
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         </div>
                         <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-                          Catalog & Brands Architecture
+                          EV Categories & Catalog Hub
                         </h2>
                         <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                          Complete hierarchical mobility classification: Primary Segments ➔ Granular Vehicle Scales (from 2W Micro to Heavy Commercial Transit Buses) ➔ Verified OEM Brands & Component Partners. Real working mode linked directly to customer storefront and booking flows.
+                          Complete electric vehicle classification: Primary Segments (Electric Scooters, Electric Autos, Cargo, Loaders) ➔ Subcategories with PM E-DRIVE subsidies ➔ Verified OEM Brands. Live working mode linked directly with customer storefront.
                         </p>
                       </div>
 
@@ -6049,7 +6049,7 @@ export const AdminDashboardPage: React.FC = () => {
                       <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                         <button
                           onClick={() => setIsCategoryModalOpen(true)}
-                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
                         >
                           <Plus className="w-4 h-4 text-[#B7F34A]" />
                           <span>+ Add Primary Category</span>
@@ -6062,7 +6062,7 @@ export const AdminDashboardPage: React.FC = () => {
                             }
                             setIsSubCategoryModalOpen(true);
                           }}
-                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
                         >
                           <Plus className="w-4 h-4 text-white" />
                           <span>+ Add Category (Sub-Category)</span>
@@ -6070,7 +6070,7 @@ export const AdminDashboardPage: React.FC = () => {
 
                         <button
                           onClick={() => setIsBrandModalOpen(true)}
-                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2"
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
                         >
                           <Award className="w-4 h-4 text-purple-200" />
                           <span>+ Add OEM Brand</span>
@@ -6126,20 +6126,32 @@ export const AdminDashboardPage: React.FC = () => {
                       {/* View Switcher Tabs */}
                       <div className="flex items-center gap-1.5 p-1 bg-gray-100/90 rounded-2xl overflow-x-auto w-max">
                         <button
+                          onClick={() => setArchViewMode('overview-hub')}
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
+                            archViewMode === 'overview-hub'
+                              ? 'bg-[#06152B] text-white shadow-md'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-[#B7F34A]" />
+                          <span>Landing Hub Overview</span>
+                        </button>
+
+                        <button
                           onClick={() => setArchViewMode('visual-tree')}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                             archViewMode === 'visual-tree'
                               ? 'bg-[#06152B] text-white shadow-md'
                               : 'text-gray-600 hover:text-gray-900'
                           }`}
                         >
                           <Layers className="w-3.5 h-3.5 text-[#00D2FF]" />
-                          <span>Interactive Visual Hierarchy Tree</span>
+                          <span>Category Hierarchy Tree</span>
                         </button>
 
                         <button
                           onClick={() => setArchViewMode('primary-table')}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                             archViewMode === 'primary-table'
                               ? 'bg-[#06152B] text-white shadow-md'
                               : 'text-gray-600 hover:text-gray-900'
@@ -6151,7 +6163,7 @@ export const AdminDashboardPage: React.FC = () => {
 
                         <button
                           onClick={() => setArchViewMode('subcategory-table')}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                             archViewMode === 'subcategory-table'
                               ? 'bg-[#06152B] text-white shadow-md'
                               : 'text-gray-600 hover:text-gray-900'
@@ -6163,7 +6175,7 @@ export const AdminDashboardPage: React.FC = () => {
 
                         <button
                           onClick={() => setArchViewMode('brand-grid')}
-                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 ${
+                          className={`px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 shrink-0 cursor-pointer ${
                             archViewMode === 'brand-grid'
                               ? 'bg-[#06152B] text-white shadow-md'
                               : 'text-gray-600 hover:text-gray-900'
@@ -6211,7 +6223,7 @@ export const AdminDashboardPage: React.FC = () => {
                         <button
                           key={f.key}
                           onClick={() => setArchScaleFilter(f.key)}
-                          className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 text-xs ${
+                          className={`px-3 py-1.5 rounded-xl font-bold transition-all shrink-0 text-xs cursor-pointer ${
                             archScaleFilter === f.key
                               ? 'bg-[#16A34A] text-white shadow-sm'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -6224,6 +6236,376 @@ export const AdminDashboardPage: React.FC = () => {
                   </div>
 
                   {/* 4. CONTENT SECTIONS BASED ON archViewMode */}
+                  {/* MODE 0: DEDICATED LANDING PAGE OVERVIEW HUB */}
+                  {archViewMode === 'overview-hub' && (
+                    <div className="space-y-6 animate-in fade-in">
+                      {/* Section 1: Executive 4-Portal Launchpad */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div
+                          onClick={() => setIsCategoryModalOpen(true)}
+                          className="p-5 rounded-3xl bg-white border border-gray-200 shadow-subtle hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                        >
+                          <div className="space-y-2">
+                            <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                              <Plus className="w-5 h-5" />
+                            </div>
+                            <h4 className="text-sm font-black text-gray-900 group-hover:text-emerald-700 transition-colors">
+                              + Add Primary Category
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                              Add new master mobility segment (Electric Scooters, Autos, Cargo, Loaders) with custom URL filter key.
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-emerald-600 mt-4 flex items-center gap-1">
+                            Open Category Studio →
+                          </span>
+                        </div>
+
+                        <div
+                          onClick={() => {
+                            if (categories.length > 0 && !subCategoryForm.categoryId) {
+                              setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
+                            }
+                            setIsSubCategoryModalOpen(true);
+                          }}
+                          className="p-5 rounded-3xl bg-white border border-gray-200 shadow-subtle hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                        >
+                          <div className="space-y-2">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                              <Layers className="w-5 h-5" />
+                            </div>
+                            <h4 className="text-sm font-black text-gray-900 group-hover:text-blue-700 transition-colors">
+                              + Add Sub-Category (Dropdown)
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                              Select parent primary category from dropdown and configure speed, range, payload & PM E-DRIVE subsidies.
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-blue-600 mt-4 flex items-center gap-1">
+                            Open Subcategory Studio →
+                          </span>
+                        </div>
+
+                        <div
+                          onClick={() => setIsBrandModalOpen(true)}
+                          className="p-5 rounded-3xl bg-white border border-gray-200 shadow-subtle hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                        >
+                          <div className="space-y-2">
+                            <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                              <Award className="w-5 h-5" />
+                            </div>
+                            <h4 className="text-sm font-black text-gray-900 group-hover:text-purple-700 transition-colors">
+                              + Register OEM Brand
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                              Onboard certified EV manufacturers, battery suppliers & warranty SLA partners live to storefront.
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-purple-600 mt-4 flex items-center gap-1">
+                            Open Brand Studio →
+                          </span>
+                        </div>
+
+                        <div
+                          onClick={() => setArchViewMode('visual-tree')}
+                          className="p-5 rounded-3xl bg-white border border-gray-200 shadow-subtle hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+                        >
+                          <div className="space-y-2">
+                            <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                              <Sparkles className="w-5 h-5" />
+                            </div>
+                            <h4 className="text-sm font-black text-gray-900 group-hover:text-amber-700 transition-colors">
+                              Category Hierarchy View
+                            </h4>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                              Inspect complete tree view of {categories.length} primary categories and {subCategories.length} child sub-types.
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-amber-600 mt-4 flex items-center gap-1">
+                            View Full Hierarchy →
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Section 2: Core Primary EV Categories Landing Grid (Working Live Cards) */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-black text-gray-900">
+                                Primary Electric Vehicle Categories
+                              </h3>
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">
+                                {categories.filter(c => c.type === 'VEHICLE').length} Vehicle Classes
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Live storefront segments linked directly with customer catalog filter routes.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setArchViewMode('primary-table')}
+                              className="px-3.5 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all cursor-pointer"
+                            >
+                              Manage All ({categories.length}) →
+                            </button>
+                            <button
+                              onClick={() => setIsCategoryModalOpen(true)}
+                              className="px-3.5 py-1.5 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>+ Add Category</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Interactive Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                          {categories.filter(c => c.type === 'VEHICLE').map((cat) => {
+                            const childSubs = subCategories.filter(s => s.categoryId === cat.id);
+                            return (
+                              <div
+                                key={cat.id}
+                                className="rounded-3xl border border-gray-200 overflow-hidden bg-gray-50/60 hover:bg-white hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between"
+                              >
+                                <div>
+                                  {/* Cover Image & Badges */}
+                                  <div className="relative h-44 overflow-hidden bg-gray-900">
+                                    <img
+                                      src={cat.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80'}
+                                      alt={cat.name}
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                    <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                                      {cat.categoryKey && (
+                                        <span className="font-mono font-bold text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white shadow-xs">
+                                          {cat.categoryKey}
+                                        </span>
+                                      )}
+                                      <span className="font-bold text-[10px] px-2 py-0.5 rounded-full bg-white/90 text-gray-900">
+                                        {cat.scaleLabel || cat.type}
+                                      </span>
+                                    </div>
+
+                                    <div className="absolute bottom-3 left-3 right-3 text-white">
+                                      <h4 className="text-base font-black leading-tight drop-shadow-sm">{cat.name}</h4>
+                                      <p className="text-[11px] text-gray-200 mt-0.5 line-clamp-1">{cat.subtitle}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Body Details */}
+                                  <div className="p-4 space-y-3">
+                                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                                      {cat.description}
+                                    </p>
+
+                                    {/* Subcategories Preview Pills */}
+                                    <div className="pt-2 border-t border-gray-200/60 space-y-1.5">
+                                      <div className="flex items-center justify-between text-[11px] font-bold">
+                                        <span className="text-gray-500">Linked Subcategories:</span>
+                                        <span className="text-emerald-700 font-mono">{childSubs.length} Classes</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1 max-h-16 overflow-hidden">
+                                        {childSubs.slice(0, 3).map(sub => (
+                                          <span
+                                            key={sub.id}
+                                            className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-gray-200 text-gray-700 font-medium"
+                                          >
+                                            {sub.name}
+                                          </span>
+                                        ))}
+                                        {childSubs.length > 3 && (
+                                          <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-gray-200 text-gray-700 font-bold">
+                                            +{childSubs.length - 3} more
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Working Action Footer */}
+                                <div className="p-4 pt-0 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <a
+                                      href={`/vehicles?category=${cat.categoryKey || cat.slug}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex-1 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                                      title="Open customer storefront page"
+                                    >
+                                      <ExternalLink className="w-3.5 h-3.5" />
+                                      <span>Storefront ↗</span>
+                                    </a>
+
+                                    <button
+                                      onClick={() => {
+                                        setSubCategoryForm(prev => ({
+                                          ...prev,
+                                          categoryId: cat.id,
+                                          name: '',
+                                          description: '',
+                                          vehicleSegment: '',
+                                          speedRangeTier: '',
+                                          typicalPayloadOrSeats: '',
+                                          subsidyEligible: true
+                                        }));
+                                        setIsSubCategoryModalOpen(true);
+                                      }}
+                                      className="flex-1 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#16A34A] text-xs font-bold transition-all border border-emerald-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                                      title="Add subcategory with this parent pre-selected"
+                                    >
+                                      <Plus className="w-3.5 h-3.5" />
+                                      <span>+ Subcategory</span>
+                                    </button>
+
+                                    <button
+                                      onClick={() => handleToggleCategoryStatus(cat.id)}
+                                      className={`px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                        cat.status === 'ACTIVE'
+                                          ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                      }`}
+                                    >
+                                      {cat.status === 'ACTIVE' ? '✓ LIVE' : 'HIDDEN'}
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section 3: Vehicle Scale Taxonomy Matrix (2W to Heavy Commercial) */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-4">
+                        <div className="border-b border-gray-100 pb-3">
+                          <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                            <Truck className="w-4 h-4 text-emerald-600" />
+                            <span>National EV Vehicle Scale Classification</span>
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            Standards compliant scale hierarchy supporting micro-mobility, passenger transport, and heavy transit fleets.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
+                          <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 space-y-1.5">
+                            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Scale Tier 1</span>
+                            <strong className="text-gray-900 text-sm block">2W Personal Mobility</strong>
+                            <p className="text-[11px] text-gray-600">L1 Non-RTO (25 km/h) & L2 High-Speed (85-115 km/h) Scooters & E-Bikes.</p>
+                            <span className="inline-block text-[10px] font-bold text-emerald-700 bg-white px-2 py-0.5 rounded border border-emerald-200">
+                              PM E-DRIVE ✓
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200/80 space-y-1.5">
+                            <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block">Scale Tier 2</span>
+                            <strong className="text-gray-900 text-sm block">3W Commercial Passenger</strong>
+                            <p className="text-[11px] text-gray-600">4+1 City E-Rickshaws & L5M High-Speed Passenger Auto Rickshaws.</p>
+                            <span className="inline-block text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
+                              PM E-DRIVE ✓
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-1.5">
+                            <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Scale Tier 3</span>
+                            <strong className="text-gray-900 text-sm block">3W Cargo & Loaders</strong>
+                            <p className="text-[11px] text-gray-600">L5N Closed Delivery Boxes, Heavy Flatbeds & Hydraulic Tippers (750kg).</p>
+                            <span className="inline-block text-[10px] font-bold text-amber-700 bg-white px-2 py-0.5 rounded border border-amber-200">
+                              FAME / Commercial ✓
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-purple-50/70 border border-purple-200/80 space-y-1.5">
+                            <span className="text-[10px] font-bold text-purple-800 uppercase tracking-wider block">Scale Tier 4</span>
+                            <strong className="text-gray-900 text-sm block">LCV Commercial Trucks</strong>
+                            <p className="text-[11px] text-gray-600">1.0T-2.5T Intra-city Delivery Mini-Trucks & Cold-Chain Reefers.</p>
+                            <span className="inline-block text-[10px] font-bold text-purple-700 bg-white px-2 py-0.5 rounded border border-purple-200">
+                              Logistics Fleets
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider block">Scale Tier 5</span>
+                            <strong className="text-gray-900 text-sm block">Heavy Commercial & Buses</strong>
+                            <p className="text-[11px] text-gray-600">9m/12m Public Transit Buses & 28T-55T Electric Mining Tippers.</p>
+                            <span className="inline-block text-[10px] font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">
+                              State Fleets
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Section 4: PM E-DRIVE Subsidy Approved Subcategories Roster */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                          <div>
+                            <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                              <Sparkles className="w-4 h-4 text-emerald-600" />
+                              <span>PM E-DRIVE Subsidy Approved EV Subcategories</span>
+                            </h3>
+                            <p className="text-xs text-gray-500">
+                              AIS-156 safety certified vehicle configurations eligible for central government financial subsidies.
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full">
+                            {subCategories.filter(s => s.subsidyEligible).length} Approved Segments
+                          </span>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-gray-50 text-gray-400 font-bold uppercase text-[10px] border-b border-gray-100">
+                              <tr>
+                                <th className="p-3">Subcategory / Model Class</th>
+                                <th className="p-3">Parent Primary Segment</th>
+                                <th className="p-3">Regulatory Code</th>
+                                <th className="p-3">Certified Speed / Range</th>
+                                <th className="p-3">Seating / Capacity</th>
+                                <th className="p-3 text-right">Subsidy Status</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 font-medium text-gray-700">
+                              {subCategories.filter(s => s.subsidyEligible).map((sub) => {
+                                const parent = categories.find(c => c.id === sub.categoryId);
+                                return (
+                                  <tr key={sub.id} className="hover:bg-gray-50/80 transition-colors">
+                                    <td className="p-3 font-bold text-gray-900">
+                                      {sub.name}
+                                    </td>
+                                    <td className="p-3">
+                                      <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-[11px] font-bold">
+                                        {parent?.name || sub.categoryName}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 font-mono text-[11px] text-gray-500">
+                                      {sub.vehicleSegment || 'N/A'}
+                                    </td>
+                                    <td className="p-3">
+                                      {sub.speedRangeTier || 'Standard AIS'}
+                                    </td>
+                                    <td className="p-3">
+                                      {sub.typicalPayloadOrSeats || 'Standard'}
+                                    </td>
+                                    <td className="p-3 text-right">
+                                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                                        PM E-DRIVE ✓
+                                      </span>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* MODE A: INTERACTIVE VISUAL HIERARCHY TREE */}
                   {archViewMode === 'visual-tree' && (
                     <div className="space-y-6">
