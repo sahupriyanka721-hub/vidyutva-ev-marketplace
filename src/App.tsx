@@ -37,6 +37,7 @@ import { LegalPage } from './pages/LegalPage';
 
 // Standalone Admin Panel Page
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
+import { AdminCatalogLandingPage } from './pages/AdminCatalogLandingPage';
 
 /**
  * ScrollToTop component: Ensures page view jumps to the very top (0, 0)
@@ -67,6 +68,7 @@ const AppContent: React.FC = () => {
         <ScrollToTop />
         <Routes>
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/catalog" element={<AdminCatalogLandingPage />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </div>

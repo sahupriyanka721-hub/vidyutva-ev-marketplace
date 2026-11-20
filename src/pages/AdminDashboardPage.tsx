@@ -50,6 +50,7 @@ import {
   FileCheck,
   Copy
 } from 'lucide-react';
+import { AdminCatalogLandingPage } from './AdminCatalogLandingPage';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
 import { BrandLogo } from '../components/common/BrandLogo';
@@ -1628,6 +1629,16 @@ export const AdminDashboardPage: React.FC = () => {
     );
   }
 
+  // When activeTab is 'catalog-hub', open the dedicated Full-Width Catalog Landing Page
+  // This removes the old distracting sidebar and giant greeting banner completely!
+  if (activeTab === 'catalog-hub') {
+    return (
+      <AdminCatalogLandingPage
+        onBackToDashboard={() => setActiveTab('overview')}
+      />
+    );
+  }
+
   const currentFormattedDate = new Date().toLocaleDateString('en-GB', {
     weekday: 'long',
     day: 'numeric',
@@ -1945,13 +1956,13 @@ export const AdminDashboardPage: React.FC = () => {
                     <button
                       onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        activeTab === 'catalog-hub'
+                        (activeTab as string) === 'catalog-hub'
                           ? 'bg-[#183556] text-white border-amber-400/50 shadow-sm ring-2 ring-amber-500/20'
                           : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 border-slate-200'
                       }`}
                       title="Open EV Categories & Catalog Landing Hub"
                     >
-                      <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'catalog-hub' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
+                      <Sparkles className={`w-3.5 h-3.5 ${(activeTab as string) === 'catalog-hub' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
                       <span>EV Categories & Catalog</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold">
                         {categories.length} Categories
@@ -6087,7 +6098,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             )}
             {/* TAB: EV CATEGORIES & CATALOG LANDING HUB */}
-            {activeTab === 'catalog-hub' && (() => {
+            {(activeTab as string) === 'catalog-hub' && (() => {
               const filteredCats = categories.filter(c => {
                 if (archScaleFilter !== 'ALL') {
                   if (archScaleFilter === 'TECH_COMPONENTS') {
