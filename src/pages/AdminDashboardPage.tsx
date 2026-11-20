@@ -723,6 +723,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [newAdminPhoneInput, setNewAdminPhoneInput] = useState('');
   const [kycFilter, setKycFilter] = useState<'ALL' | 'VERIFIED' | 'PENDING'>('ALL');
   const [selectedCustomerModal, setSelectedCustomerModal] = useState<CustomerUser | null>(null);
+  const [recentActivityTab, setRecentActivityTab] = useState<'orders' | 'test-drives' | 'quotes'>('orders');
 
   // Grouped Navigation structure for Admin Sidebar Menu
   const adminAccordionGroups = [
@@ -1857,621 +1858,594 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* Executive Live Greeting & Operational Attention Banner */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-white via-[#F8FAFC] to-[#F1F5F9] rounded-3xl p-5 sm:p-7 border border-slate-200/90 shadow-sm transition-all">
-            {/* Ambient Background Gradient Accent */}
-            <div className="pointer-events-none absolute -right-12 -top-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
-            <div className="pointer-events-none absolute right-48 -bottom-10 w-44 h-44 bg-blue-500/5 rounded-full blur-2xl" />
-
-            <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-              {/* Left Column: Console Meta, Greeting & Platform Summary */}
-              <div className="space-y-2.5 max-w-2xl">
-                {/* Meta status bar */}
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold shadow-xs">
-                    <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-[#16A34A]"></span>
-                    </span>
-                    <span className="font-bold tracking-tight">Live Admin Console</span>
-                  </div>
-
-                  <span className="text-slate-300 hidden sm:inline">•</span>
-
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 text-slate-700 font-medium border border-slate-200/70">
-                    <Clock className="w-3.5 h-3.5 text-slate-500" />
-                    <span>{currentFormattedDate}</span>
-                  </div>
-
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 font-semibold border border-blue-200/80">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                    <span className="text-[11px]">System Online & Verified</span>
-                  </div>
-                </div>
-
-                {/* Primary Greeting */}
-                <div className="flex flex-wrap items-center gap-3 pt-0.5">
-                  <h1 className="text-2xl sm:text-3xl font-black text-[#06152B] tracking-tight">
-                    Good {timeGreeting}, Administrator 👋
-                  </h1>
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider bg-[#06152B] text-emerald-400 px-3 py-1 rounded-xl shadow-xs">
+          {/* Clean Executive Welcome & Quick Actions Bar */}
+          <div className="relative overflow-hidden bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Central Command • 24 Cities Live
+                  </span>
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-slate-900 text-[#00D2FF]">
                     Super Admin
                   </span>
                 </div>
-
-                {/* Multi-Vendor Operations Portal Switcher (Clickable Portals) */}
-                <div className="space-y-2 pt-1">
-                  <p className="text-xs text-slate-600 font-medium">
-                    Multi-vendor EV marketplace management: (Click any domain below to open its dedicated live operations console):
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={() => handleSelectTab('sp-list', 'service-management')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        activeTab === 'sp-list'
-                          ? 'bg-[#183556] text-white border-blue-400/50 shadow-sm ring-2 ring-blue-500/20'
-                          : 'bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 border-slate-200'
-                      }`}
-                      title="Open Live Service Vans & Mobile Fleet Operations Hub"
-                    >
-                      <Truck className={`w-3.5 h-3.5 ${activeTab === 'sp-list' ? 'text-[#00D2FF]' : 'text-blue-600'}`} />
-                      <span>Live Service Vans</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold">
-                        {activeServiceVansCount} Active
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => handleSelectTab('vendor-list', 'spare-vendor')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        activeTab === 'vendor-list'
-                          ? 'bg-[#183556] text-white border-emerald-400/50 shadow-sm ring-2 ring-emerald-500/20'
-                          : 'bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border-slate-200'
-                      }`}
-                      title="Open Certified OEM Spare Parts Vendors & Wholesale Hub"
-                    >
-                      <Box className={`w-3.5 h-3.5 ${activeTab === 'vendor-list' ? 'text-[#00D2FF]' : 'text-emerald-600'}`} />
-                      <span>Certified Vendors</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">
-                        {spareVendors.length} Verified
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => handleSelectTab('shop-list', 'marketplace')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        activeTab === 'shop-list'
-                          ? 'bg-[#183556] text-white border-purple-400/50 shadow-sm ring-2 ring-purple-500/20'
-                          : 'bg-white hover:bg-purple-50 text-slate-700 hover:text-purple-700 border-slate-200'
-                      }`}
-                      title="Open Showroom Dealers & Marketplace Dealership Console"
-                    >
-                      <Store className={`w-3.5 h-3.5 ${activeTab === 'shop-list' ? 'text-[#00D2FF]' : 'text-purple-600'}`} />
-                      <span>Showroom Dealers</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 font-extrabold">
-                        {shopkeepers.length} Hubs
-                      </span>
-                    </button>
-
-                    <button
-                      onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        (activeTab as string) === 'catalog-hub'
-                          ? 'bg-[#183556] text-white border-amber-400/50 shadow-sm ring-2 ring-amber-500/20'
-                          : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 border-slate-200'
-                      }`}
-                      title="Open EV Categories & Catalog Landing Hub"
-                    >
-                      <Sparkles className={`w-3.5 h-3.5 ${(activeTab as string) === 'catalog-hub' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
-                      <span>EV Categories & Catalog</span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold">
-                        {categories.length} Categories
-                      </span>
-                    </button>
-                  </div>
-                </div>
+                <h1 className="text-2xl sm:text-3xl font-black text-[#06152B] tracking-tight">
+                  Good {timeGreeting}, Administrator 👋
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  Vidyutva E-Vahan Multi-Vendor Operations: Vehicles catalog, mobile service vans, certified vendors & showroom network.
+                </p>
               </div>
 
-              {/* Right Column: Status & Attention Cards */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-                {/* Dynamic Attention Card */}
-                <div
-                  onClick={() => {
-                    if (pendingKycCount > 0) setActiveTab('customer-kyc');
-                    else if (pendingServicesCount > 0) setActiveTab('services');
-                    else if (pendingQuotationsCount > 0) setActiveTab('quotations');
-                  }}
-                  className={`group relative p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 cursor-pointer min-w-[210px] ${
-                    totalPendingAssignments > 0
-                      ? 'bg-amber-50/90 border-amber-300 hover:border-amber-400 hover:shadow-md'
-                      : 'bg-emerald-50/70 border-emerald-300/80 hover:border-emerald-400 hover:shadow-md'
-                  }`}
-                  title={totalPendingAssignments > 0 ? 'Click to inspect pending tasks' : 'All systems operating smoothly'}
-                >
-                  <div className="flex items-start gap-3">
-                    <div
-                      className={`p-2.5 rounded-xl shrink-0 ${
-                        totalPendingAssignments > 0
-                          ? 'bg-amber-500 text-white shadow-xs'
-                          : 'bg-emerald-600 text-white shadow-xs'
-                      }`}
-                    >
-                      {totalPendingAssignments > 0 ? (
-                        <AlertCircle className="w-5 h-5 animate-pulse" />
-                      ) : (
-                        <CheckCircle2 className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <span
-                        className={`text-[10px] uppercase font-bold tracking-wider block ${
-                          totalPendingAssignments > 0 ? 'text-amber-800' : 'text-emerald-800'
-                        }`}
-                      >
-                        Attention:
-                      </span>
-                      <strong className="text-sm sm:text-base font-black text-slate-900 block truncate">
-                        {totalPendingAssignments} Pending Assignment{totalPendingAssignments === 1 ? '' : 's'}
-                      </strong>
-                      <span className="text-[11px] text-slate-500 font-medium block truncate mt-0.5">
-                        {totalPendingAssignments > 0
-                          ? `${pendingKycCount} KYC • ${pendingServicesCount} Bookings`
-                          : 'All tasks up to date'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Live Fleet & Network Active Card */}
-                <div
-                  onClick={() => setActiveTab('services')}
-                  className="group relative p-3.5 sm:p-4 rounded-2xl bg-white/95 border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all duration-200 cursor-pointer min-w-[200px]"
-                  title="Click to view live service vans & bookings"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-[#16A34A] text-white shrink-0 shadow-xs">
-                      <Zap className="w-5 h-5 text-amber-200" />
-                    </div>
-                    <div className="min-w-0">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 block">
-                        Live Active:
-                      </span>
-                      <strong className="text-sm sm:text-base font-black text-slate-900 block truncate">
-                        {activeServiceVansCount} Service Vans
-                      </strong>
-                      <span className="text-[11px] text-emerald-700 font-semibold block truncate mt-0.5">
-                        {shopkeepers.length} Showrooms • {spareVendors.length} Vendors
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Quick Refresh Sync Button */}
+              {/* Top Quick Actions */}
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                 <button
-                  type="button"
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                  className="px-4 py-2.5 rounded-2xl bg-[#06152B] hover:bg-[#132A46] text-white text-xs font-bold transition-all shadow-sm flex items-center gap-2 cursor-pointer"
+                  title="Open Dedicated Full-Width Catalog Hub"
+                >
+                  <Sparkles className="w-4 h-4 text-[#B7F34A]" />
+                  <span>Catalog Studio</span>
+                </button>
+
+                <button
                   onClick={handleManualRefresh}
                   disabled={isRefreshing}
-                  title="Synchronize live backend data"
-                  className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-row sm:flex-col items-center justify-center gap-1.5 shrink-0 ${
-                    isRefreshing
-                      ? 'bg-slate-100 border-slate-300 text-slate-400 cursor-not-allowed'
-                      : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-slate-300 text-slate-700 shadow-xs hover:shadow-sm'
-                  }`}
+                  className="px-3.5 py-2.5 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300 text-xs font-bold transition-all shadow-2xs flex items-center gap-2 cursor-pointer"
+                  title="Synchronize live storage and backend data"
                 >
-                  <RefreshCw
-                    className={`w-5 h-5 text-slate-600 transition-transform ${
-                      isRefreshing ? 'animate-spin text-emerald-600' : 'group-hover:rotate-180'
-                    }`}
-                  />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:block hidden">
-                    Sync
-                  </span>
+                  <RefreshCw className={`w-3.5 h-3.5 text-[#16A34A] ${isRefreshing ? 'animate-spin' : ''}`} />
+                  <span>{isRefreshing ? 'Syncing...' : 'Sync Data'}</span>
                 </button>
+
+                <Link
+                  to="/"
+                  target="_blank"
+                  className="px-3.5 py-2.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-2"
+                  title="Open live customer storefront in new tab"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Storefront ↗</span>
+                </Link>
               </div>
             </div>
           </div>
-            
-            {/* Top 7 KPI Metric Cards (Responsive Grid inside Main Area) */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-2.5 sm:gap-3">
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'customers' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-                }`}
-                onClick={() => setActiveTab('customers')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Customers
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{registeredCustomers.length}</strong>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Live</span>
-                </div>
-              </div>
 
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'orders' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-                }`}
-                onClick={() => setActiveTab('orders')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Vehicle Orders
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{vehicleOrders.length}</strong>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">Live</span>
+          {/* 4 Core Executive Metric Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 1. Catalog & Models */}
+            <div
+              onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+              className="p-5 rounded-3xl bg-white border border-slate-200/90 hover:border-emerald-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Zap className="w-5 h-5 text-[#16A34A]" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Live Catalog
+                  </span>
                 </div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                  Certified EV Models
+                </span>
+                <strong className="text-2xl sm:text-3xl font-black text-[#06152B] block mt-0.5">
+                  {storage.getVehicles().length} Models
+                </strong>
+                <p className="text-xs text-slate-500 mt-1">
+                  {categories.length} Segments • {subCategories.length} Subcategories
+                </p>
               </div>
-
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'test-drives' ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-blue-300'
-                }`}
-                onClick={() => setActiveTab('test-drives')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Test Drives
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{testDrives.length}</strong>
-                  <span className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded">Active</span>
-                </div>
-              </div>
-
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'quotations' ? 'bg-purple-50 border-purple-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-purple-300'
-                }`}
-                onClick={() => setActiveTab('quotations')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Fleet Quotes
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{quotations.length}</strong>
-                  <span className="text-[10px] text-purple-600 font-bold bg-purple-50 px-1.5 py-0.5 rounded">Issued</span>
-                </div>
-              </div>
-
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'services' ? 'bg-amber-50 border-amber-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-amber-300'
-                }`}
-                onClick={() => setActiveTab('services')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Doorstep Vans
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{services.length}</strong>
-                  <span className="text-[10px] text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded">Vans</span>
-                </div>
-              </div>
-
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'parts' ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-emerald-300'
-                }`}
-                onClick={() => setActiveTab('parts')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Parts Orders
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{partsOrders.length}</strong>
-                  <span className="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">OEM</span>
-                </div>
-              </div>
-
-              <div
-                className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer ${
-                  activeTab === 'tickets' ? 'bg-rose-50 border-rose-400 shadow-sm' : 'bg-white border-gray-200 shadow-subtle hover:border-rose-300'
-                }`}
-                onClick={() => setActiveTab('tickets')}
-              >
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                  Support Desk
-                </span>
-                <div className="flex items-baseline justify-between">
-                  <strong className="text-lg sm:text-xl font-black text-[#06152B]">{tickets.length}</strong>
-                  <span className="text-[10px] text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded">Desk</span>
-                </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:text-emerald-800">
+                <span>Open Catalog Studio</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
+
+            {/* 2. Multi-Vendor Fleet & Hubs */}
+            <div
+              onClick={() => handleSelectTab('sp-list', 'service-management')}
+              className="p-5 rounded-3xl bg-white border border-slate-200/90 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Truck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                    {activeServiceVansCount} Active Vans
+                  </span>
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                  Partner Network Hubs
+                </span>
+                <strong className="text-2xl sm:text-3xl font-black text-[#06152B] block mt-0.5">
+                  {serviceProviders.length + spareVendors.length + shopkeepers.length} Partners
+                </strong>
+                <p className="text-xs text-slate-500 mt-1">
+                  {shopkeepers.length} Showrooms • {spareVendors.length} OEM Vendors
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-700 group-hover:text-blue-800">
+                <span>Manage Fleet & Hubs</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* 3. Customer Demand & Inquiries */}
+            <div
+              onClick={() => handleSelectTab('orders', 'orders-management')}
+              className="p-5 rounded-3xl bg-white border border-slate-200/90 hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <ShoppingBag className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                    Demand Queue
+                  </span>
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                  Customer Bookings
+                </span>
+                <strong className="text-2xl sm:text-3xl font-black text-[#06152B] block mt-0.5">
+                  {vehicleOrders.length + testDrives.length + quotations.length} Requests
+                </strong>
+                <p className="text-xs text-slate-500 mt-1">
+                  {vehicleOrders.length} Token Orders • {testDrives.length} Test Drives
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800 group-hover:text-amber-900">
+                <span>View All Bookings</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+
+            {/* 4. Operational Readiness & KYC */}
+            <div
+              onClick={() => {
+                if (pendingKycCount > 0) setActiveTab('customer-kyc');
+                else if (pendingServicesCount > 0) setActiveTab('services');
+                else setActiveTab('admin-users');
+              }}
+              className="p-5 rounded-3xl bg-white border border-slate-200/90 hover:border-purple-400 hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-2xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <ShieldCheck className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    totalPendingAssignments > 0
+                      ? 'bg-amber-100 text-amber-900 border-amber-300'
+                      : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  }`}>
+                    {totalPendingAssignments > 0 ? `${totalPendingAssignments} Pending` : 'Verified'}
+                  </span>
+                </div>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block">
+                  Operational Health
+                </span>
+                <strong className="text-2xl sm:text-3xl font-black text-[#06152B] block mt-0.5">
+                  {totalPendingAssignments === 0 ? 'Optimal' : `${totalPendingAssignments} To Review`}
+                </strong>
+                <p className="text-xs text-slate-500 mt-1">
+                  {totalPendingAssignments === 0 ? 'All 24 city hubs online & synced' : `${pendingKycCount} KYC • ${pendingServicesCount} Bookings`}
+                </p>
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-700 group-hover:text-purple-800">
+                <span>System Verification</span>
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
 
         {/* Tab 1: Overview */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* Multi-Vendor Marketplace Operations Launchpad (4 Dedicated Portals) */}
-            <div className="bg-gradient-to-r from-[#06152B] via-[#0E284D] to-[#123668] rounded-3xl p-6 sm:p-7 text-white shadow-xl border border-blue-500/20 space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-blue-500/20 pb-4">
+            {/* 4 Core Marketplace Hubs (Clean modern elevated cards) */}
+            <div className="space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-[#B7F34A] text-[11px] font-bold uppercase tracking-wider mb-1.5 border border-emerald-500/30">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Multi-Vendor Operations Network</span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                    Dedicated Partner Operations Consoles
+                  <h2 className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-[#16A34A]" />
+                    <span>Enterprise Marketplace Hubs</span>
                   </h2>
-                  <p className="text-xs sm:text-sm text-slate-300 mt-0.5">
-                    Click any pillar below to launch its dedicated enterprise console with real live working data and instant actions.
+                  <p className="text-xs text-gray-500">
+                    Direct access to specialized multi-vendor consoles with live bi-directional sync.
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* 1. Live Service Vans Hub */}
+                {/* 1. EV Categories & Catalog Hub */}
                 <div
-                  onClick={() => handleSelectTab('sp-list', 'service-management')}
-                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-blue-400/20 hover:border-blue-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                  className="group relative p-5 rounded-3xl bg-white border border-gray-200/90 hover:border-amber-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center border border-blue-400/30 group-hover:scale-105 transition-transform">
-                        <Truck className="w-5 h-5" />
+                      <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200 group-hover:scale-105 transition-transform">
+                        <Sparkles className="w-5 h-5 text-amber-600" />
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                        {categories.length} Segments
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors">
+                        EV Categories & Catalog Hub
+                      </h3>
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                        Electric Scooters, Electric Autos, Cargo, Loaders, 35+ Subcategories with PM E-DRIVE subsidies & OEM Brands.
+                      </p>
+                    </div>
+                    <div className="text-xs text-gray-600 pt-2 space-y-1.5 border-t border-gray-100">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Subcategories:</span>
+                        <strong className="text-gray-800">{subCategories.length} Types</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Verified Brands:</span>
+                        <strong className="text-emerald-700 font-bold">{brands.length} OEMs</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-3 flex items-center text-xs font-bold text-amber-700 group-hover:translate-x-1 transition-transform">
+                    <span>Open Catalog Studio →</span>
+                  </div>
+                </div>
+
+                {/* 2. Live Service Vans Hub */}
+                <div
+                  onClick={() => handleSelectTab('sp-list', 'service-management')}
+                  className="group relative p-5 rounded-3xl bg-white border border-gray-200/90 hover:border-blue-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200 group-hover:scale-105 transition-transform">
+                        <Truck className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
                         {activeServiceVansCount} Active
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-[#00D2FF] transition-colors">
-                        Live Service Vans Hub
+                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                        Doorstep Service Vans Fleet
                       </h3>
-                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                        Mobile EV breakdown fleet, field dispatch, GPS van status & technician instant payouts.
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                        Mobile EV breakdown fleet, field dispatch, GPS van tracking & technician instant payouts.
                       </p>
                     </div>
-                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                    <div className="text-xs text-gray-600 pt-2 space-y-1.5 border-t border-gray-100">
                       <div className="flex justify-between">
-                        <span>Total Fleet:</span>
-                        <strong className="text-white">{serviceProviders.length} Vans</strong>
+                        <span className="text-gray-400">Total Fleet:</span>
+                        <strong className="text-gray-800">{serviceProviders.length} Vans</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Doorstep Bookings:</span>
-                        <strong className="text-[#B7F34A]">{services.length} Requests</strong>
+                        <span className="text-gray-400">Service Requests:</span>
+                        <strong className="text-blue-700 font-bold">{services.length} Requests</strong>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-[#00D2FF] group-hover:translate-x-1 transition-transform">
+                  <div className="mt-4 pt-3 flex items-center text-xs font-bold text-blue-700 group-hover:translate-x-1 transition-transform">
                     <span>Open Fleet Console →</span>
                   </div>
                 </div>
 
-                {/* 2. Certified Spare Vendors Hub */}
+                {/* 3. Certified Spare Vendors */}
                 <div
                   onClick={() => handleSelectTab('vendor-list', 'spare-vendor')}
-                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-emerald-400/20 hover:border-emerald-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                  className="group relative p-5 rounded-3xl bg-white border border-gray-200/90 hover:border-emerald-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/30 group-hover:scale-105 transition-transform">
-                        <Box className="w-5 h-5" />
+                      <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200 group-hover:scale-105 transition-transform">
+                        <Box className="w-5 h-5 text-emerald-600" />
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                         {spareVendors.length} Verified
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
-                        Certified OEM Vendors
+                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                        Certified OEM Spare Vendors
                       </h3>
-                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                        Tier-1 component manufacturers, warehouse hubs, parts SKU dispatch & NEFT settlements.
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                        Tier-1 component manufacturers, battery warehouses, parts SKU dispatch & settlements.
                       </p>
                     </div>
-                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                    <div className="text-xs text-gray-600 pt-2 space-y-1.5 border-t border-gray-100">
                       <div className="flex justify-between">
-                        <span>Active SKUs:</span>
-                        <strong className="text-white">{spareVendors.reduce((acc, v) => acc + (v.activeSkus || 0), 0)} SKUs</strong>
+                        <span className="text-gray-400">Active SKUs:</span>
+                        <strong className="text-gray-800">{spareVendors.reduce((acc, v) => acc + (v.activeSkus || 0), 0)} SKUs</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Customer Orders:</span>
-                        <strong className="text-[#B7F34A]">{partsOrders.length} Orders</strong>
+                        <span className="text-gray-400">Customer Orders:</span>
+                        <strong className="text-emerald-700 font-bold">{partsOrders.length} Orders</strong>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-emerald-400 group-hover:translate-x-1 transition-transform">
+                  <div className="mt-4 pt-3 flex items-center text-xs font-bold text-emerald-700 group-hover:translate-x-1 transition-transform">
                     <span>Open Vendor Console →</span>
                   </div>
                 </div>
 
-                {/* 3. Showroom Dealers Hub */}
+                {/* 4. Showroom Dealers Hub */}
                 <div
                   onClick={() => handleSelectTab('shop-list', 'marketplace')}
-                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-purple-400/20 hover:border-purple-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
+                  className="group relative p-5 rounded-3xl bg-white border border-gray-200/90 hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center border border-purple-400/30 group-hover:scale-105 transition-transform">
-                        <Store className="w-5 h-5" />
+                      <div className="w-11 h-11 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200 group-hover:scale-105 transition-transform">
+                        <Store className="w-5 h-5 text-purple-600" />
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                      <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 border border-purple-200">
                         {shopkeepers.length} Hubs
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-purple-300 transition-colors">
-                        Showroom Dealers Hub
+                      <h3 className="text-sm font-bold text-gray-900 group-hover:text-purple-700 transition-colors">
+                        Showroom Dealers Network
                       </h3>
-                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                        Authorized dealerships, floor vehicle display models, test drives & commission disbursements.
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1">
+                        Authorized dealerships, floor vehicle display models, test drives & commissions.
                       </p>
                     </div>
-                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
+                    <div className="text-xs text-gray-600 pt-2 space-y-1.5 border-t border-gray-100">
                       <div className="flex justify-between">
-                        <span>Floor Models:</span>
-                        <strong className="text-white">{shopkeepers.reduce((acc, s) => acc + (s.inventoryCount || 0), 0)} Units</strong>
+                        <span className="text-gray-400">Floor Models:</span>
+                        <strong className="text-gray-800">{shopkeepers.reduce((acc, s) => acc + (s.inventoryCount || 0), 0)} Units</strong>
                       </div>
                       <div className="flex justify-between">
-                        <span>Test Drives:</span>
-                        <strong className="text-[#B7F34A]">{testDrives.length} Bookings</strong>
+                        <span className="text-gray-400">Test Drives:</span>
+                        <strong className="text-purple-700 font-bold">{testDrives.length} Bookings</strong>
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-purple-400 group-hover:translate-x-1 transition-transform">
+                  <div className="mt-4 pt-3 flex items-center text-xs font-bold text-purple-700 group-hover:translate-x-1 transition-transform">
                     <span>Open Dealership Console →</span>
                   </div>
                 </div>
-
-                {/* 4. EV Categories & Catalog Landing Hub */}
-                <div
-                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
-                  className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-amber-400/20 hover:border-amber-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-400/30 group-hover:scale-105 transition-transform">
-                        <Sparkles className="w-5 h-5" />
-                      </div>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                        {categories.length} Categories
-                      </span>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-amber-300 transition-colors">
-                        EV Categories & Catalog Hub
-                      </h3>
-                      <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">
-                        Electric Scooters, Electric Autos, Cargo, Loaders, 35+ Subcategories with PM E-DRIVE subsidies & OEM Brands.
-                      </p>
-                    </div>
-                    <div className="text-[11px] text-slate-300 pt-1 space-y-1 border-t border-slate-700/50">
-                      <div className="flex justify-between">
-                        <span>Subcategories:</span>
-                        <strong className="text-white">{subCategories.length} Types</strong>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Verified Brands:</span>
-                        <strong className="text-[#B7F34A]">{brands.length} OEMs</strong>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-2 flex items-center text-xs font-bold text-amber-400 group-hover:translate-x-1 transition-transform">
-                    <span>Open Catalog Landing Page →</span>
-                  </div>
-                </div>
               </div>
             </div>
 
+            {/* Live Operational Activity Center: Split View */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              
-              {/* Recent Vehicle Orders */}
-              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+              {/* Left Column: Customer Inquiries (Orders / Test Drives / Quotes) with Sub-tabs */}
+              <div className="bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                      <ShoppingBag className="w-4 h-4 text-[#16A34A]" />
+                      <span>Customer Bookings & Test Drives</span>
+                    </h3>
+                  </div>
+
+                  {/* Clean Tab Switcher */}
+                  <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+                    <button
+                      onClick={() => setRecentActivityTab('orders')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        recentActivityTab === 'orders'
+                          ? 'bg-white text-gray-900 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Orders ({vehicleOrders.length})
+                    </button>
+                    <button
+                      onClick={() => setRecentActivityTab('test-drives')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        recentActivityTab === 'test-drives'
+                          ? 'bg-white text-gray-900 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Test Drives ({testDrives.length})
+                    </button>
+                    <button
+                      onClick={() => setRecentActivityTab('quotes')}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        recentActivityTab === 'quotes'
+                          ? 'bg-white text-gray-900 shadow-2xs'
+                          : 'text-gray-500 hover:text-gray-900'
+                      }`}
+                    >
+                      Quotes ({quotations.length})
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab Content */}
+                {recentActivityTab === 'orders' && (
+                  <div className="space-y-3">
+                    {vehicleOrders.length === 0 ? (
+                      <div className="py-8 px-4 text-center rounded-2xl bg-gray-50/70 border border-dashed border-gray-200 space-y-2">
+                        <ShoppingBag className="w-8 h-8 text-gray-300 mx-auto" />
+                        <p className="text-xs font-bold text-gray-700">No active vehicle token bookings</p>
+                        <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                          Customer bookings from the storefront or showroom walk-ins appear here with digital token deposit receipts.
+                        </p>
+                        <Link
+                          to="/"
+                          target="_blank"
+                          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16A34A] hover:underline pt-1"
+                        >
+                          <span>Explore Customer Storefront</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    ) : (
+                      vehicleOrders.slice(0, 4).map(o => (
+                        <div key={o.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                          <div>
+                            <strong className="text-xs font-bold text-gray-900 block">{o.vehicleName}</strong>
+                            <span className="text-[11px] text-gray-500 font-mono">
+                              {o.orderNumber} • ₹{(o.bookingAmountPaid || 0).toLocaleString('en-IN')} ({o.deliveryAddress?.fullName || 'Customer'})
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            {o.status.replace(/_/g, ' ')}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {recentActivityTab === 'test-drives' && (
+                  <div className="space-y-3">
+                    {testDrives.length === 0 ? (
+                      <div className="py-8 px-4 text-center rounded-2xl bg-gray-50/70 border border-dashed border-gray-200 space-y-2">
+                        <Clock className="w-8 h-8 text-gray-300 mx-auto" />
+                        <p className="text-xs font-bold text-gray-700">No doorstep test drives scheduled</p>
+                        <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                          Scheduled customer test drives across 24 cities with assigned showroom dealer units will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      testDrives.slice(0, 4).map(td => (
+                        <div key={td.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                          <div>
+                            <strong className="text-xs font-bold text-gray-900 block">{td.vehicleName}</strong>
+                            <span className="text-[11px] text-gray-500">
+                              {td.customerName} • {td.preferredDate} ({td.timeSlot}) • {td.city}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
+                            {td.status}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {recentActivityTab === 'quotes' && (
+                  <div className="space-y-3">
+                    {quotations.length === 0 ? (
+                      <div className="py-8 px-4 text-center rounded-2xl bg-gray-50/70 border border-dashed border-gray-200 space-y-2">
+                        <FileText className="w-8 h-8 text-gray-300 mx-auto" />
+                        <p className="text-xs font-bold text-gray-700">No fleet quotations in review</p>
+                        <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                          B2B enterprise fleet inquiries and custom financing quotations will be displayed here.
+                        </p>
+                      </div>
+                    ) : (
+                      quotations.slice(0, 4).map(q => (
+                        <div key={q.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                          <div>
+                            <strong className="text-xs font-bold text-gray-900 block">{q.vehicleName} ({q.quantity} Units)</strong>
+                            <span className="text-[11px] text-gray-500">
+                              {q.companyName || q.customerName} • {q.city}
+                            </span>
+                          </div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200">
+                            {q.status}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column: Registered Customer Profiles */}
+              <div className="bg-white rounded-3xl p-6 border border-gray-200/90 shadow-xs space-y-4">
                 <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                   <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <ShoppingBag className="w-4 h-4 text-[#16A34A]" />
-                    <span>Recent Customer Vehicle Bookings</span>
+                    <Users className="w-4 h-4 text-[#16A34A]" />
+                    <span>Registered Customers ({registeredCustomers.length})</span>
                   </h3>
                   <button
-                    onClick={() => setActiveTab('orders')}
-                    className="text-xs font-bold text-[#16A34A] hover:underline"
+                    onClick={() => setActiveTab('customers')}
+                    className="text-xs font-bold text-[#16A34A] hover:underline cursor-pointer"
                   >
-                    View All →
+                    Manage Users →
                   </button>
                 </div>
 
-                <div className="space-y-3">
-                  {vehicleOrders.length === 0 ? (
-                    <p className="text-xs text-gray-400 py-4 text-center">No vehicle orders yet.</p>
-                  ) : (
-                    vehicleOrders.slice(0, 4).map(o => (
-                      <div key={o.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                        <div>
-                          <strong className="text-xs font-bold text-gray-900 block">{o.vehicleName}</strong>
-                          <span className="text-[11px] text-gray-500 font-mono">
-                            {o.orderNumber} • ₹{(o.bookingAmountPaid || 0).toLocaleString('en-IN')} ({o.deliveryAddress?.fullName || 'Customer'})
-                          </span>
+                {registeredCustomers.length === 0 ? (
+                  <div className="py-8 px-4 text-center rounded-2xl bg-gray-50/70 border border-dashed border-gray-200 space-y-2">
+                    <Users className="w-8 h-8 text-gray-300 mx-auto" />
+                    <p className="text-xs font-bold text-gray-700">Customer profiles ready</p>
+                    <p className="text-[11px] text-gray-400 max-w-sm mx-auto">
+                      Real customer user profiles with verified mobile OTP numbers and KYC documents will appear here.
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('customer-kyc')}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16A34A] hover:underline pt-1 cursor-pointer"
+                    >
+                      <span>Check Customer KYC Desk →</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {registeredCustomers.slice(0, 4).map(cust => (
+                      <div key={cust.id || cust.phone} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <strong className="text-xs font-bold text-gray-900 block">{cust.fullName}</strong>
+                          <div className="text-[11px] text-gray-600 font-mono flex items-center gap-1">
+                            <Phone className="w-3 h-3 text-[#16A34A]" />
+                            <span>+91 {cust.phone}</span>
+                          </div>
+                          <span className="text-[10px] text-gray-400 block">{cust.city} {cust.pincode ? `(${cust.pincode})` : ''}</span>
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
-                          {o.status.replace(/_/g, ' ')}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                          cust.isKycVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {cust.isKycVerified ? 'Verified' : 'Pending'}
                         </span>
                       </div>
-                    ))
-                  )}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {/* Recent Test Drive Bookings */}
-              <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
-                <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                  <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-600" />
-                    <span>Upcoming Doorstep Test Drives</span>
-                  </h3>
-                  <button
-                    onClick={() => setActiveTab('test-drives')}
-                    className="text-xs font-bold text-[#16A34A] hover:underline"
-                  >
-                    View All →
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {testDrives.length === 0 ? (
-                    <p className="text-xs text-gray-400 py-4 text-center">No test drives scheduled yet.</p>
-                  ) : (
-                    testDrives.slice(0, 4).map(td => (
-                      <div key={td.id} className="p-3.5 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                        <div>
-                          <strong className="text-xs font-bold text-gray-900 block">{td.vehicleName}</strong>
-                          <span className="text-[11px] text-gray-500">
-                            {td.customerName} • {td.preferredDate} ({td.timeSlot}) • {td.city}
-                          </span>
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200">
-                          {td.status}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
             </div>
 
-            {/* Recent Registered Customers Overview Card */}
-            <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#16A34A]" />
-                  <span>Recent Registered Customer Profiles</span>
-                </h3>
+            {/* Quick Operations Action Bar */}
+            <div className="p-5 rounded-3xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-bold text-slate-800 block">Quick Operational Actions</span>
+                <span className="text-[11px] text-slate-500">Fast onboarding & configuration shortcuts</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
                 <button
-                  onClick={() => setActiveTab('customers')}
-                  className="text-xs font-bold text-[#16A34A] hover:underline"
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                 >
-                  Manage All Customers ({registeredCustomers.length}) →
+                  <Plus className="w-3.5 h-3.5 text-[#16A34A]" />
+                  <span>+ Add Primary Category</span>
+                </button>
+                <button
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#16A34A]" />
+                  <span>+ Add Sub-Category</span>
+                </button>
+                <button
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-[#16A34A]" />
+                  <span>+ Add Vehicle Model</span>
+                </button>
+                <button
+                  onClick={() => handleSelectTab('sp-onboarding', 'service-management')}
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-blue-50 text-blue-800 border border-blue-200 text-xs font-bold transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 text-blue-600" />
+                  <span>+ Dispatch Service Van</span>
                 </button>
               </div>
-
-              {registeredCustomers.length === 0 ? (
-                <div className="p-6 text-center rounded-2xl bg-gray-50 border border-dashed border-gray-200">
-                  <p className="text-xs text-gray-500 font-medium">
-                    No customers have registered yet. Real customer profiles will appear here as soon as they sign up on the marketplace.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {registeredCustomers.slice(0, 6).map(cust => (
-                    <div key={cust.id || cust.phone} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <strong className="text-xs font-bold text-gray-900 block">{cust.fullName}</strong>
-                        <div className="text-[11px] text-gray-600 font-mono flex items-center gap-1">
-                          <Phone className="w-3 h-3 text-[#16A34A]" />
-                          <span>+91 {cust.phone}</span>
-                        </div>
-                        <span className="text-[10px] text-gray-400 block">{cust.city} {cust.pincode ? `(${cust.pincode})` : ''}</span>
-                      </div>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
-                        cust.isKycVerified ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {cust.isKycVerified ? 'KYC Verified' : 'Pending KYC'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         )}
