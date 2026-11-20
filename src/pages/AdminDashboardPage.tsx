@@ -97,7 +97,7 @@ export type AdminTab =
   | 'shop-list'
   | 'shop-payout'
   // Category & Brand Management
-  | 'catalog-architecture'
+  | 'catalog-hub'
   | 'categories'
   | 'subcategories'
   | 'brands';
@@ -434,7 +434,7 @@ export const AdminDashboardPage: React.FC = () => {
     'service-management': false,
     'spare-vendor': false,
     'marketplace': false,
-    'catalog-architecture': false,
+    'catalog-hub': false,
     'orders-management': false,
     'user-management': false,
     'support-communication': false
@@ -759,11 +759,11 @@ export const AdminDashboardPage: React.FC = () => {
       ]
     },
     {
-      id: 'catalog-architecture',
+      id: 'catalog-hub',
       label: 'EV Categories & Catalog Hub',
       icon: Sparkles,
       items: [
-        { id: 'catalog-architecture' as AdminTab, label: 'Catalog Landing Hub', badge: 'Live' },
+        { id: 'catalog-hub' as AdminTab, label: 'Catalog Landing Hub', badge: 'Live' },
         { id: 'categories' as AdminTab, label: 'Primary Categories', badge: categories.length },
         { id: 'subcategories' as AdminTab, label: 'Categories (Sub-Categories)', badge: subCategories.length },
         { id: 'brands' as AdminTab, label: 'Brands & OEMs', badge: brands.length },
@@ -803,7 +803,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Helper to get current active breadcrumb
   const getTabBreadcrumb = () => {
     if (activeTab === 'overview') return { group: 'Main Console', label: 'Dashboard' };
-    if (activeTab === 'catalog-architecture') return { group: 'EV Categories & Catalog Hub', label: 'Master Catalog Landing Page' };
+    if (activeTab === 'catalog-hub') return { group: 'EV Categories & Catalog Hub', label: 'Master Catalog Landing Page' };
     if (activeTab === 'sp-list') return { group: 'Service Management', label: 'Live Service Vans & Mobile Fleet Hub' };
     if (activeTab === 'vendor-list') return { group: 'Spare VendorManagement', label: 'Certified Vendors & Wholesale Hub' };
     if (activeTab === 'shop-list') return { group: 'Marketplace Management', label: 'Showroom Dealers & Dealerships Hub' };
@@ -849,7 +849,7 @@ export const AdminDashboardPage: React.FC = () => {
                   'service-management': 'sp-list',
                   'spare-vendor': 'vendor-list',
                   'marketplace': 'shop-list',
-                  'catalog-architecture': 'catalog-architecture',
+                  'catalog-hub': 'catalog-hub',
                   'orders-management': 'orders',
                   'user-management': 'customers',
                   'support-communication': 'tickets'
@@ -1838,15 +1838,15 @@ export const AdminDashboardPage: React.FC = () => {
                     </button>
 
                     <button
-                      onClick={() => handleSelectTab('catalog-architecture', 'catalog-architecture')}
+                      onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border shadow-xs cursor-pointer ${
-                        activeTab === 'catalog-architecture'
+                        activeTab === 'catalog-hub'
                           ? 'bg-[#183556] text-white border-amber-400/50 shadow-sm ring-2 ring-amber-500/20'
                           : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-700 border-slate-200'
                       }`}
                       title="Open EV Categories & Catalog Landing Hub"
                     >
-                      <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'catalog-architecture' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
+                      <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'catalog-hub' ? 'text-[#00D2FF]' : 'text-amber-600'}`} />
                       <span>EV Categories & Catalog</span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-extrabold">
                         {categories.length} Categories
@@ -2200,7 +2200,7 @@ export const AdminDashboardPage: React.FC = () => {
 
                 {/* 4. EV Categories & Catalog Landing Hub */}
                 <div
-                  onClick={() => handleSelectTab('catalog-architecture', 'catalog-architecture')}
+                  onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
                   className="group relative p-5 rounded-2xl bg-[#142C4C]/90 hover:bg-[#193860] border border-amber-400/20 hover:border-amber-400/60 transition-all duration-200 cursor-pointer shadow-md flex flex-col justify-between"
                 >
                   <div className="space-y-3">
@@ -5981,8 +5981,8 @@ export const AdminDashboardPage: React.FC = () => {
                 </div>
               </div>
             )}
-            {/* TAB: CATALOG & BRANDS ARCHITECTURE MASTER CONSOLE */}
-            {activeTab === 'catalog-architecture' && (() => {
+            {/* TAB: EV CATEGORIES & CATALOG LANDING HUB */}
+            {activeTab === 'catalog-hub' && (() => {
               const filteredCats = categories.filter(c => {
                 if (archScaleFilter !== 'ALL') {
                   if (archScaleFilter === 'TECH_COMPONENTS') {
@@ -7148,7 +7148,7 @@ export const AdminDashboardPage: React.FC = () => {
                   <div>
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-[#16A34A] text-xs font-bold border border-emerald-200 mb-1">
                       <Sparkles className="w-3.5 h-3.5" />
-                      <span>Live Frontend Catalog Architecture</span>
+                      <span>Live Frontend EV Catalog & Categories</span>
                     </div>
                     <h2 className="text-xl font-black text-[#06152B]">
                       Primary ({categories.length})
@@ -7157,13 +7157,22 @@ export const AdminDashboardPage: React.FC = () => {
                       Create, reorder, and publish main primary categories shown live on Homepage "Shop by Category" and Header menus.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setIsCategoryModalOpen(true)}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Create Primary</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                      className="px-3.5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Catalog Landing Hub →</span>
+                    </button>
+                    <button
+                      onClick={() => setIsCategoryModalOpen(true)}
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Create Primary</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Primary Table */}
@@ -7254,18 +7263,27 @@ export const AdminDashboardPage: React.FC = () => {
                       Organize granular category types (e.g. High-Speed, Delivery Boxes, 72V LFP Batteries) under primary categories.
                     </p>
                   </div>
-                  <button
-                    onClick={() => {
-                      if (categories.length > 0 && !subCategoryForm.categoryId) {
-                        setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
-                      }
-                      setIsSubCategoryModalOpen(true);
-                    }}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Create Category</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                      className="px-3.5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Catalog Landing Hub →</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (categories.length > 0 && !subCategoryForm.categoryId) {
+                          setSubCategoryForm(prev => ({ ...prev, categoryId: categories[0].id }));
+                        }
+                        setIsSubCategoryModalOpen(true);
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Create Category</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Filter by Primary Category */}
@@ -7366,13 +7384,22 @@ export const AdminDashboardPage: React.FC = () => {
                       Manage official EV manufacturer profiles, warranty guarantees, and homepage brand showcase cards.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setIsBrandModalOpen(true)}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max"
-                  >
-                    <Plus className="w-4 h-4 text-[#B7F34A]" />
-                    <span>Register New OEM Brand</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleSelectTab('catalog-hub', 'catalog-hub')}
+                      className="px-3.5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Catalog Landing Hub →</span>
+                    </button>
+                    <button
+                      onClick={() => setIsBrandModalOpen(true)}
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-[#22C55E] hover:from-emerald-700 hover:to-emerald-600 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 w-max cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4 text-[#B7F34A]" />
+                      <span>Register New OEM Brand</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Brands Grid */}
@@ -7462,7 +7489,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </button>
                     <div>
                       <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
-                        Master Catalog Architecture / New Segment
+                        Master EV Catalog / New Category
                       </div>
                       <h2 className="text-base sm:text-lg font-black text-white">
                         Create New Primary EV Category
@@ -7664,7 +7691,7 @@ export const AdminDashboardPage: React.FC = () => {
                         </div>
 
                         <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 space-y-1">
-                          <strong className="block font-bold">ℹ️ Enterprise Architecture Tip:</strong>
+                          <strong className="block font-bold">ℹ️ Enterprise Catalog Tip:</strong>
                           <p className="text-[11px] leading-relaxed text-blue-800">
                             Saving this category creates a top-level taxonomy node in the catalog. You can immediately attach specialized vehicle subcategories and certified OEM brands under it.
                           </p>
@@ -7708,7 +7735,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </button>
                     <div>
                       <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
-                        Master Catalog Architecture / Vehicle Tier
+                        Master EV Catalog / Vehicle Subcategory
                       </div>
                       <h2 className="text-base sm:text-lg font-black text-white">
                         Create EV Subcategory & Segment Tier
@@ -7864,7 +7891,7 @@ export const AdminDashboardPage: React.FC = () => {
                     <div className="space-y-4">
                       <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
                         <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                          Live Architecture Preview
+                          Live Catalog Hierarchy Preview
                         </h4>
                         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 space-y-3 shadow-xs">
                           <div className="flex items-center justify-between">
@@ -7942,7 +7969,7 @@ export const AdminDashboardPage: React.FC = () => {
                     </button>
                     <div>
                       <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
-                        Master Catalog Architecture / OEM Partnerships
+                        Master EV Catalog / OEM Partnerships
                       </div>
                       <h2 className="text-base sm:text-lg font-black text-white">
                         Register Certified OEM Brand Partner
