@@ -47,7 +47,8 @@ import {
   Store,
   DollarSign,
   Check,
-  FileCheck
+  FileCheck,
+  Copy
 } from 'lucide-react';
 import { storage } from '../services/storageService';
 import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
@@ -62,7 +63,8 @@ import {
   QuotationRequestItem,
   ServiceBookingItem,
   SparePartsOrder,
-  SupportTicketItem
+  SupportTicketItem,
+  VehicleItem
 } from '../types';
 
 export type AdminTab =
@@ -945,6 +947,31 @@ export const AdminDashboardPage: React.FC = () => {
   const [archSearchQuery, setArchSearchQuery] = useState('');
   const [archScaleFilter, setArchScaleFilter] = useState('ALL');
 
+  // Interactive Catalog Landing Page States (Storefront Preview & Vehicle Models)
+  const [vehicles, setVehicles] = useState<VehicleItem[]>(() => storage.getVehicles());
+  const [landingSelectedCat, setLandingSelectedCat] = useState<string>('ELECTRIC_SCOOTER');
+  const [landingSelectedSub, setLandingSelectedSub] = useState<string>('ALL');
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  // New Vehicle Model Studio State
+  const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
+  const [vehicleForm, setVehicleForm] = useState({
+    name: '',
+    brand: 'ElectraMobility',
+    category: 'ELECTRIC_SCOOTER',
+    subcategory: '',
+    tagline: '',
+    description: '',
+    exShowroomPrice: 125000,
+    subsidyEstimate: 15000,
+    certifiedRangeKm: 150,
+    batteryCapacityKwh: 3.5,
+    topSpeedKmph: 85,
+    chargingTimeHours: 4,
+    imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
+    inStock: true
+  });
+
   // Service Provider Fleet Master Console State
   const [spViewMode, setSpViewMode] = useState<'fleet' | 'bookings' | 'payouts' | 'onboard'>('fleet');
   const [spSearchQuery, setSpSearchQuery] = useState('');
@@ -1164,6 +1191,84 @@ export const AdminDashboardPage: React.FC = () => {
     setCategories(storage.getCategories());
     setSubCategories(storage.getSubCategories());
     setBrands(storage.getBrands());
+    setVehicles(storage.getVehicles());
+  };
+
+  // Vehicle Management Handlers
+  const handleSaveVehicle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!vehicleForm.name.trim()) return;
+
+    const newVeh = storage.addVehicle({
+      name: vehicleForm.name.trim(),
+      brand: vehicleForm.brand || 'ElectraMobility',
+      category: vehicleForm.category as any,
+      tagline: vehicleForm.tagline || `${vehicleForm.brand} ${vehicleForm.name}`,
+      description: vehicleForm.description || `Certified high-efficiency electric vehicle by ${vehicleForm.brand}.`,
+      usageType: 'COMMERCIAL',
+      exShowroomPrice: Number(vehicleForm.exShowroomPrice) || 99000,
+      subsidyEstimate: Number(vehicleForm.subsidyEstimate) || 0,
+      rtoEstimate: Math.round(Number(vehicleForm.exShowroomPrice) * 0.04),
+      insuranceEstimate: Math.round(Number(vehicleForm.exShowroomPrice) * 0.05),
+      bookingTokenAmount: 2999,
+      certifiedRangeKm: Number(vehicleForm.certifiedRangeKm) || 120,
+      certifiedRangeCondition: 'ARAI / IDC Certified under standard test conditions',
+      topSpeedKmph: Number(vehicleForm.topSpeedKmph) || 75,
+      batteryCapacityKwh: Number(vehicleForm.batteryCapacityKwh) || 3.5,
+      chargingTimeHours: Number(vehicleForm.chargingTimeHours) || 4,
+      fastChargingTimeMin: 60,
+      motorType: 'High Efficiency PMSM Drive',
+      motorPowerWatts: 3500,
+      warrantyYears: 3,
+      warrantyKm: 50000,
+      isFeatured: true,
+      inStock: vehicleForm.inStock,
+      deliveryEstimateDays: 5,
+      images: [
+        { url: vehicleForm.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80', label: vehicleForm.name, isPrimary: true }
+      ],
+      variants: [
+        { id: `var-${Date.now()}`, variantName: 'Standard Edition', colorName: 'Pearl White', colorHex: '#F3F4F6', priceDifference: 0, batteryCapacity: Number(vehicleForm.batteryCapacityKwh) || 3.5, realWorldRangeKm: Number(vehicleForm.certifiedRangeKm) || 120, stockCount: 10, imageUrl: vehicleForm.imageUrl, isDefault: true }
+      ],
+      specifications: []
+    });
+
+    setVehicles(storage.getVehicles());
+    setIsVehicleModalOpen(false);
+    setVehicleForm({
+      name: '',
+      brand: 'ElectraMobility',
+      category: 'ELECTRIC_SCOOTER',
+      subcategory: '',
+      tagline: '',
+      description: '',
+      exShowroomPrice: 125000,
+      subsidyEstimate: 15000,
+      certifiedRangeKm: 150,
+      batteryCapacityKwh: 3.5,
+      topSpeedKmph: 85,
+      chargingTimeHours: 4,
+      imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80',
+      inStock: true
+    });
+    setRefreshNotification(`✓ Vehicle "${newVeh.name}" added to catalog and live storefront!`);
+    setTimeout(() => setRefreshNotification(null), 3500);
+  };
+
+  const handleToggleVehicleStock = (vehicleId: string, currentStock: boolean) => {
+    storage.updateVehicle(vehicleId, { inStock: !currentStock });
+    setVehicles(storage.getVehicles());
+    setRefreshNotification(`✓ Vehicle stock status updated!`);
+    setTimeout(() => setRefreshNotification(null), 3000);
+  };
+
+  const handleDeleteVehicle = (vehicleId: string, vehicleName: string) => {
+    if (confirm(`Are you sure you want to delete "${vehicleName}" from catalog?`)) {
+      storage.deleteVehicle(vehicleId);
+      setVehicles(storage.getVehicles());
+      setRefreshNotification(`✓ Vehicle "${vehicleName}" removed from catalog!`);
+      setTimeout(() => setRefreshNotification(null), 3000);
+    }
   };
 
   // User Management Handlers
@@ -6025,6 +6130,57 @@ export const AdminDashboardPage: React.FC = () => {
                 );
               });
 
+              // Dynamic Storefront URL & Filtered Vehicles for Landing Hub
+              const activeParentCat = categories.find(c =>
+                (c.categoryKey && c.categoryKey.toUpperCase() === landingSelectedCat.toUpperCase()) ||
+                c.slug.toLowerCase() === landingSelectedCat.toLowerCase() ||
+                c.id === landingSelectedCat
+              );
+
+              const activeChildSubs = activeParentCat ? subCategories.filter(s => s.categoryId === activeParentCat.id) : [];
+
+              const currentStorefrontPath = `/vehicles?category=${activeParentCat?.categoryKey || landingSelectedCat}${landingSelectedSub !== 'ALL' ? `&subcategory=${landingSelectedSub}` : ''}`;
+              const currentStorefrontUrl = `https://vidyutva-ev-marketplace.vercel.app${currentStorefrontPath}`;
+
+              const displayedLandingVehicles = vehicles.filter(v => {
+                if (landingSelectedCat !== 'ALL') {
+                  const qNorm = landingSelectedCat.trim().toUpperCase();
+                  let match = Boolean(v.category && (v.category === landingSelectedCat || v.category.toUpperCase() === qNorm));
+                  if (!match && activeParentCat) {
+                    const catKey = activeParentCat.categoryKey ? activeParentCat.categoryKey.toUpperCase() : '';
+                    const catName = activeParentCat.name.toLowerCase();
+                    match = Boolean(v.category && v.category.toUpperCase() === catKey) ||
+                            v.name.toLowerCase().includes(catName) ||
+                            v.tagline.toLowerCase().includes(catName);
+                  }
+                  if (!match) return false;
+                }
+
+                if (landingSelectedSub !== 'ALL') {
+                  const subObj = subCategories.find(s => s.id === landingSelectedSub || s.slug === landingSelectedSub);
+                  if (subObj) {
+                    const subTerm = subObj.name.toLowerCase();
+                    const matchesSub = v.name.toLowerCase().includes(subTerm) ||
+                                       v.tagline.toLowerCase().includes(subTerm) ||
+                                       Boolean(v.description && v.description.toLowerCase().includes(subTerm));
+                    if (!matchesSub && subObj.vehicleSegment) {
+                      const segMatch = v.name.toLowerCase().includes(subObj.vehicleSegment.toLowerCase());
+                      if (!segMatch) return false;
+                    }
+                  }
+                }
+
+                if (archSearchQuery) {
+                  const q = archSearchQuery.toLowerCase();
+                  const matchesQ = v.name.toLowerCase().includes(q) ||
+                                   v.brand.toLowerCase().includes(q) ||
+                                   v.tagline.toLowerCase().includes(q);
+                  if (!matchesQ) return false;
+                }
+
+                return true;
+              });
+
               return (
                 <div className="space-y-6">
                   {/* 1. Command Header Banner */}
@@ -6325,6 +6481,425 @@ export const AdminDashboardPage: React.FC = () => {
                             View Full Hierarchy →
                           </span>
                         </div>
+                      </div>
+
+                      {/* Section: Live Customer Catalog Showcase & Direct Link Creator */}
+                      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-6">
+                        {/* Header & Quick Action */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-black text-gray-900">
+                                Electric Vehicles Catalog Showcase
+                              </h3>
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-black">
+                                Showing {displayedLandingVehicles.length} certified models
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              Live storefront preview & link generator. Select category and subcategory to filter models, test live links, and onboard new vehicles.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setVehicleForm(prev => ({
+                                  ...prev,
+                                  category: landingSelectedCat !== 'ALL' ? landingSelectedCat : 'ELECTRIC_SCOOTER'
+                                }));
+                                setIsVehicleModalOpen(true);
+                              }}
+                              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#16A34A] to-emerald-600 hover:opacity-95 text-white text-xs font-bold transition-all shadow-md flex items-center gap-2 cursor-pointer"
+                            >
+                              <Plus className="w-4 h-4 text-[#B7F34A]" />
+                              <span>+ Add Vehicle to Catalog</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 1. Category Navigation Selector Bar (Exact match to storefront) */}
+                        <div className="space-y-1.5">
+                          <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Select Primary Category:</span>
+                          </div>
+                          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                            <button
+                              onClick={() => {
+                                setLandingSelectedCat('ALL');
+                                setLandingSelectedSub('ALL');
+                              }}
+                              className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all shrink-0 cursor-pointer ${
+                                landingSelectedCat === 'ALL'
+                                  ? 'bg-[#06152B] text-white shadow-md ring-2 ring-emerald-400/40'
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                              }`}
+                            >
+                              All Categories
+                            </button>
+                            {categories.filter(c => c.type === 'VEHICLE').map((cat) => {
+                              const catKey = cat.categoryKey || cat.slug;
+                              const isSelected = landingSelectedCat === catKey || landingSelectedCat === cat.id;
+                              return (
+                                <button
+                                  key={cat.id}
+                                  onClick={() => {
+                                    setLandingSelectedCat(catKey);
+                                    setLandingSelectedSub('ALL');
+                                  }}
+                                  className={`px-4 py-2.5 rounded-2xl text-xs font-black transition-all shrink-0 cursor-pointer flex items-center gap-2 ${
+                                    isSelected
+                                      ? 'bg-[#16A34A] text-white shadow-md ring-2 ring-emerald-500/40'
+                                      : 'bg-gray-100 hover:bg-emerald-50 text-gray-700 hover:text-emerald-800'
+                                  }`}
+                                >
+                                  <span>{cat.name}</span>
+                                  {cat.categoryKey && (
+                                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-md ${
+                                      isSelected ? 'bg-black/20 text-white' : 'bg-white text-gray-500 border border-gray-200'
+                                    }`}>
+                                      {cat.categoryKey}
+                                    </span>
+                                  )}
+                                </button>
+                              );
+                            })}
+                            <button
+                              onClick={() => setIsCategoryModalOpen(true)}
+                              className="px-3.5 py-2.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-dashed border-emerald-300 text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>+ Add Primary Category</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 2. Dynamic Subcategories Bar (When a Primary Category is chosen) */}
+                        {landingSelectedCat !== 'ALL' && activeChildSubs.length > 0 && (
+                          <div className="bg-gray-50/90 p-4 rounded-2xl border border-gray-200/80 space-y-2.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <Layers className="w-3.5 h-3.5 text-blue-600" />
+                                <span>Subcategories for {activeParentCat?.name || landingSelectedCat}:</span>
+                              </span>
+                              <button
+                                onClick={() => {
+                                  if (activeParentCat) {
+                                    setSubCategoryForm(prev => ({ ...prev, categoryId: activeParentCat.id }));
+                                  }
+                                  setIsSubCategoryModalOpen(true);
+                                }}
+                                className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>+ Add Subcategory (Dropdown)</span>
+                              </button>
+                            </div>
+
+                            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                              <button
+                                onClick={() => setLandingSelectedSub('ALL')}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                                  landingSelectedSub === 'ALL'
+                                    ? 'bg-blue-600 text-white shadow-xs'
+                                    : 'bg-white hover:bg-gray-100 text-gray-700 border border-gray-200'
+                                }`}
+                              >
+                                All {activeParentCat?.name || 'Subcategories'}
+                              </button>
+                              {activeChildSubs.map(sub => {
+                                const isSubSelected = landingSelectedSub === sub.id || landingSelectedSub === sub.slug;
+                                return (
+                                  <button
+                                    key={sub.id}
+                                    onClick={() => setLandingSelectedSub(sub.id)}
+                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                                      isSubSelected
+                                        ? 'bg-emerald-600 text-white shadow-xs'
+                                        : 'bg-white hover:bg-emerald-50 text-gray-700 hover:text-emerald-800 border border-gray-200'
+                                    }`}
+                                  >
+                                    <span>{sub.name}</span>
+                                    {sub.subsidyEligible && (
+                                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
+                                        isSubSelected ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                                      }`}>
+                                        PM E-DRIVE
+                                      </span>
+                                    )}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 3. Live Storefront Link Creator & Filter Bar */}
+                        <div className="bg-gradient-to-r from-[#06152B] via-[#0E2442] to-[#12335C] p-4 sm:p-5 rounded-2xl border border-blue-400/30 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-[#B7F34A] text-[10px] font-mono font-bold uppercase tracking-wider border border-emerald-400/30">
+                                Generated Storefront URL
+                              </span>
+                              <span className="text-xs text-blue-200">
+                                Direct Customer Route:
+                              </span>
+                            </div>
+                            <div className="font-mono text-xs sm:text-sm text-cyan-300 font-bold break-all bg-black/40 px-3 py-1.5 rounded-lg border border-cyan-400/20 select-all">
+                              {currentStorefrontUrl}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(currentStorefrontUrl);
+                                setCopiedLink(true);
+                                setTimeout(() => setCopiedLink(false), 2500);
+                              }}
+                              className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all border border-white/20 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                              title="Copy live customer link"
+                            >
+                              <Copy className="w-3.5 h-3.5 text-cyan-300" />
+                              <span>{copiedLink ? '✓ Copied!' : 'Copy Link'}</span>
+                            </button>
+                            <a
+                              href={currentStorefrontPath}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#16A34A] to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-black transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
+                              title="Open filtered customer catalog in new tab"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-white" />
+                              <span>Open Storefront ↗</span>
+                            </a>
+                          </div>
+                        </div>
+
+                        {/* Active Filters Pill */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 text-xs pt-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-gray-500 font-bold">Active Filters:</span>
+                            {landingSelectedCat !== 'ALL' && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-mono font-bold text-xs border border-emerald-300">
+                                <span>Category: {landingSelectedCat}</span>
+                                <button
+                                  onClick={() => { setLandingSelectedCat('ALL'); setLandingSelectedSub('ALL'); }}
+                                  className="hover:text-red-600 font-bold ml-1 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            )}
+                            {landingSelectedSub !== 'ALL' && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-900 font-bold text-xs border border-blue-300">
+                                <span>Subcategory: {subCategories.find(s => s.id === landingSelectedSub)?.name || landingSelectedSub}</span>
+                                <button
+                                  onClick={() => setLandingSelectedSub('ALL')}
+                                  className="hover:text-red-600 font-bold ml-1 cursor-pointer"
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            )}
+                            {(landingSelectedCat !== 'ALL' || landingSelectedSub !== 'ALL') && (
+                              <button
+                                onClick={() => { setLandingSelectedCat('ALL'); setLandingSelectedSub('ALL'); }}
+                                className="text-xs text-gray-500 hover:text-red-600 underline font-semibold ml-1 cursor-pointer"
+                              >
+                                Clear All Filters
+                              </button>
+                            )}
+                          </div>
+
+                          <span className="text-xs text-gray-500 font-medium">
+                            Showing <strong>{displayedLandingVehicles.length}</strong> certified models
+                          </span>
+                        </div>
+
+                        {/* 4. Live Vehicle Cards Grid */}
+                        {displayedLandingVehicles.length === 0 ? (
+                          <div className="p-10 rounded-3xl border border-dashed border-gray-300 text-center space-y-3 bg-gray-50">
+                            <Truck className="w-10 h-10 text-gray-400 mx-auto" />
+                            <h4 className="text-sm font-bold text-gray-800">No vehicles in this segment yet</h4>
+                            <p className="text-xs text-gray-500 max-w-md mx-auto">
+                              No electric models found matching the selected category and subcategory. Add your first vehicle model using the studio.
+                            </p>
+                            <button
+                              onClick={() => {
+                                setVehicleForm(prev => ({
+                                  ...prev,
+                                  category: landingSelectedCat !== 'ALL' ? landingSelectedCat : 'ELECTRIC_SCOOTER'
+                                }));
+                                setIsVehicleModalOpen(true);
+                              }}
+                              className="px-4 py-2 rounded-xl bg-[#16A34A] text-white text-xs font-bold hover:bg-emerald-700 transition-all cursor-pointer inline-flex items-center gap-1.5"
+                            >
+                              <Plus className="w-3.5 h-3.5 text-[#B7F34A]" />
+                              <span>+ Add Vehicle to Catalog</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {displayedLandingVehicles.map((v) => {
+                              const primaryImage = v.images?.find((img: any) => img.isPrimary)?.url || v.images?.[0]?.url || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80';
+                              return (
+                                <div
+                                  key={v.id}
+                                  className="rounded-3xl border border-gray-200 overflow-hidden bg-white hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between"
+                                >
+                                  <div>
+                                    {/* Image & Stock Badge */}
+                                    <div className="relative h-48 overflow-hidden bg-gray-900 group">
+                                      <img
+                                        src={primaryImage}
+                                        alt={v.name}
+                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                                      
+                                      {/* Stock Tag */}
+                                      <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                          v.inStock ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+                                        }`}>
+                                          {v.inStock ? 'In Stock • Ready for Delivery' : 'Out of Stock'}
+                                        </span>
+                                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-black/60 text-emerald-300">
+                                          Book at ₹{v.bookingTokenAmount?.toLocaleString('en-IN') || '2,999'}
+                                        </span>
+                                      </div>
+
+                                      {/* Colours Preview */}
+                                      {v.variants && v.variants.length > 0 && (
+                                        <div className="absolute top-3 right-3 flex items-center gap-1 bg-black/60 px-2 py-1 rounded-full">
+                                          {v.variants.slice(0, 3).map((vr: any) => (
+                                            <span
+                                              key={vr.id}
+                                              className="w-3 h-3 rounded-full border border-white/50"
+                                              style={{ backgroundColor: vr.colorHex }}
+                                              title={vr.colorName}
+                                            />
+                                          ))}
+                                        </div>
+                                      )}
+
+                                      {/* Title & Brand on Image */}
+                                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                                        <div className="text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                                          {v.brand}
+                                        </div>
+                                        <h4 className="text-base font-black leading-tight drop-shadow-sm">
+                                          {v.name}
+                                        </h4>
+                                        <p className="text-[11px] text-gray-200 mt-0.5 line-clamp-1">
+                                          {v.tagline}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Price & Subsidy Box */}
+                                    <div className="p-4 space-y-3">
+                                      <div className="flex items-baseline justify-between border-b border-gray-100 pb-2.5">
+                                        <div>
+                                          <span className="text-[10px] text-gray-400 block font-bold uppercase">Ex-Showroom Price</span>
+                                          <strong className="text-lg font-black text-gray-900">
+                                            ₹{v.exShowroomPrice.toLocaleString('en-IN')}
+                                          </strong>
+                                        </div>
+                                        {v.subsidyEstimate > 0 && (
+                                          <div className="text-right">
+                                            <span className="text-[11px] font-black text-[#16A34A] block bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                                              ₹{v.subsidyEstimate.toLocaleString('en-IN')} Subsidy
+                                            </span>
+                                            <span className="text-[9px] text-gray-400">FAME-II / State credit</span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* 4 Core Technical Specs Grid */}
+                                      <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 space-y-0.5">
+                                          <span className="text-[10px] text-gray-400 block font-bold uppercase">Certified Range</span>
+                                          <strong className="text-xs font-black text-gray-900 flex items-center gap-1">
+                                            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                                            <span>{v.certifiedRangeKm} km</span>
+                                          </strong>
+                                        </div>
+
+                                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 space-y-0.5">
+                                          <span className="text-[10px] text-gray-400 block font-bold uppercase">Battery Capacity</span>
+                                          <strong className="text-xs font-black text-gray-900 flex items-center gap-1">
+                                            <Box className="w-3.5 h-3.5 text-blue-600" />
+                                            <span>{v.batteryCapacityKwh} kWh</span>
+                                          </strong>
+                                        </div>
+
+                                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 space-y-0.5">
+                                          <span className="text-[10px] text-gray-400 block font-bold uppercase">Max Speed</span>
+                                          <strong className="text-xs font-black text-gray-900">
+                                            {v.topSpeedKmph} km/h
+                                          </strong>
+                                        </div>
+
+                                        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 space-y-0.5">
+                                          <span className="text-[10px] text-gray-400 block font-bold uppercase">Charging Time</span>
+                                          <strong className="text-xs font-black text-gray-900">
+                                            {v.chargingTimeHours} hrs
+                                          </strong>
+                                        </div>
+                                      </div>
+
+                                      <div className="text-[10px] text-gray-500 pt-1 border-t border-gray-100 flex items-center justify-between">
+                                        <span className="truncate">{v.certifiedRangeCondition || 'ARAI / IDC Certified under test conditions'}</span>
+                                        <span className="font-bold text-gray-700 shrink-0 ml-1">{v.warrantyYears}Y / {v.warrantyKm / 1000}k km</span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Admin Actions Footer */}
+                                  <div className="p-4 pt-0 space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      <a
+                                        href={`/vehicles/${v.modelSlug}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex-1 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition-all border border-blue-200 flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                                        title="Open vehicle detail page on storefront"
+                                      >
+                                        <ExternalLink className="w-3.5 h-3.5" />
+                                        <span>Storefront View ↗</span>
+                                      </a>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => handleToggleVehicleStock(v.id, v.inStock)}
+                                        className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                          v.inStock
+                                            ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200'
+                                            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                        }`}
+                                        title="Toggle stock availability"
+                                      >
+                                        {v.inStock ? 'Mark Out of Stock' : 'Mark In Stock'}
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteVehicle(v.id, v.name)}
+                                        className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 transition-all border border-rose-200 cursor-pointer"
+                                        title="Remove vehicle from catalog"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
                       {/* Section 2: Core Primary EV Categories Landing Grid (Working Live Cards) */}
@@ -8130,6 +8705,295 @@ export const AdminDashboardPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setIsBrandModalOpen(false)}
+                          className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-2xl transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* 4. Create Vehicle Model Full-Screen Studio */}
+            {isVehicleModalOpen && (
+              <div className="fixed inset-0 z-50 bg-[#F1F5F9] w-screen h-screen overflow-y-auto flex flex-col animate-in fade-in">
+                {/* Full Screen Top Nav Header */}
+                <div className="bg-[#06152B] text-white px-6 py-4 flex items-center justify-between border-b border-blue-500/20 shrink-0 sticky top-0 z-20 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsVehicleModalOpen(false)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <span>← Back to Catalog Landing Hub</span>
+                    </button>
+                    <div>
+                      <div className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">
+                        Master EV Catalog / New Model Onboarding
+                      </div>
+                      <h2 className="text-base sm:text-lg font-black text-white">
+                        Add Electric Vehicle to Catalog
+                      </h2>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsVehicleModalOpen(false)}
+                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all cursor-pointer"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Full Screen Content Body */}
+                <div className="flex-1 p-6 sm:p-10 max-w-6xl mx-auto w-full">
+                  <form onSubmit={handleSaveVehicle} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left 2 Cols: Form Inputs */}
+                    <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-subtle space-y-5">
+                      <div className="border-b border-gray-100 pb-4">
+                        <h3 className="text-base font-bold text-gray-900">Vehicle Specifications & Pricing</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Enter official ARAI/ICAT certified vehicle details, on-road pricing, and government subsidy credits.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Vehicle Model Name *</label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. Electra Glide Pro, Vidyut Yatri Auto"
+                            value={vehicleForm.name}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, name: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Brand / Manufacturer *</label>
+                          <select
+                            value={vehicleForm.brand}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, brand: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold"
+                          >
+                            {brands.map(b => (
+                              <option key={b.id} value={b.name}>{b.name} ({b.origin})</option>
+                            ))}
+                            <option value="ElectraMobility">ElectraMobility</option>
+                            <option value="Vidyut Motors">Vidyut Motors</option>
+                            <option value="Shakti EV Commercials">Shakti EV Commercials</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Primary EV Category *</label>
+                          <select
+                            value={vehicleForm.category}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, category: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-bold"
+                          >
+                            {categories.filter(c => c.type === 'VEHICLE').map(c => (
+                              <option key={c.id} value={c.categoryKey || c.slug}>
+                                {c.name} [{c.categoryKey || c.slug}]
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Subcategory Segment Tag</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. High-Speed Performance Scooters, Passenger E-Rickshaws"
+                            value={vehicleForm.subcategory}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, subcategory: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Tagline / Subtitle</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. High Performance Urban Electric Smart Scooter"
+                          value={vehicleForm.tagline}
+                          onChange={(e) => setVehicleForm({ ...vehicleForm, tagline: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">Ex-Showroom Price (₹) *</label>
+                          <input
+                            type="number"
+                            required
+                            min={10000}
+                            placeholder="129999"
+                            value={vehicleForm.exShowroomPrice}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, exShowroomPrice: Number(e.target.value) })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1.5">FAME-II / State Subsidy Credit (₹)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="18000"
+                            value={vehicleForm.subsidyEstimate}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, subsidyEstimate: Number(e.target.value) })}
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1">Certified Range (km) *</label>
+                          <input
+                            type="number"
+                            required
+                            min={20}
+                            placeholder="170"
+                            value={vehicleForm.certifiedRangeKm}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, certifiedRangeKm: Number(e.target.value) })}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1">Battery (kWh) *</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            required
+                            min={1}
+                            placeholder="4.0"
+                            value={vehicleForm.batteryCapacityKwh}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, batteryCapacityKwh: Number(e.target.value) })}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1">Max Speed (km/h) *</label>
+                          <input
+                            type="number"
+                            required
+                            min={25}
+                            placeholder="95"
+                            value={vehicleForm.topSpeedKmph}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, topSpeedKmph: Number(e.target.value) })}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1">Charging (Hours) *</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            required
+                            min={0.5}
+                            placeholder="4.5"
+                            value={vehicleForm.chargingTimeHours}
+                            onChange={(e) => setVehicleForm({ ...vehicleForm, chargingTimeHours: Number(e.target.value) })}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-mono font-bold"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1.5">Vehicle Cover Image URL</label>
+                        <input
+                          type="url"
+                          placeholder="https://images.unsplash.com/... or hosted image"
+                          value={vehicleForm.imageUrl}
+                          onChange={(e) => setVehicleForm({ ...vehicleForm, imageUrl: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl border border-gray-200 text-xs focus:ring-2 focus:ring-[#16A34A] focus:outline-none font-medium"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <input
+                          type="checkbox"
+                          id="vehicleInStock"
+                          checked={vehicleForm.inStock}
+                          onChange={(e) => setVehicleForm({ ...vehicleForm, inStock: e.target.checked })}
+                          className="w-4 h-4 text-[#16A34A] rounded border-gray-300 focus:ring-[#16A34A]"
+                        />
+                        <label htmlFor="vehicleInStock" className="text-xs font-bold text-gray-800 cursor-pointer">
+                          Mark In-Stock & Ready for Immediate Doorstep Delivery
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Right 1 Col: Live Preview Card */}
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-3xl p-6 border border-gray-200 shadow-subtle space-y-4">
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                          Live Storefront Preview
+                        </h4>
+                        <div className="rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 shadow-xs">
+                          <div className="h-40 bg-gray-800 relative">
+                            <img
+                              src={vehicleForm.imageUrl || 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=600&q=80'}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold">
+                              {vehicleForm.inStock ? 'In Stock' : 'Out of Stock'}
+                            </div>
+                          </div>
+                          <div className="p-4 space-y-2">
+                            <span className="text-[10px] uppercase font-bold text-emerald-600 block">{vehicleForm.brand}</span>
+                            <strong className="text-sm font-black text-gray-900 block">{vehicleForm.name || 'Vehicle Model'}</strong>
+                            <p className="text-[11px] text-gray-500 line-clamp-1">{vehicleForm.tagline || 'Tagline description'}</p>
+                            <div className="flex items-baseline justify-between pt-1 border-t border-gray-200">
+                              <span className="text-sm font-black text-gray-900">₹{vehicleForm.exShowroomPrice.toLocaleString('en-IN')}</span>
+                              {vehicleForm.subsidyEstimate > 0 && (
+                                <span className="text-[10px] font-bold text-emerald-700">₹{vehicleForm.subsidyEstimate.toLocaleString('en-IN')} Subsidy</span>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-1 text-[10px] text-gray-600 pt-1">
+                              <span>Range: <strong>{vehicleForm.certifiedRangeKm} km</strong></span>
+                              <span>Battery: <strong>{vehicleForm.batteryCapacityKwh} kWh</strong></span>
+                              <span>Speed: <strong>{vehicleForm.topSpeedKmph} km/h</strong></span>
+                              <span>Charge: <strong>{vehicleForm.chargingTimeHours} hrs</strong></span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-xs text-emerald-950 space-y-1">
+                          <strong className="block font-bold">⚡ Live Storefront Publish:</strong>
+                          <p className="text-[11px] leading-relaxed text-emerald-800">
+                            Saving publishes this vehicle directly to the customer catalog with instant search, test-drive booking, and quotation generation.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          className="flex-1 py-3.5 bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Plus className="w-4 h-4 text-[#B7F34A]" />
+                          <span>Save & Publish to Catalog</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsVehicleModalOpen(false)}
                           className="px-5 py-3.5 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-bold rounded-2xl transition-all cursor-pointer"
                         >
                           Cancel

@@ -14,9 +14,10 @@ import {
   CustomerReviewItem,
   CategoryItem,
   SubCategoryItem,
-  BrandItem
+  BrandItem,
+  VehicleItem
 } from '../types';
-import { INDIAN_PINCODES } from '../data/seedData';
+import { INDIAN_PINCODES, VEHICLES_DATA } from '../data/seedData';
 import { lookupCityOrPincode } from '../data/indianCitiesPincodes';
 import { api } from './apiService';
 import {
@@ -1019,6 +1020,61 @@ class StorageService {
     const list = this.getBrands().filter(b => b.id !== id);
     this.set('evahan_catalog_brands', list);
     api.deleteBrand(id).catch(err => console.warn('Backend sync error:', err));
+  }
+
+  // --- Dynamic Vehicle Catalog ---
+  getVehicles(): VehicleItem[] {
+    const stored = this.get<VehicleItem[]>('evahan_catalog_vehicles', VEHICLES_DATA);
+    const merged = this.mergeById(stored, VEHICLES_DATA);
+    if (merged.length !== stored.length) {
+      this.set('evahan_catalog_vehicles', merged);
+    }
+    return merged;
+  }
+
+  addVehicle(vehicle: Omit<VehicleItem, 'id' | 'modelSlug'> & { id?: string; modelSlug?: string }): VehicleItem {
+    const list = this.getVehicles();
+    const slug = vehicle.modelSlug || vehicle.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const newVeh: VehicleItem = {
+      ...vehicle,
+      id: vehicle.id || `veh-${Date.now().toString(36)}`,
+      modelSlug: slug,
+      usageType: vehicle.usageType || 'COMMERCIAL',
+      certifiedRangeKm: Number(vehicle.certifiedRangeKm) || 120,
+      batteryCapacityKwh: Number(vehicle.batteryCapacityKwh) || 3.5,
+      topSpeedKmph: Number(vehicle.topSpeedKmph) || 75,
+      chargingTimeHours: Number(vehicle.chargingTimeHours) || 4,
+      warrantyYears: vehicle.warrantyYears || 3,
+      warrantyKm: vehicle.warrantyKm || 50000,
+      inStock: vehicle.inStock !== undefined ? vehicle.inStock : true,
+      images: vehicle.images && vehicle.images.length > 0 ? vehicle.images : [
+        { url: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80', label: vehicle.name, isPrimary: true }
+      ],
+      variants: vehicle.variants && vehicle.variants.length > 0 ? vehicle.variants : [
+        { id: `var-${Date.now()}`, variantName: 'Standard Edition', colorName: 'Pearl White', colorHex: '#F3F4F6', priceDifference: 0, batteryCapacity: Number(vehicle.batteryCapacityKwh) || 3.5, realWorldRangeKm: Number(vehicle.certifiedRangeKm) || 120, stockCount: 10, imageUrl: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1000&q=80', isDefault: true }
+      ],
+      specifications: vehicle.specifications || []
+    };
+    list.unshift(newVeh);
+    this.set('evahan_catalog_vehicles', list);
+    return newVeh;
+  }
+
+  updateVehicle(id: string, updates: Partial<VehicleItem>): boolean {
+    const list = this.getVehicles();
+    const idx = list.findIndex(v => v.id === id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...updates };
+      this.set('evahan_catalog_vehicles', list);
+      return true;
+    }
+    return false;
+  }
+
+  deleteVehicle(id: string): boolean {
+    const list = this.getVehicles().filter(v => v.id !== id);
+    this.set('evahan_catalog_vehicles', list);
+    return true;
   }
 
   // --- Payment Gateway Simulation (Razorpay Sandbox Style) ---

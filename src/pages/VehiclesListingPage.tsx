@@ -30,6 +30,7 @@ export const VehiclesListingPage: React.FC = () => {
   const [subCategoriesList, setSubCategoriesList] = useState<SubCategoryItem[]>(() =>
     storage.getSubCategories().filter(s => s.status === 'ACTIVE')
   );
+  const [vehiclesList, setVehiclesList] = useState<VehicleItem[]>(() => storage.getVehicles());
 
   // URL Query Params Initializers
   const initialCategory = searchParams.get('category') || 'ALL';
@@ -57,6 +58,7 @@ export const VehiclesListingPage: React.FC = () => {
     return storage.onSync(() => {
       setCategoriesList(storage.getCategories().filter(c => c.type === 'VEHICLE' && c.status === 'ACTIVE'));
       setSubCategoriesList(storage.getSubCategories().filter(s => s.status === 'ACTIVE'));
+      setVehiclesList(storage.getVehicles());
     });
   }, []);
 
@@ -79,12 +81,12 @@ export const VehiclesListingPage: React.FC = () => {
 
   // Unique Brands list
   const availableBrands = useMemo(() => {
-    return Array.from(new Set(VEHICLES_DATA.map(v => v.brand)));
-  }, []);
+    return Array.from(new Set(vehiclesList.map(v => v.brand)));
+  }, [vehiclesList]);
 
   // Filtered & Sorted vehicles
   const filteredVehicles = useMemo(() => {
-    return VEHICLES_DATA.filter((v) => {
+    return vehiclesList.filter((v) => {
       // Category Filter (supports direct key e.g. ELECTRIC_SCOOTER or slug e.g. electric-scooters)
       if (selectedCategory !== 'ALL') {
         const queryNorm = selectedCategory.trim().toUpperCase();
