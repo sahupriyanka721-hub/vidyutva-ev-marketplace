@@ -17,6 +17,7 @@ import {
   Minus
 } from 'lucide-react';
 import { SPARE_PARTS_DATA, VEHICLES_DATA } from '../data/seedData';
+import { storage } from '../services/storageService';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useLocation } from '../context/LocationContext';
@@ -34,14 +35,16 @@ export const SparePartDetailPage: React.FC = () => {
   const isWishlisted = isPartWishlisted(part.id);
   const discountPercent = Math.round(((part.mrpPrice - part.sellingPrice) / part.mrpPrice) * 100);
 
+  const availableVehicles = storage.getVehicles().length > 0 ? storage.getVehicles() : VEHICLES_DATA;
+
   // Compatibility Checker Interactive State
   const [checkerBrand, setCheckerBrand] = useState('ElectraMobility');
-  const [checkerVehicleId, setCheckerVehicleId] = useState(VEHICLES_DATA[0].id);
+  const [checkerVehicleId, setCheckerVehicleId] = useState(availableVehicles[0].id);
   const [checkerYear, setCheckerYear] = useState('2026');
   const [hasChecked, setHasChecked] = useState(false);
 
   // Available models for selected brand in checker
-  const brandModels = VEHICLES_DATA.filter(v => v.brand === checkerBrand);
+  const brandModels = availableVehicles.filter(v => v.brand === checkerBrand);
 
   // Evaluate compatibility
   const isCompatible = part.compatibleVehicleIds.includes(checkerVehicleId);

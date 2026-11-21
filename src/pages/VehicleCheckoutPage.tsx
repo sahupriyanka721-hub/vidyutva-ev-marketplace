@@ -15,7 +15,6 @@ import {
   FileText,
   Lock
 } from 'lucide-react';
-import { VEHICLES_DATA } from '../data/seedData';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../context/LocationContext';
 import { storage } from '../services/storageService';
@@ -27,12 +26,21 @@ export const VehicleCheckoutPage: React.FC = () => {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const { city: defaultCity, pincode: defaultPin } = useLocation();
 
-  const vehicle = VEHICLES_DATA.find(
-    (v) => v.modelSlug === modelSlug || v.id === modelSlug
-  ) || VEHICLES_DATA[0];
+  const vehicle = storage.getVehicleById(modelSlug || '');
 
   const variantParam = searchParams.get('variant');
-  const initialVariant = vehicle.variants.find(v => v.id === variantParam) || vehicle.variants[0];
+  const initialVariant = vehicle?.variants?.find(v => v.id === variantParam) || vehicle?.variants?.[0] || {
+    id: 'var-default',
+    variantName: 'Standard Edition',
+    colorName: 'Pearl White',
+    colorHex: '#F3F4F6',
+    priceDifference: 0,
+    batteryCapacity: vehicle?.batteryCapacityKwh || 3.5,
+    realWorldRangeKm: vehicle?.certifiedRangeKm || 120,
+    stockCount: 5,
+    imageUrl: vehicle?.images?.[0]?.url || '',
+    isDefault: true
+  };
 
   // Steps: 1: Variant/Color, 2: Delivery Address, 3: Pricing & Accessories, 4: Financing Preference, 5: Payment Gateway, 6: Confirmation
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -43,6 +51,25 @@ export const VehicleCheckoutPage: React.FC = () => {
 
   // Address
   const defaultAddress = user?.savedAddresses?.find(a => a.isDefault) || user?.savedAddresses?.[0];
+
+  if (!vehicle) {
+    return (
+      <div className="bg-[#F0F4F8] min-h-screen py-16 text-center">
+        <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-gray-200 shadow-subtle space-y-4">
+          <h2 className="text-xl font-black text-gray-900">Vehicle Not Found</h2>
+          <p className="text-xs text-gray-500">
+            This electric vehicle is not available in the live catalog.
+          </p>
+          <Link
+            to="/vehicles"
+            className="inline-block px-5 py-2.5 bg-[#14532D] text-white text-xs font-bold rounded-xl"
+          >
+            ← Browse EV Catalog
+          </Link>
+        </div>
+      </div>
+    );
+  }
   const [fullName, setFullName] = useState(defaultAddress?.fullName || user?.fullName || '');
   const [phone, setPhone] = useState(defaultAddress?.phone || user?.phone || '');
   const [email, setEmail] = useState(user?.email || '');

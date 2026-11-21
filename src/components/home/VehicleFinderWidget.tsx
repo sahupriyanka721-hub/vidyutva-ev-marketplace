@@ -1,10 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Sliders, ArrowRight, Zap, CheckCircle2, RefreshCw } from 'lucide-react';
-import { VEHICLES_DATA } from '../../data/seedData';
+import { storage } from '../../services/storageService';
+import { VehicleItem, CategoryItem } from '../../types';
 import { VehicleCard } from '../vehicles/VehicleCard';
 
 export const VehicleFinderWidget: React.FC = () => {
+  const [vehicles, setVehicles] = useState<VehicleItem[]>(() => storage.getVehicles());
+  const [categoriesList, setCategoriesList] = useState<CategoryItem[]>(() =>
+    storage.getCategories().filter(c => c.type === 'VEHICLE' && c.status === 'ACTIVE')
+  );
+
+  useEffect(() => {
+    return storage.onSync(() => {
+      setVehicles(storage.getVehicles());
+      setCategoriesList(storage.getCategories().filter(c => c.type === 'VEHICLE' && c.status === 'ACTIVE'));
+    });
+  }, []);
+
   const [category, setCategory] = useState<string>('ALL');
   const [usageType, setUsageType] = useState<string>('ALL');
   const [maxBudget, setMaxBudget] = useState<number>(400000);
@@ -15,7 +28,7 @@ export const VehicleFinderWidget: React.FC = () => {
   const [financeRequired, setFinanceRequired] = useState<string>('ANY');
 
   // Filter logic
-  const matchedVehicles = VEHICLES_DATA.filter((v) => {
+  const matchedVehicles = vehicles.filter((v) => {
     if (category !== 'ALL' && v.category !== category) return false;
     if (usageType !== 'ALL' && v.usageType !== usageType) return false;
     if (v.exShowroomPrice > maxBudget) return false;
@@ -68,10 +81,11 @@ export const VehicleFinderWidget: React.FC = () => {
                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#14532D]"
               >
                 <option value="ALL">All Categories</option>
-                <option value="ELECTRIC_SCOOTER">Electric Scooters</option>
-                <option value="ELECTRIC_PASSENGER_AUTO">Electric Passenger Autos (3W)</option>
-                <option value="ELECTRIC_CARGO_AUTO">Electric Cargo 3-Wheelers</option>
-                <option value="ELECTRIC_LOADER">Commercial Loaders</option>
+                {categoriesList.map((cat) => (
+                  <option key={cat.id} value={cat.categoryKey || cat.slug}>
+                    {cat.name}
+                  </option>
+                ))}
               </select>
             </div>
 

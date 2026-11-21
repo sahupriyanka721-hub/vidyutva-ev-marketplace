@@ -19,7 +19,7 @@ import {
   X,
   FileText
 } from 'lucide-react';
-import { SERVICE_CATEGORIES, VEHICLES_DATA } from '../data/seedData';
+import { SERVICE_CATEGORIES } from '../data/seedData';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../context/LocationContext';
 import { storage } from '../services/storageService';
@@ -42,11 +42,12 @@ export const ServiceBookingPage: React.FC = () => {
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
 
   // Step 2: Vehicle
-  const initialVehicleId = searchParams.get('vehicle') || VEHICLES_DATA[0].id;
-  const matchedVeh = VEHICLES_DATA.find(v => v.id === initialVehicleId) || VEHICLES_DATA[0];
-  const [vehicleCategory, setVehicleCategory] = useState<VehicleCategoryType>(matchedVeh.category);
-  const [vehicleBrand, setVehicleBrand] = useState(matchedVeh.brand);
-  const [vehicleModel, setVehicleModel] = useState(matchedVeh.name);
+  const catalogVehicles = storage.getVehicles();
+  const initialVehicleId = searchParams.get('vehicle');
+  const matchedVeh = catalogVehicles.find(v => v.id === initialVehicleId || v.modelSlug === initialVehicleId) || catalogVehicles[0];
+  const [vehicleCategory, setVehicleCategory] = useState<VehicleCategoryType>(matchedVeh?.category || 'ELECTRIC_SCOOTER');
+  const [vehicleBrand, setVehicleBrand] = useState(matchedVeh?.brand || 'Electric Two-Wheeler');
+  const [vehicleModel, setVehicleModel] = useState(matchedVeh?.name || 'Custom EV Model');
   const [vehicleRegNo, setVehicleRegNo] = useState('DL-01-EV-4422');
   const [purchaseYear, setPurchaseYear] = useState('2024');
 

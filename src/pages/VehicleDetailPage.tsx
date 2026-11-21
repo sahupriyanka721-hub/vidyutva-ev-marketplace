@@ -21,7 +21,7 @@ import {
   Sparkles,
   Info
 } from 'lucide-react';
-import { VEHICLES_DATA } from '../data/seedData';
+import { storage } from '../services/storageService';
 import { useLocation } from '../context/LocationContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCompare } from '../context/CompareContext';
@@ -33,15 +33,52 @@ export const VehicleDetailPage: React.FC = () => {
   const { isVehicleWishlisted, toggleVehicleWishlist } = useWishlist();
   const { isVehicleInCompare, addVehicleToCompare, removeVehicleFromCompare } = useCompare();
 
-  const vehicle = VEHICLES_DATA.find(
-    (v) => v.modelSlug === modelSlug || v.id === modelSlug
-  ) || VEHICLES_DATA[0];
+  const vehicle = storage.getVehicleById(modelSlug || '');
+
+  // If vehicle is not in catalog yet
+  if (!vehicle) {
+    return (
+      <div className="bg-[#F0F4F8] min-h-screen py-16 text-center">
+        <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-gray-200 shadow-subtle space-y-4">
+          <h2 className="text-xl font-black text-gray-900">Vehicle Not Found</h2>
+          <p className="text-xs text-gray-500">
+            This electric vehicle model is not available or has not been onboarded in the catalog yet.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            <Link
+              to="/vehicles"
+              className="px-5 py-2.5 bg-[#14532D] text-white text-xs font-bold rounded-xl hover:bg-[#0d381e] transition-colors"
+            >
+              ← Browse EV Catalog
+            </Link>
+            <Link
+              to="/admin/catalog"
+              className="px-5 py-2.5 bg-[#16A34A] text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+            >
+              + Admin Studio
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Variant & Color Selection
   const [selectedVariantId, setSelectedVariantId] = useState<string>(
-    vehicle.variants[0]?.id || ''
+    vehicle.variants?.[0]?.id || ''
   );
-  const activeVariant = vehicle.variants.find((v) => v.id === selectedVariantId) || vehicle.variants[0];
+  const activeVariant = vehicle.variants?.find((v) => v.id === selectedVariantId) || vehicle.variants?.[0] || {
+    id: 'default',
+    variantName: 'Standard Edition',
+    colorName: 'Standard',
+    colorHex: '#14532D',
+    priceDifference: 0,
+    batteryCapacity: vehicle.batteryCapacityKwh,
+    realWorldRangeKm: vehicle.certifiedRangeKm,
+    stockCount: 5,
+    imageUrl: vehicle.images?.[0]?.url || '',
+    isDefault: true
+  };
 
   // Image Gallery Selection & Zoom preview
   const [activeImageIndex, setActiveImageIndex] = useState(0);

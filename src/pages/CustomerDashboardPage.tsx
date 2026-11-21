@@ -27,7 +27,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { storage } from '../services/storageService';
-import { VEHICLES_DATA, SPARE_PARTS_DATA } from '../data/seedData';
+import { SPARE_PARTS_DATA } from '../data/seedData';
 import { lookupCityOrPincode, ALL_INDIAN_CITIES } from '../data/indianCitiesPincodes';
 import {
   VehicleOrderItem,
@@ -146,7 +146,7 @@ export const CustomerDashboardPage: React.FC = () => {
     }
   };
 
-  const wishlistedVehicles = VEHICLES_DATA.filter(v => savedVehicleIds.includes(v.id));
+  const wishlistedVehicles = storage.getVehicles().filter(v => savedVehicleIds.includes(v.id));
   const wishlistedParts = SPARE_PARTS_DATA.filter(p => savedPartIds.includes(p.id));
 
   // If NOT authenticated or user is null (e.g. after signout or direct URL access),

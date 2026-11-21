@@ -215,7 +215,8 @@ class StorageService {
   private get<T>(key: string, fallback: T): T {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        const data = localStorage.getItem(`evahan_${key}`);
+        const fullKey = key.startsWith('evahan_') ? key : `evahan_${key}`;
+        const data = localStorage.getItem(fullKey);
         return data ? JSON.parse(data) : fallback;
       }
       return this.memoryStore[key] !== undefined ? this.memoryStore[key] : fallback;
@@ -226,12 +227,15 @@ class StorageService {
 
   private set<T>(key: string, value: T): void {
     try {
+      const fullKey = key.startsWith('evahan_') ? key : `evahan_${key}`;
+      const cleanKey = key.replace(/^evahan_/, '');
       if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(`evahan_${key}`, JSON.stringify(value));
+        localStorage.setItem(fullKey, JSON.stringify(value));
       } else {
         this.memoryStore[key] = value;
       }
-      this.notifySync(key, value);
+      this.notifySync(cleanKey, value);
+      this.notifySync(fullKey, value);
     } catch (err) {
       console.error('Storage error:', err);
     }
@@ -869,12 +873,18 @@ class StorageService {
 
   // --- Dynamic Categories, Sub-Categories & Brands ---
   getCategories(): CategoryItem[] {
-    const stored = this.get<CategoryItem[]>('evahan_catalog_categories', DEFAULT_PRIMARY_CATEGORIES);
-    const merged = this.mergeById(stored, DEFAULT_PRIMARY_CATEGORIES);
+    let stored = this.get<CategoryItem[] | null>('catalog_categories', null);
+    if (!stored) {
+      stored = this.get<CategoryItem[] | null>('evahan_catalog_categories', null);
+    }
+    if (!stored || !Array.isArray(stored)) {
+      stored = DEFAULT_PRIMARY_CATEGORIES;
+      this.set('catalog_categories', stored);
+    }
     
     // Auto-migrate & ensure categoryKey is set for URL query compatibility
     let updated = false;
-    merged.forEach(c => {
+    stored.forEach(c => {
       if (!c.categoryKey) {
         if (c.id === 'cat-electric-scooters' || c.id === 'cat-2w-personal' || c.name.toLowerCase().includes('scooter')) {
           c.categoryKey = 'ELECTRIC_SCOOTER';
@@ -895,10 +905,10 @@ class StorageService {
       }
     });
 
-    if (updated || merged.length !== stored.length) {
-      this.set('evahan_catalog_categories', merged);
+    if (updated) {
+      this.set('catalog_categories', stored);
     }
-    return merged;
+    return stored;
   }
 
   getCategoryByKeyOrSlug(keyOrSlug: string): CategoryItem | undefined {
@@ -925,7 +935,7 @@ class StorageService {
       createdAt: new Date().toISOString().split('T')[0]
     };
     list.push(newCat);
-    this.set('evahan_catalog_categories', list);
+    this.set('catalog_categories', list);
     api.createCategory(newCat).catch(err => console.warn('Backend sync error:', err));
     return newCat;
   }
@@ -935,24 +945,27 @@ class StorageService {
     const idx = list.findIndex(c => c.id === id);
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
-      this.set('evahan_catalog_categories', list);
+      this.set('catalog_categories', list);
       api.updateCategory(id, updates).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
   deleteCategory(id: string): void {
     const list = this.getCategories().filter(c => c.id !== id);
-    this.set('evahan_catalog_categories', list);
+    this.set('catalog_categories', list);
     api.deleteCategory(id).catch(err => console.warn('Backend sync error:', err));
   }
 
   getSubCategories(): SubCategoryItem[] {
-    const stored = this.get<SubCategoryItem[]>('evahan_catalog_subcategories', DEFAULT_SUBCATEGORIES);
-    const merged = this.mergeById(stored, DEFAULT_SUBCATEGORIES);
-    if (merged.length !== stored.length) {
-      this.set('evahan_catalog_subcategories', merged);
+    let stored = this.get<SubCategoryItem[] | null>('catalog_subcategories', null);
+    if (!stored) {
+      stored = this.get<SubCategoryItem[] | null>('evahan_catalog_subcategories', null);
     }
-    return merged;
+    if (!stored || !Array.isArray(stored)) {
+      stored = DEFAULT_SUBCATEGORIES;
+      this.set('catalog_subcategories', stored);
+    }
+    return stored;
   }
 
   addSubCategory(subCategory: Omit<SubCategoryItem, 'id' | 'createdAt'>): SubCategoryItem {
@@ -963,7 +976,7 @@ class StorageService {
       createdAt: new Date().toISOString().split('T')[0]
     };
     list.push(newSub);
-    this.set('evahan_catalog_subcategories', list);
+    this.set('catalog_subcategories', list);
     api.createSubCategory(newSub).catch(err => console.warn('Backend sync error:', err));
     return newSub;
   }
@@ -973,24 +986,27 @@ class StorageService {
     const idx = list.findIndex(s => s.id === id);
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
-      this.set('evahan_catalog_subcategories', list);
+      this.set('catalog_subcategories', list);
       api.updateSubCategory(id, updates).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
   deleteSubCategory(id: string): void {
     const list = this.getSubCategories().filter(s => s.id !== id);
-    this.set('evahan_catalog_subcategories', list);
+    this.set('catalog_subcategories', list);
     api.deleteSubCategory(id).catch(err => console.warn('Backend sync error:', err));
   }
 
   getBrands(): BrandItem[] {
-    const stored = this.get<BrandItem[]>('evahan_catalog_brands', DEFAULT_OEM_BRANDS);
-    const merged = this.mergeById(stored, DEFAULT_OEM_BRANDS);
-    if (merged.length !== stored.length) {
-      this.set('evahan_catalog_brands', merged);
+    let stored = this.get<BrandItem[] | null>('catalog_brands', null);
+    if (!stored) {
+      stored = this.get<BrandItem[] | null>('evahan_catalog_brands', null);
     }
-    return merged;
+    if (!stored || !Array.isArray(stored)) {
+      stored = DEFAULT_OEM_BRANDS;
+      this.set('catalog_brands', stored);
+    }
+    return stored;
   }
 
   addBrand(brand: Omit<BrandItem, 'id' | 'createdAt'>): BrandItem {
@@ -1001,7 +1017,7 @@ class StorageService {
       createdAt: new Date().toISOString().split('T')[0]
     };
     list.push(newBrand);
-    this.set('evahan_catalog_brands', list);
+    this.set('catalog_brands', list);
     api.createBrand(newBrand).catch(err => console.warn('Backend sync error:', err));
     return newBrand;
   }
@@ -1011,25 +1027,39 @@ class StorageService {
     const idx = list.findIndex(b => b.id === id);
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
-      this.set('evahan_catalog_brands', list);
+      this.set('catalog_brands', list);
       api.updateBrand(id, updates).catch(err => console.warn('Backend sync error:', err));
     }
   }
 
   deleteBrand(id: string): void {
     const list = this.getBrands().filter(b => b.id !== id);
-    this.set('evahan_catalog_brands', list);
+    this.set('catalog_brands', list);
     api.deleteBrand(id).catch(err => console.warn('Backend sync error:', err));
   }
 
-  // --- Dynamic Vehicle Catalog ---
+  // --- Dynamic Vehicle Catalog (Strictly Admin Controlled) ---
   getVehicles(): VehicleItem[] {
-    const stored = this.get<VehicleItem[]>('evahan_catalog_vehicles', VEHICLES_DATA);
-    const merged = this.mergeById(stored, VEHICLES_DATA);
-    if (merged.length !== stored.length) {
-      this.set('evahan_catalog_vehicles', merged);
+    let stored = this.get<VehicleItem[] | null>('catalog_vehicles', null);
+    if (!stored) {
+      stored = this.get<VehicleItem[] | null>('evahan_catalog_vehicles', null);
     }
-    return merged;
+    if (!stored || !Array.isArray(stored)) {
+      // Empty by default: vehicles must be explicitly onboarded/added by the Admin!
+      return [];
+    }
+    // Filter out old seed vehicles so only admin-created vehicles are shown on the storefront
+    const seedIds = new Set(['veh-eglide-pro', 'veh-thundervolt-x', 'veh-sprint-plus', 'veh-aeroscoot-city', 'veh-shakti-cargo-van']);
+    const customOnly = stored.filter(v => !seedIds.has(v.id));
+    if (customOnly.length !== stored.length) {
+      this.set('catalog_vehicles', customOnly);
+    }
+    return customOnly;
+  }
+
+  getVehicleById(idOrSlug: string): VehicleItem | undefined {
+    const list = this.getVehicles();
+    return list.find(v => v.id === idOrSlug || v.modelSlug === idOrSlug);
   }
 
   addVehicle(vehicle: Omit<VehicleItem, 'id' | 'modelSlug'> & { id?: string; modelSlug?: string }): VehicleItem {
@@ -1056,7 +1086,7 @@ class StorageService {
       specifications: vehicle.specifications || []
     };
     list.unshift(newVeh);
-    this.set('evahan_catalog_vehicles', list);
+    this.set('catalog_vehicles', list);
     return newVeh;
   }
 
@@ -1065,7 +1095,7 @@ class StorageService {
     const idx = list.findIndex(v => v.id === id);
     if (idx >= 0) {
       list[idx] = { ...list[idx], ...updates };
-      this.set('evahan_catalog_vehicles', list);
+      this.set('catalog_vehicles', list);
       return true;
     }
     return false;
@@ -1073,7 +1103,7 @@ class StorageService {
 
   deleteVehicle(id: string): boolean {
     const list = this.getVehicles().filter(v => v.id !== id);
-    this.set('evahan_catalog_vehicles', list);
+    this.set('catalog_vehicles', list);
     return true;
   }
 

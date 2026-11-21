@@ -12,7 +12,7 @@ import {
   Building,
   Home
 } from 'lucide-react';
-import { VEHICLES_DATA, INDIAN_PINCODES } from '../data/seedData';
+import { INDIAN_PINCODES } from '../data/seedData';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../context/LocationContext';
 import { storage } from '../services/storageService';
@@ -23,11 +23,12 @@ export const TestDrivePage: React.FC = () => {
   const { user } = useAuth();
   const { city: defaultCity, pincode: defaultPincode, serviceability } = useLocation();
 
+  const vehicles = storage.getVehicles();
   const vehicleParam = searchParams.get('vehicle');
-  const initialVehicle = VEHICLES_DATA.find(v => v.id === vehicleParam || v.modelSlug === vehicleParam) || VEHICLES_DATA[0];
+  const initialVehicle = vehicles.find(v => v.id === vehicleParam || v.modelSlug === vehicleParam) || vehicles[0];
 
-  const [selectedVehicleId, setSelectedVehicleId] = useState(initialVehicle.id);
-  const currentVehicle = VEHICLES_DATA.find(v => v.id === selectedVehicleId) || VEHICLES_DATA[0];
+  const [selectedVehicleId, setSelectedVehicleId] = useState(initialVehicle?.id || '');
+  const currentVehicle = vehicles.find(v => v.id === selectedVehicleId) || initialVehicle;
 
   const [testDriveMode, setTestDriveMode] = useState<'DOORSTEP' | 'DEALERSHIP'>('DOORSTEP');
   const [customerName, setCustomerName] = useState(user?.fullName || '');
@@ -127,7 +128,7 @@ export const TestDrivePage: React.FC = () => {
                   Select Vehicle to Test Drive
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {VEHICLES_DATA.map((v) => (
+                  {vehicles.map((v) => (
                     <button
                       key={v.id}
                       type="button"

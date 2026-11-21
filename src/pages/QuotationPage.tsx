@@ -15,7 +15,6 @@ import {
   Truck,
   RotateCcw
 } from 'lucide-react';
-import { VEHICLES_DATA } from '../data/seedData';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from '../context/LocationContext';
 import { storage } from '../services/storageService';
@@ -27,8 +26,9 @@ export const QuotationPage: React.FC = () => {
   const { user } = useAuth();
   const { city: defaultCity, pincode: defaultPincode } = useLocation();
 
+  const vehicles = storage.getVehicles();
   const preselectedVehicleId = searchParams.get('vehicle');
-  const initialVehicle = VEHICLES_DATA.find(v => v.id === preselectedVehicleId || v.modelSlug === preselectedVehicleId) || VEHICLES_DATA[0];
+  const initialVehicle = vehicles.find(v => v.id === preselectedVehicleId || v.modelSlug === preselectedVehicleId) || vehicles[0];
 
   // Form State
   const [customerType, setCustomerType] = useState<'INDIVIDUAL' | 'BUSINESS'>('INDIVIDUAL');
@@ -40,10 +40,10 @@ export const QuotationPage: React.FC = () => {
   const [city, setCity] = useState(defaultCity);
   const [pincode, setPincode] = useState(defaultPincode);
 
-  const [category, setCategory] = useState<VehicleCategoryType>(initialVehicle.category);
-  const [selectedVehicleId, setSelectedVehicleId] = useState(initialVehicle.id);
+  const [category, setCategory] = useState<VehicleCategoryType>(initialVehicle?.category || 'ELECTRIC_SCOOTER');
+  const [selectedVehicleId, setSelectedVehicleId] = useState(initialVehicle?.id || '');
   const [quantity, setQuantity] = useState<number>(1);
-  const [usageType, setUsageType] = useState<VehicleUsageType>(initialVehicle.usageType);
+  const [usageType, setUsageType] = useState<VehicleUsageType>(initialVehicle?.usageType || 'COMMERCIAL');
   const [financeRequirement, setFinanceRequirement] = useState<boolean>(true);
   const [tradeInOldVehicle, setTradeInOldVehicle] = useState<boolean>(false);
   const [oldVehicleDetails, setOldVehicleDetails] = useState('');
@@ -54,8 +54,8 @@ export const QuotationPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Available vehicles for chosen category
-  const categoryVehicles = VEHICLES_DATA.filter(v => v.category === category);
-  const activeVehicle = VEHICLES_DATA.find(v => v.id === selectedVehicleId) || categoryVehicles[0] || VEHICLES_DATA[0];
+  const categoryVehicles = vehicles.filter(v => v.category === category);
+  const activeVehicle = vehicles.find(v => v.id === selectedVehicleId) || categoryVehicles[0] || initialVehicle;
 
   // Bulk Discount tiers: 1-2 units: 0%, 3-5 units: ₹5,000/unit, 6-10 units: ₹8,000/unit, 11+ units: ₹12,000/unit
   const getBulkDiscountPerUnit = (qty: number) => {
@@ -251,7 +251,7 @@ export const QuotationPage: React.FC = () => {
                     onChange={(e) => {
                       const newCat = e.target.value as VehicleCategoryType;
                       setCategory(newCat);
-                      const matching = VEHICLES_DATA.find(v => v.category === newCat);
+                      const matching = vehicles.find(v => v.category === newCat);
                       if (matching) setSelectedVehicleId(matching.id);
                     }}
                     className="w-full px-3 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-xs font-semibold"

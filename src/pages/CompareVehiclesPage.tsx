@@ -11,17 +11,18 @@ import {
   Calendar
 } from 'lucide-react';
 import { useCompare } from '../context/CompareContext';
-import { VEHICLES_DATA } from '../data/seedData';
 import { VehicleItem } from '../types';
+import { storage } from '../services/storageService';
 
 export const CompareVehiclesPage: React.FC = () => {
   const { comparedVehicleIds, removeVehicleFromCompare, addVehicleToCompare, clearCompare, maxVehicles } = useCompare();
 
+  const allVehicles = storage.getVehicles();
   const vehicles = comparedVehicleIds
-    .map((id) => VEHICLES_DATA.find((v) => v.id === id || v.modelSlug === id))
+    .map((id) => allVehicles.find((v) => v.id === id || v.modelSlug === id))
     .filter(Boolean) as VehicleItem[];
 
-  const availableVehiclesToAdd = VEHICLES_DATA.filter(
+  const availableVehiclesToAdd = allVehicles.filter(
     (v) => !comparedVehicleIds.includes(v.id) && !comparedVehicleIds.includes(v.modelSlug)
   );
 

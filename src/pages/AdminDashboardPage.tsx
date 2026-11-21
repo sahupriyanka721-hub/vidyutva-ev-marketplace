@@ -757,7 +757,7 @@ export const AdminDashboardPage: React.FC = () => {
       icon: Store,
       items: [
         { id: 'shop-list' as AdminTab, label: 'Showroom Dealers & List', badge: shopkeepers.length },
-        { id: 'inventory' as AdminTab, label: 'Dealership Floor Vehicles', badge: VEHICLES_DATA.length },
+        { id: 'inventory' as AdminTab, label: 'Dealership Floor Vehicles', badge: storage.getVehicles().length },
         { id: 'shop-onboarding' as AdminTab, label: 'Showroom Onboarding', badge: null },
         { id: 'shop-payout' as AdminTab, label: 'Dealership Commissions', badge: null },
       ]
@@ -3340,9 +3340,9 @@ export const AdminDashboardPage: React.FC = () => {
               {/* Vehicles */}
               <div className="space-y-3">
                 <strong className="text-xs font-bold text-gray-400 uppercase tracking-wider block">
-                  Electric Vehicles ({VEHICLES_DATA.length})
+                  Electric Vehicles ({storage.getVehicles().length})
                 </strong>
-                {VEHICLES_DATA.map(v => (
+                {storage.getVehicles().map(v => (
                   <div key={v.id} className="p-3 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <img src={v.images[0]?.url} alt={v.name} className="w-10 h-10 object-cover rounded-xl bg-gray-200" />
@@ -5449,7 +5449,7 @@ export const AdminDashboardPage: React.FC = () => {
                         <div className="flex items-baseline justify-between mt-1">
                           <strong className="text-2xl font-black text-white">{totalFloorInventory}</strong>
                           <span className="text-[11px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded">
-                            {VEHICLES_DATA.length} Models
+                            {storage.getVehicles().length} Models
                           </span>
                         </div>
                       </div>
@@ -5505,7 +5505,7 @@ export const AdminDashboardPage: React.FC = () => {
                       }`}
                     >
                       <Tag className="w-3.5 h-3.5" />
-                      <span>Dealership Floor Vehicles ({VEHICLES_DATA.length})</span>
+                      <span>Dealership Floor Vehicles ({storage.getVehicles().length})</span>
                     </button>
 
                     <button
@@ -5706,14 +5706,14 @@ export const AdminDashboardPage: React.FC = () => {
                         <div>
                           <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
                             <Tag className="w-5 h-5 text-purple-600" />
-                            <span>Dealership Floor Display Models & Stock ({VEHICLES_DATA.length})</span>
+                            <span>Dealership Floor Display Models & Stock ({storage.getVehicles().length})</span>
                           </h2>
                           <p className="text-xs text-gray-500">Live vehicles available for showroom display, test drives, and customer delivery.</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {VEHICLES_DATA.map(vehicle => (
+                        {storage.getVehicles().map(vehicle => (
                           <div key={vehicle.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col justify-between space-y-3">
                             <div>
                               <div className="relative h-40 rounded-xl overflow-hidden bg-white mb-3">

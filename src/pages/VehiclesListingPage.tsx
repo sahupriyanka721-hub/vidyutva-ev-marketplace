@@ -11,9 +11,10 @@ import {
   CheckCircle2,
   ChevronDown,
   Sparkles,
-  MapPin
+  MapPin,
+  Truck,
+  Plus
 } from 'lucide-react';
-import { VEHICLES_DATA } from '../data/seedData';
 import { VehicleCard } from '../components/vehicles/VehicleCard';
 import { useLocation } from '../context/LocationContext';
 import { VehicleItem, CategoryItem, SubCategoryItem } from '../types';
@@ -582,7 +583,30 @@ export const VehiclesListingPage: React.FC = () => {
 
           {/* Main Products Grid Area */}
           <main className="lg:col-span-9">
-            {filteredVehicles.length === 0 ? (
+            {vehiclesList.length === 0 ? (
+              <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-300 space-y-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 text-[#14532D] flex items-center justify-center">
+                  <Truck className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    No Vehicles in Catalog Yet
+                  </h3>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto">
+                    Vehicle models onboarded by the administrator in the Admin Catalog Hub will appear here live with transparent pricing, ARAI certified range, and instant token booking.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <Link
+                    to="/admin/catalog"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16A34A] hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm"
+                  >
+                    <Plus className="w-4 h-4 text-[#B7F34A]" />
+                    <span>+ Add Vehicle in Admin Hub</span>
+                  </Link>
+                </div>
+              </div>
+            ) : filteredVehicles.length === 0 ? (
               <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-300">
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-50 text-[#14532D] flex items-center justify-center">
                   <Search className="w-8 h-8" />

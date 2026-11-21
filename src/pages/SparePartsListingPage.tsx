@@ -11,12 +11,15 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { SPARE_PARTS_DATA, VEHICLES_DATA } from '../data/seedData';
+import { storage } from '../services/storageService';
 import { PartCard } from '../components/parts/PartCard';
 import { useLocation } from '../context/LocationContext';
 
 export const SparePartsListingPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { city, pincode, openLocationModal } = useLocation();
+
+  const availableVehicles = storage.getVehicles().length > 0 ? storage.getVehicles() : VEHICLES_DATA;
 
   const initialCat = searchParams.get('category') || 'ALL';
   const initialSearch = searchParams.get('search') || '';
@@ -166,7 +169,7 @@ export const SparePartsListingPage: React.FC = () => {
                 className="p-2 bg-emerald-50 text-[#14532D] border border-emerald-200 rounded-xl font-bold focus:outline-none"
               >
                 <option value="ALL">All EV Models</option>
-                {VEHICLES_DATA.map(v => (
+                {availableVehicles.map(v => (
                   <option key={v.id} value={v.id}>Compatible with {v.name}</option>
                 ))}
               </select>
